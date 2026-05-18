@@ -1,0 +1,31 @@
+extends ../layout
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Data Ruangan Laboratorium
+
+    .content
+        .container-fluid
+            .card
+                .card-header
+                    h3.card-title Daftar Ruangan GWT 8
+                .card-body
+                    table.table.table-bordered
+                        thead
+                            tr
+                                th ID
+                                th Nama Ruangan
+                                th Deskripsi
+                                th Aksi
+                        tbody
+                            each r in rooms
+                                tr
+                                    td= r.id
+                                    td= r.room_name
+                                    td= r.description
+                                    td
+                                        button.btn.btn-sm.btn-warning Edit
+                                        button.btn.btn-sm.btn-danger.ml-1 Hapus

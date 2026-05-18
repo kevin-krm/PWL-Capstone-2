@@ -1,0 +1,29 @@
+doctype html
+html(lang="en")
+    head
+        meta(charset="utf-8")
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+        title Log in
+        link(rel="stylesheet" href="/adminlte/plugins/fontawesome-free/css/all.min.css")
+        link(rel="stylesheet" href="/adminlte/dist/css/adminlte.min.css")
+    body.hold-transition.login-page
+        .login-box
+            .card.card-outline.card-primary
+                .card-header.text-center
+                    a.h1(href="#") <b>Lab</b>Inventory
+                .card-body
+                    p.login-box-msg Silakan login untuk masuk ke sistem
+                    form(action="/login" method="post")
+                        .input-group.mb-3
+                            input.form-control(type="email" name="email" placeholder="Email" required)
+                            .input-group-append
+                                .input-group-text
+                                    span.fas.fa-envelope
+                        .input-group.mb-3
+                            input.form-control(type="password" name="password" placeholder="Password" required)
+                            .input-group-append
+                                .input-group-text
+                                    span.fas.fa-lock
+                        .row
+                            .col-4
+                                button.btn.btn-primary.btn-block(type="submit") Sign In

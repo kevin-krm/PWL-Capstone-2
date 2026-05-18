@@ -26,6 +26,11 @@ const adminRoutes = require('./routes/admin');
 app.use('/', authRoutes);
 app.use('/admin', adminRoutes);
 
+// Redirect otomatis dari rute root (/) ke halaman /login
+app.get('/', (req, res) => {
+    res.redirect('/login');
+});
+
 // Jalankan Server
 const PORT = 3000;
 app.listen(PORT, () => {
