@@ -23,7 +23,7 @@ html(lang="en")
 
             // Main Sidebar Container
             aside.main-sidebar.sidebar-dark-primary.elevation-4
-                a.brand-link(href="#")
+                a.brand-link(href="/admin/dashboard")
                     span.brand-text.font-weight-light Lab Inventory GWT 8
 
                 .sidebar
@@ -34,6 +34,10 @@ html(lang="en")
                     nav.mt-2
                         ul.nav.nav-pills.nav-sidebar.flex-column(data-widget="treeview" role="menu" data-accordion="false")
                             if user.role === 'Administrator'
+                                li.nav-item
+                                    a.nav-link(href="/admin/dashboard")
+                                        i.nav-icon.fas.fa-tachometer-alt
+                                        p Dashboard Utama
                                 li.nav-item
                                     a.nav-link(href="/admin/users")
                                         i.nav-icon.fas.fa-users

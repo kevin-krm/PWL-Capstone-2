@@ -15,10 +15,12 @@ block content
                         .card-header
                             h5.m-0 Selamat Datang!
                         .card-body
-                            h6.card-title Halo, #{user.name}
-                            p.card-text
-                                | Anda masuk sebagai
-                                strong #{user.role}
-                                | . Selamat datang di sistem manajemen Inventaris dan BHP Laboratorium GWT 8.
-                            p.card-text
-                                | Silakan gunakan menu di sebelah kiri untuk mulai mengelola Data Pengguna dan Data Ruangan.
+                            h6.card-title.mb-3 Halo, <strong>#{user.name}</strong>
+
+                            p.card-text.mt-3
+                                | Anda masuk ke sistem sebagai
+                                strong.text-primary #{user.role}
+                                | . Selamat datang di aplikasi digitalisasi dan manajemen siklus aset serta Barang Habis Pakai (BHP) untuk Laboratorium GWT 8.
+
+                            p.card-text.mt-2
+                                | Silakan gunakan menu navigasi di sebelah kiri untuk mulai mengelola Data Pengguna sistem maupun memantau ketersediaan Data Ruangan laboratorium.
