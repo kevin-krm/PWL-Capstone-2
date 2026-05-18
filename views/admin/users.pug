@@ -12,6 +12,11 @@ block content
             .card
                 .card-header
                     h3.card-title Daftar Pengguna Sistem
+                    .card-tools
+                        // Tombol untuk memunculkan Modal Tambah
+                        button.btn.btn-primary.btn-sm(data-toggle="modal" data-target="#modal-tambah")
+                            i.fas.fa-plus
+                            |  Tambah Pengguna
                 .card-body
                     table.table.table-bordered
                         thead
@@ -29,5 +34,72 @@ block content
                                     td= u.email
                                     td= u.role
                                     td
-                                        button.btn.btn-sm.btn-warning Edit
-                                        button.btn.btn-sm.btn-danger.ml-1 Hapus
+                                        // Tombol Edit
+                                        button.btn.btn-sm.btn-warning(data-toggle="modal" data-target=`#modal-edit-${u.id}`) Edit
+
+                                        // Tombol Hapus
+                                        form(action=`/admin/users/delete/${u.id}` method="POST" style="display:inline;")
+                                            button.btn.btn-sm.btn-danger.ml-1(type="submit" onclick="return confirm('Yakin ingin menghapus pengguna ini?');") Hapus
+
+                                // MODAL EDIT (Dibuat otomatis)
+                                .modal.fade(id=`modal-edit-${u.id}`)
+                                    .modal-dialog
+                                        .modal-content
+                                            .modal-header
+                                                h4.modal-title Edit Pengguna
+                                                button.close(type="button" data-dismiss="modal" aria-label="Close")
+                                                    span(aria-hidden="true") &times;
+                                            form(action=`/admin/users/edit/${u.id}` method="POST")
+                                                .modal-body
+                                                    .form-group
+                                                        label Nama Lengkap
+                                                        input.form-control(type="text" name="name" value=u.name required)
+                                                    .form-group
+                                                        label Email
+                                                        input.form-control(type="email" name="email" value=u.email required)
+                                                    .form-group
+                                                        label Password (Ketik ulang jika ingin diubah)
+                                                        input.form-control(type="text" name="password" value=u.password required)
+                                                    .form-group
+                                                        label Hak Akses (Role)
+                                                        select.form-control(name="role" required)
+                                                            option(value="Administrator" selected=u.role=='Administrator') Administrator
+                                                            option(value="Kepala Laboratorium" selected=u.role=='Kepala Laboratorium') Kepala Laboratorium
+                                                            option(value="Ketua Program Studi" selected=u.role=='Ketua Program Studi') Ketua Program Studi
+                                                            option(value="Staf Administrasi" selected=u.role=='Staf Administrasi') Staf Administrasi
+                                                            option(value="Staf Laboratorium" selected=u.role=='Staf Laboratorium') Staf Laboratorium
+                                                .modal-footer.justify-content-between
+                                                    button.btn.btn-default(type="button" data-dismiss="modal") Batal
+                                                    button.btn.btn-primary(type="submit") Simpan Perubahan
+
+            // MODAL TAMBAH PENGGUNA
+            .modal.fade#modal-tambah
+                .modal-dialog
+                    .modal-content
+                        .modal-header
+                            h4.modal-title Tambah Pengguna Baru
+                            button.close(type="button" data-dismiss="modal" aria-label="Close")
+                                span(aria-hidden="true") &times;
+                        form(action="/admin/users/add" method="POST")
+                            .modal-body
+                                .form-group
+                                    label Nama Lengkap
+                                    input.form-control(type="text" name="name" placeholder="Masukkan nama" required)
+                                .form-group
+                                    label Email
+                                    input.form-control(type="email" name="email" placeholder="contoh@lab.ac.id" required)
+                                .form-group
+                                    label Password
+                                    input.form-control(type="password" name="password" placeholder="Minimal 6 karakter" required)
+                                .form-group
+                                    label Hak Akses (Role)
+                                    select.form-control(name="role" required)
+                                        option(value="" disabled selected) -- Pilih Role --
+                                        option(value="Administrator") Administrator
+                                        option(value="Kepala Laboratorium") Kepala Laboratorium
+                                        option(value="Ketua Program Studi") Ketua Program Studi
+                                        option(value="Staf Administrasi") Staf Administrasi
+                                        option(value="Staf Laboratorium") Staf Laboratorium
+                            .modal-footer.justify-content-between
+                                button.btn.btn-default(type="button" data-dismiss="modal") Batal
+                                button.btn.btn-primary(type="submit") Simpan Pengguna

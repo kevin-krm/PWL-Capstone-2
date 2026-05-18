@@ -11,7 +11,7 @@ router.get('/dashboard', (req, res) => {
     res.render('admin/dashboard', { user: req.session.user });
 });
 
-// 2. Rute Kelola Pengguna
+// 2. Rute Kelola Pengguna (READ)
 router.get('/users', (req, res) => {
     db.query('SELECT * FROM users', (err, results) => {
         if (err) throw err;
@@ -24,6 +24,67 @@ router.get('/rooms', (req, res) => {
     db.query('SELECT * FROM rooms', (err, results) => {
         if (err) throw err;
         res.render('admin/rooms', { user: req.session.user, rooms: results });
+    });
+});
+
+
+// PROSES CRUD PENGGUNA
+
+// CREATE: Proses tambah pengguna
+router.post('/users/add', (req, res) => {
+    const { name, email, password, role } = req.body;
+    db.query('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+        [name, email, password, role], (err) => {
+            if (err) throw err;
+            res.redirect('/admin/users'); // Kembali ke halaman pengguna setelah berhasil
+        });
+});
+
+// UPDATE: Proses edit pengguna
+router.post('/users/edit/:id', (req, res) => {
+    const { name, email, password, role } = req.body;
+    db.query('UPDATE users SET name=?, email=?, password=?, role=? WHERE id=?',
+        [name, email, password, role, req.params.id], (err) => {
+            if (err) throw err;
+            res.redirect('/admin/users');
+        });
+});
+
+// DELETE: Proses hapus pengguna
+router.post('/users/delete/:id', (req, res) => {
+    db.query('DELETE FROM users WHERE id=?', [req.params.id], (err) => {
+        if (err) throw err;
+        res.redirect('/admin/users');
+    });
+});
+
+// PROSES CRUD RUANGAN
+
+// CREATE: Proses tambah ruangan
+router.post('/rooms/add', (req, res) => {
+    const { room_name, description } = req.body;
+    db.query('INSERT INTO rooms (room_name, description) VALUES (?, ?)',
+        [room_name, description], (err) => {
+            if (err) throw err;
+            res.redirect('/admin/rooms');
+        });
+});
+
+// UPDATE: Proses edit ruangan
+router.post('/rooms/edit/:id', (req, res) => {
+    const { room_name, description } = req.body;
+    db.query('UPDATE rooms SET room_name=?, description=? WHERE id=?',
+        [room_name, description, req.params.id], (err) => {
+            if (err) throw err;
+            res.redirect('/admin/rooms');
+        });
+});
+
+// DELETE: Proses hapus ruangan
+router.post('/rooms/delete/:id', (req, res) => {
+    db.query('DELETE FROM rooms WHERE id=?', [req.params.id], (err) => {
+        if (err) throw err;
+        res.redirect('/admin/rooms');
     });
 });
 

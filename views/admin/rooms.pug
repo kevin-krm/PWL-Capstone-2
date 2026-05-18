@@ -12,6 +12,11 @@ block content
             .card
                 .card-header
                     h3.card-title Daftar Ruangan GWT 8
+                    .card-tools
+                        // Tombol untuk memunculkan Modal Tambah
+                        button.btn.btn-primary.btn-sm(data-toggle="modal" data-target="#modal-tambah")
+                            i.fas.fa-plus
+                            |  Tambah Ruangan
                 .card-body
                     table.table.table-bordered
                         thead
@@ -27,5 +32,49 @@ block content
                                     td= r.room_name
                                     td= r.description
                                     td
-                                        button.btn.btn-sm.btn-warning Edit
-                                        button.btn.btn-sm.btn-danger.ml-1 Hapus
+                                        // Tombol Edit
+                                        button.btn.btn-sm.btn-warning(data-toggle="modal" data-target=`#modal-edit-${r.id}`) Edit
+
+                                        // Tombol Hapus
+                                        form(action=`/admin/rooms/delete/${r.id}` method="POST" style="display:inline;")
+                                            button.btn.btn-sm.btn-danger.ml-1(type="submit" onclick="return confirm('Yakin ingin menghapus ruangan ini?');") Hapus
+
+                                // MODAL EDIT RUANGAN
+                                .modal.fade(id=`modal-edit-${r.id}`)
+                                    .modal-dialog
+                                        .modal-content
+                                            .modal-header
+                                                h4.modal-title Edit Ruangan
+                                                button.close(type="button" data-dismiss="modal" aria-label="Close")
+                                                    span(aria-hidden="true") &times;
+                                            form(action=`/admin/rooms/edit/${r.id}` method="POST")
+                                                .modal-body
+                                                    .form-group
+                                                        label Nama Ruangan
+                                                        input.form-control(type="text" name="room_name" value=r.room_name required)
+                                                    .form-group
+                                                        label Deskripsi
+                                                        textarea.form-control(name="description" rows="3" required)= r.description
+                                                .modal-footer.justify-content-between
+                                                    button.btn.btn-default(type="button" data-dismiss="modal") Batal
+                                                    button.btn.btn-primary(type="submit") Simpan Perubahan
+
+            // MODAL TAMBAH RUANGAN
+            .modal.fade#modal-tambah
+                .modal-dialog
+                    .modal-content
+                        .modal-header
+                            h4.modal-title Tambah Ruangan Baru
+                            button.close(type="button" data-dismiss="modal" aria-label="Close")
+                                span(aria-hidden="true") &times;
+                        form(action="/admin/rooms/add" method="POST")
+                            .modal-body
+                                .form-group
+                                    label Nama Ruangan
+                                    input.form-control(type="text" name="room_name" placeholder="Misal: Lab Basis Data R5" required)
+                                .form-group
+                                    label Deskripsi
+                                    textarea.form-control(name="description" rows="3" placeholder="Deskripsi atau lokasi ruangan" required)
+                            .modal-footer.justify-content-between
+                                button.btn.btn-default(type="button" data-dismiss="modal") Batal
+                                button.btn.btn-primary(type="submit") Simpan Ruangan
