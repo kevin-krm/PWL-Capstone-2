@@ -21,14 +21,15 @@ block content
                     table.table.table-bordered
                         thead
                             tr
-                                th ID
+                                th No.
                                 th Nama Ruangan
                                 th Deskripsi
                                 th Aksi
                         tbody
-                            each r in rooms
+                            each r, index in rooms
                                 tr
-                                    td= r.id
+                                    td= index + 1
+                                    // td= r.id
                                     td= r.room_name
                                     td= r.description
                                     td

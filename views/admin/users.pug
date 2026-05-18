@@ -13,7 +13,6 @@ block content
                 .card-header
                     h3.card-title Daftar Pengguna Sistem
                     .card-tools
-                        // Tombol untuk memunculkan Modal Tambah
                         button.btn.btn-primary.btn-sm(data-toggle="modal" data-target="#modal-tambah")
                             i.fas.fa-plus
                             |  Tambah Pengguna
@@ -21,27 +20,25 @@ block content
                     table.table.table-bordered
                         thead
                             tr
-                                th ID
+                                th No.
                                 th Nama
                                 th Email
                                 th Role
                                 th Aksi
                         tbody
-                            each u in users
+                            each u, index in users
                                 tr
-                                    td= u.id
+                                    td= index + 1
                                     td= u.name
                                     td= u.email
                                     td= u.role
                                     td
-                                        // Tombol Edit
                                         button.btn.btn-sm.btn-warning(data-toggle="modal" data-target=`#modal-edit-${u.id}`) Edit
 
-                                        // Tombol Hapus
                                         form(action=`/admin/users/delete/${u.id}` method="POST" style="display:inline;")
                                             button.btn.btn-sm.btn-danger.ml-1(type="submit" onclick="return confirm('Yakin ingin menghapus pengguna ini?');") Hapus
 
-                                // MODAL EDIT (Dibuat otomatis)
+                                // MODAL EDIT
                                 .modal.fade(id=`modal-edit-${u.id}`)
                                     .modal-dialog
                                         .modal-content
