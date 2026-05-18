@@ -1,0 +1,33 @@
+extends ../layout
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Data Pengguna
+
+    .content
+        .container-fluid
+            .card
+                .card-header
+                    h3.card-title Daftar Pengguna Sistem
+                .card-body
+                    table.table.table-bordered
+                        thead
+                            tr
+                                th ID
+                                th Nama
+                                th Email
+                                th Role
+                                th Aksi
+                        tbody
+                            each u in users
+                                tr
+                                    td= u.id
+                                    td= u.name
+                                    td= u.email
+                                    td= u.role
+                                    td
+                                        button.btn.btn-sm.btn-warning Edit
+                                        button.btn.btn-sm.btn-danger.ml-1 Hapus

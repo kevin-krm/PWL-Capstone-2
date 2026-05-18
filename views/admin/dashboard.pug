@@ -1,0 +1,24 @@
+extends ../layout
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Dashboard Administrator
+
+    .content
+        .container-fluid
+            .row
+                .col-lg-12
+                    .card.card-primary.card-outline
+                        .card-header
+                            h5.m-0 Selamat Datang!
+                        .card-body
+                            h6.card-title Halo, #{user.name}
+                            p.card-text
+                                | Anda masuk sebagai
+                                strong #{user.role}
+                                | . Selamat datang di sistem manajemen Inventaris dan BHP Laboratorium GWT 8.
+                            p.card-text
+                                | Silakan gunakan menu di sebelah kiri untuk mulai mengelola Data Pengguna dan Data Ruangan.
