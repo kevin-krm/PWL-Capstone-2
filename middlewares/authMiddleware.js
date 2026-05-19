@@ -3,8 +3,14 @@ const checkAuth = (role) => {
         if (!req.session.user) {
             return res.redirect('/login');
         }
-        if (req.session.user.role !== role) {
-            return res.send('Akses Ditolak. Anda bukan ' + role);
+        if (Array.isArray(role)) {
+            if (!role.includes(req.session.user.role)) {
+                return res.redirect('/login');
+            }
+        } else {
+            if (req.session.user.role !== role) {
+                return res.redirect('/login');
+            }
         }
         next();
     };

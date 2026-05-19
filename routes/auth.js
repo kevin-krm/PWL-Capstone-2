@@ -9,18 +9,32 @@ router.get('/login', (req, res) => {
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
 
-    db.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (err, results) => {
-        if (err) throw err;
+    db.query(
+        'SELECT * FROM users WHERE email = ? AND password = ?',
+        [email, password],
+        (err, results) => {
 
-        if (results.length > 0) {
-            req.session.user = results[0];
-            if (results[0].role === 'Administrator') res.redirect('/admin/dashboard');
-            // Rambahkan redirect untuk Kalab, Kaprodi, dll di sini jika sudah ada
-            else res.send('Login berhasil, tapi rute dashboard belum dibuat untuk role ini.');
-        } else {
-            res.send('Email atau Password salah!');
+            if (err) {
+                return res.send(err);
+            }
+
+            // cek login berhasil
+            if (results.length > 0) {
+                req.session.user = results[0];
+
+                if (results[0].role === 'Administrator') {
+                    return res.redirect('/admin/dashboard');
+                } else if (results[0].role === 'Ketua Program Studi') {
+                    return res.redirect('/kaprodi/dashboard');
+                } else {
+                    return res.send('Role tidak cocok');
+                }
+
+            } else {
+                return res.send('Email atau Password salah!');
+            }
         }
-    });
+    );
 });
 
 router.get('/logout', (req, res) => {

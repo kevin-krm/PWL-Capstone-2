@@ -1,0 +1,51 @@
+extends ../layout
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Draft Pengadaan
+
+    .content
+        .container-fluid
+            .card
+                .card-header
+                    h3.card-title Daftar Draft Pengadaan
+
+                .card-body
+                    table.table.table-bordered.table-striped
+                        thead
+                            tr
+                                th No
+                                th Tahun
+                                th Kepala Laboratorium
+                                th Status
+                                th Tanggal Dibuat
+                                th Aksi
+
+                        tbody
+                            each draft, index in drafts
+                                tr
+                                    td= index + 1
+                                    td= draft.year
+                                    td= draft.kalab_name
+                                    td
+                                        if draft.status == 'Draft'
+                                            span.badge.badge-warning Draft
+                                        else if draft.status == 'Reviewed'
+                                            span.badge.badge-info Reviewed
+                                        else if draft.status == 'Locked'
+                                            span.badge.badge-success Locked
+
+                                    td= new Date(draft.created_at).toLocaleDateString('id-ID')
+
+                                    td
+                                        a.btn.btn-primary.btn-sm(href=`/kaprodi/procurement-drafts/${draft.id}`)
+                                            i.fas.fa-eye
+                                            |  Review
+
+                                        if draft.status != 'Locked'
+                                            span.badge.badge-warning.ml-2 Bisa Direview
+                                        else
+                                            span.badge.badge-secondary.ml-2 Sudah Final
