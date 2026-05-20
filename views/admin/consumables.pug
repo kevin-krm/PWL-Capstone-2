@@ -1,0 +1,84 @@
+extends ../layout
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Data Barang Habis Pakai (BHP)
+
+    .content
+        .container-fluid
+            .card
+                .card-header
+                    h3.card-title Daftar Stok BHP GWT 8
+                    .card-tools
+                        button.btn.btn-primary.btn-sm(data-toggle="modal" data-target="#modal-tambah")
+                            i.fas.fa-plus
+                            |  Tambah BHP
+                .card-body
+                    table.table.table-bordered
+                        thead
+                            tr
+                                th No.
+                                th Nama Barang
+                                th Stok Tersedia
+                                th Satuan (Unit)
+                                th Aksi
+                        tbody
+                            each c, index in consumables
+                                tr
+                                    td= index + 1
+                                    td= c.item_name
+                                    td= c.stock
+                                    td= c.unit
+                                    td
+                                        button.btn.btn-sm.btn-warning(data-toggle="modal" data-target=`#modal-edit-${c.id}`) Edit
+                                        form(action=`/admin/consumables/delete/${c.id}` method="POST" style="display:inline;")
+                                            button.btn.btn-sm.btn-danger.ml-1(type="submit" onclick="return confirm('Yakin ingin menghapus item BHP ini?');") Hapus
+
+                                // MODAL EDIT BHP
+                                .modal.fade(id=`modal-edit-${c.id}`)
+                                    .modal-dialog
+                                        .modal-content
+                                            .modal-header
+                                                h4.modal-title Edit BHP
+                                                button.close(type="button" data-dismiss="modal" aria-label="Close")
+                                                    span(aria-hidden="true") &times;
+                                            form(action=`/admin/consumables/edit/${c.id}` method="POST")
+                                                .modal-body
+                                                    .form-group
+                                                        label Nama Barang
+                                                        input.form-control(type="text" name="item_name" value=c.item_name required)
+                                                    .form-group
+                                                        label Stok Saat Ini
+                                                        input.form-control(type="number" name="stock" value=c.stock required)
+                                                    .form-group
+                                                        label Satuan (Pcs, Roll, Botol, dll)
+                                                        input.form-control(type="text" name="unit" value=c.unit required)
+                                                .modal-footer.justify-content-between
+                                                    button.btn.btn-default(type="button" data-dismiss="modal") Batal
+                                                    button.btn.btn-primary(type="submit") Simpan Perubahan
+
+            // MODAL TAMBAH BHP
+            .modal.fade#modal-tambah
+                .modal-dialog
+                    .modal-content
+                        .modal-header
+                            h4.modal-title Tambah BHP Baru
+                            button.close(type="button" data-dismiss="modal" aria-label="Close")
+                                span(aria-hidden="true") &times;
+                        form(action="/admin/consumables/add" method="POST")
+                            .modal-body
+                                .form-group
+                                    label Nama Barang
+                                    input.form-control(type="text" name="item_name" placeholder="Misal: Tinta Printer Epson" required)
+                                .form-group
+                                    label Stok Awal
+                                    input.form-control(type="number" name="stock" placeholder="0" required)
+                                .form-group
+                                    label Satuan
+                                    input.form-control(type="text" name="unit" placeholder="Misal: Botol" required)
+                            .modal-footer.justify-content-between
+                                button.btn.btn-default(type="button" data-dismiss="modal") Batal
+                                button.btn.btn-primary(type="submit") Simpan BHP
