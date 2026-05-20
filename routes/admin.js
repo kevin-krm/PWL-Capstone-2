@@ -88,4 +88,81 @@ router.post('/rooms/delete/:id', (req, res) => {
     });
 });
 
+// PROSES CRUD INVENTARIS (ASSETS)
+
+router.get('/assets', (req, res) => {
+    const query = `
+        SELECT a.*, r.room_name 
+        FROM assets a 
+        LEFT JOIN rooms r ON a.room_id = r.id
+    `;
+    db.query(query, (err, assets) => {
+        if (err) throw err;
+        db.query('SELECT * FROM rooms', (err, rooms) => {
+            if (err) throw err;
+            res.render('admin/assets', { user: req.session.user, assets, rooms });
+        });
+    });
+});
+
+router.post('/assets/add', (req, res) => {
+    const { room_id, item_name, label_code, condition_status } = req.body;
+    db.query('INSERT INTO assets (room_id, item_name, label_code, condition_status) VALUES (?, ?, ?, ?)',
+        [room_id, item_name, label_code, condition_status], (err) => {
+            if (err) throw err;
+            res.redirect('/admin/assets');
+        });
+});
+
+router.post('/assets/edit/:id', (req, res) => {
+    const { room_id, item_name, label_code, condition_status, is_active } = req.body;
+    db.query('UPDATE assets SET room_id=?, item_name=?, label_code=?, condition_status=?, is_active=? WHERE id=?',
+        [room_id, item_name, label_code, condition_status, is_active, req.params.id], (err) => {
+            if (err) throw err;
+            res.redirect('/admin/assets');
+        });
+});
+
+router.post('/assets/delete/:id', (req, res) => {
+    db.query('DELETE FROM assets WHERE id=?', [req.params.id], (err) => {
+        if (err) throw err;
+        res.redirect('/admin/assets');
+    });
+});
+
+
+// PROSES CRUD BHP (CONSUMABLES)
+
+router.get('/consumables', (req, res) => {
+    db.query('SELECT * FROM consumables', (err, consumables) => {
+        if (err) throw err;
+        res.render('admin/consumables', { user: req.session.user, consumables });
+    });
+});
+
+router.post('/consumables/add', (req, res) => {
+    const { item_name, stock, unit } = req.body;
+    db.query('INSERT INTO consumables (item_name, stock, unit) VALUES (?, ?, ?)',
+        [item_name, stock, unit], (err) => {
+            if (err) throw err;
+            res.redirect('/admin/consumables');
+        });
+});
+
+router.post('/consumables/edit/:id', (req, res) => {
+    const { item_name, stock, unit } = req.body;
+    db.query('UPDATE consumables SET item_name=?, stock=?, unit=? WHERE id=?',
+        [item_name, stock, unit, req.params.id], (err) => {
+            if (err) throw err;
+            res.redirect('/admin/consumables');
+        });
+});
+
+router.post('/consumables/delete/:id', (req, res) => {
+    db.query('DELETE FROM consumables WHERE id=?', [req.params.id], (err) => {
+        if (err) throw err;
+        res.redirect('/admin/consumables');
+    });
+});
+
 module.exports = router;
