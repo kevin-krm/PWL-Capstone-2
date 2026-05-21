@@ -19,16 +19,24 @@ router.get('/users', (req, res) => {
     });
 });
 
-// 3. Rute Kelola Ruangan
-router.get('/rooms', (req, res) => {
-    db.query('SELECT * FROM rooms', (err, results) => {
-        if (err) throw err;
-        res.render('admin/rooms', { user: req.session.user, rooms: results });
-    });
+// PROSES CRUD PENGGUNA
+
+// Form Tambah Pengguna
+router.get('/users/create', (req, res) => {
+    res.render('users/create', { user: req.session.user });
 });
 
-
-// PROSES CRUD PENGGUNA
+// Form Edit Pengguna
+router.get('/users/edit/:id', (req, res) => {
+    db.query('SELECT * FROM users WHERE id = ?', [req.params.id], (err, results) => {
+        if (err) throw err;
+        if (results.length > 0) {
+            res.render('users/edit', { user: req.session.user, userEdit: results[0] });
+        } else {
+            res.redirect('/admin/users');
+        }
+    });
+});
 
 // CREATE: Proses tambah pengguna
 router.post('/users/add', (req, res) => {
@@ -36,7 +44,7 @@ router.post('/users/add', (req, res) => {
     db.query('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
         [name, email, password, role], (err) => {
             if (err) throw err;
-            res.redirect('/admin/users'); // Kembali ke halaman pengguna setelah berhasil
+            res.redirect('/admin/users');
         });
 });
 
@@ -59,6 +67,14 @@ router.post('/users/delete/:id', (req, res) => {
 });
 
 // PROSES CRUD RUANGAN
+
+// 3. Rute Kelola Ruangan
+router.get('/rooms', (req, res) => {
+    db.query('SELECT * FROM rooms', (err, results) => {
+        if (err) throw err;
+        res.render('admin/rooms', { user: req.session.user, rooms: results });
+    });
+});
 
 // CREATE: Proses tambah ruangan
 router.post('/rooms/add', (req, res) => {
