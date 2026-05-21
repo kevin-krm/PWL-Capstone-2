@@ -22,15 +22,23 @@ app.use(session({
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const kaprodiRoutes = require('./routes/kaprodi');
+const stafadminRoutes = require('./routes/stafadmin');
+const staflabRoutes = require('./routes/staflab');
 
 // Gunakan Routes
 app.use('/', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/kaprodi', kaprodiRoutes);
+app.use('/stafadmin', stafadminRoutes);
+app.use('/staflab', staflabRoutes);
 
 // Redirect otomatis dari rute root (/) ke halaman /login
 app.get('/', (req, res) => {
     res.redirect('/login');
 });
 
-module.exports = app;
+// Jalankan Server
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server berjalan di http://localhost:${PORT}`);
+});

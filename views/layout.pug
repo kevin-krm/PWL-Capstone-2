@@ -33,6 +33,7 @@ html(lang="en")
 
                     nav.mt-2
                         ul.nav.nav-pills.nav-sidebar.flex-column(data-widget="treeview" role="menu" data-accordion="false")
+                            // 1. MENU ADMINISTRATOR
                             if user.role === 'Administrator'
                                 li.nav-item
                                     a.nav-link(href="/admin/dashboard")
@@ -46,21 +47,28 @@ html(lang="en")
                                     a.nav-link(href="/admin/rooms")
                                         i.nav-icon.fas.fa-door-open
                                         p Kelola Ruangan
+
+                            // 2. MENU STAF ADMINISTRASI
+                            if user.role === 'Staf Administrasi'
                                 li.nav-item
-                                    a.nav-link(href="/admin/assets")
+                                    a.nav-link(href="/stafadmin/assets")
                                         i.nav-icon.fas.fa-desktop
                                         p Data Inventaris
+
+                            // 3. MENU STAF LABORATORIUM
+                            if user.role === 'Staf Laboratorium'
                                 li.nav-item
-                                    a.nav-link(href="/admin/consumables")
+                                    a.nav-link(href="/staflab/consumables")
                                         i.nav-icon.fas.fa-box
                                         p Data BHP
 
-
+                            // 4. MENU KAPRODI
                             if user.role === 'Ketua Program Studi'
                                 li.nav-item
                                     a.nav-link(href='/kaprodi/procurement-drafts')
                                         i.nav-icon.fas.fa-clipboard-list
                                         p Draft Pengadaan
+
                             li.nav-item
                                 a.nav-link(href="/logout" class="text-danger")
                                     i.nav-icon.fas.fa-sign-out-alt
