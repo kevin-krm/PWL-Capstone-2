@@ -8,7 +8,7 @@ router.use(checkAuth('Administrator'));
 
 // 1. Rute Dashboard
 router.get('/dashboard', (req, res) => {
-    res.render('admin/dashboard', { user: req.session.user });
+    res.render('starter', { user: req.session.user });
 });
 
 // 2. Rute Kelola Pengguna (READ)
