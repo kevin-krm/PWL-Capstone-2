@@ -11,6 +11,8 @@ router.get('/dashboard', (req, res) => {
     res.render('starter', { user: req.session.user });
 });
 
+// PROSES CRUD PENGGUNA
+
 // 2. Rute Kelola Pengguna (READ)
 router.get('/users', (req, res) => {
     db.query('SELECT * FROM users', (err, results) => {
@@ -18,8 +20,6 @@ router.get('/users', (req, res) => {
         res.render('users/index', { user: req.session.user, users: results });
     });
 });
-
-// PROSES CRUD PENGGUNA
 
 // Form Tambah Pengguna
 router.get('/users/create', (req, res) => {
@@ -68,11 +68,30 @@ router.post('/users/delete/:id', (req, res) => {
 
 // PROSES CRUD RUANGAN
 
-// 3. Rute Kelola Ruangan
+// Rute Kelola Ruangan
 router.get('/rooms', (req, res) => {
     db.query('SELECT * FROM rooms', (err, results) => {
         if (err) throw err;
-        res.render('admin/rooms', { user: req.session.user, rooms: results });
+        // PENTING: Menggunakan 'rooms/index'
+        res.render('rooms/index', { user: req.session.user, rooms: results });
+    });
+});
+
+// Form Tambah Ruangan
+router.get('/rooms/create', (req, res) => {
+    res.render('rooms/create', { user: req.session.user });
+});
+
+// Form Edit Ruangan
+router.get('/rooms/edit/:id', (req, res) => {
+    db.query('SELECT * FROM rooms WHERE id = ?', [req.params.id], (err, results) => {
+        if (err) throw err;
+        if (results.length > 0) {
+            // Mengirim data ruangan lama dengan variabel 'roomEdit'
+            res.render('rooms/edit', { user: req.session.user, roomEdit: results[0] });
+        } else {
+            res.redirect('/admin/rooms');
+        }
     });
 });
 

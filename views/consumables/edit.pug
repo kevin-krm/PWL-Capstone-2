@@ -1,0 +1,28 @@
+extends ../layouts/starter
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Edit Data BHP
+
+    .content
+        .container-fluid
+            .card.card-warning
+                .card-header
+                    h3.card-title Form Edit BHP
+                form(action=`/staflab/consumables/edit/${consumableEdit.id}` method="POST")
+                    .card-body
+                        .form-group
+                            label Nama Barang
+                            input.form-control(type="text" name="item_name" value=consumableEdit.item_name required)
+                        .form-group
+                            label Stok Saat Ini
+                            input.form-control(type="number" name="stock" value=consumableEdit.stock required)
+                        .form-group
+                            label Satuan (Pcs, Roll, Botol, dll)
+                            input.form-control(type="text" name="unit" value=consumableEdit.unit required)
+                    .card-footer
+                        a.btn.btn-default(href="/staflab/consumables") Batal
+                        button.btn.btn-primary.float-right(type="submit") Simpan Perubahan

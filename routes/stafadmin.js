@@ -8,6 +8,7 @@ router.use(checkAuth('Staf Administrasi'));
 
 // PROSES CRUD INVENTARIS (ASSETS)
 
+// READ: Menampilkan daftar aset
 router.get('/assets', (req, res) => {
     const query = `
         SELECT a.*, r.room_name 
@@ -16,13 +17,34 @@ router.get('/assets', (req, res) => {
     `;
     db.query(query, (err, assets) => {
         if (err) throw err;
-        db.query('SELECT * FROM rooms', (err, rooms) => {
-            if (err) throw err;
-            res.render('admin/assets', { user: req.session.user, assets, rooms });
-        });
+        res.render('assets/index', { user: req.session.user, assets });
     });
 });
 
+// CREATE FORM: Halaman tambah aset
+router.get('/assets/create', (req, res) => {
+    db.query('SELECT * FROM rooms', (err, rooms) => {
+        if (err) throw err;
+        res.render('assets/create', { user: req.session.user, rooms });
+    });
+});
+
+// EDIT FORM: Halaman edit aset
+router.get('/assets/edit/:id', (req, res) => {
+    db.query('SELECT * FROM assets WHERE id = ?', [req.params.id], (err, assets) => {
+        if (err) throw err;
+        if (assets.length > 0) {
+            db.query('SELECT * FROM rooms', (err, rooms) => {
+                if (err) throw err;
+                res.render('assets/edit', { user: req.session.user, assetEdit: assets[0], rooms });
+            });
+        } else {
+            res.redirect('/stafadmin/assets');
+        }
+    });
+});
+
+// POST CREATE
 router.post('/assets/add', (req, res) => {
     const { room_id, item_name, label_code, condition_status } = req.body;
     db.query('INSERT INTO assets (room_id, item_name, label_code, condition_status) VALUES (?, ?, ?, ?)',
@@ -37,6 +59,7 @@ router.post('/assets/add', (req, res) => {
         });
 });
 
+// POST EDIT
 router.post('/assets/edit/:id', (req, res) => {
     const { room_id, item_name, label_code, condition_status, is_active } = req.body;
     db.query('UPDATE assets SET room_id=?, item_name=?, label_code=?, condition_status=?, is_active=? WHERE id=?',
@@ -51,6 +74,7 @@ router.post('/assets/edit/:id', (req, res) => {
         });
 });
 
+// POST DELETE
 router.post('/assets/delete/:id', (req, res) => {
     db.query('DELETE FROM assets WHERE id=?', [req.params.id], (err) => {
         if (err) throw err;

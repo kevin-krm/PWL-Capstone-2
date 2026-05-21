@@ -1,0 +1,25 @@
+extends ../layouts/starter
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Edit Data Ruangan
+
+    .content
+        .container-fluid
+            .card.card-warning
+                .card-header
+                    h3.card-title Form Edit Ruangan
+                form(action=`/admin/rooms/edit/${roomEdit.id}` method="POST")
+                    .card-body
+                        .form-group
+                            label Nama Ruangan
+                            input.form-control(type="text" name="room_name" value=roomEdit.room_name required)
+                        .form-group
+                            label Deskripsi
+                            textarea.form-control(name="description" rows="3" required)= roomEdit.description
+                    .card-footer
+                        a.btn.btn-default(href="/admin/rooms") Batal
+                        button.btn.btn-primary.float-right(type="submit") Simpan Perubahan

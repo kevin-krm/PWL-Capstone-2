@@ -1,0 +1,42 @@
+extends ../layouts/starter
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Edit Data Aset
+
+    .content
+        .container-fluid
+            .card.card-warning
+                .card-header
+                    h3.card-title Form Edit Aset
+                form(action=`/stafadmin/assets/edit/${assetEdit.id}` method="POST")
+                    .card-body
+                        .form-group
+                            label Kode Label / Barcode
+                            input.form-control(type="text" name="label_code" value=assetEdit.label_code required)
+                        .form-group
+                            label Nama Barang
+                            input.form-control(type="text" name="item_name" value=assetEdit.item_name required)
+                        .form-group
+                            label Lokasi Ruangan
+                            select.form-control(name="room_id" required)
+                                each r in rooms
+                                    option(value=r.id selected=assetEdit.room_id==r.id)= r.room_name
+                        .form-group
+                            label Kondisi
+                            select.form-control(name="condition_status" required)
+                                option(value="Baik" selected=assetEdit.condition_status=='Baik') Baik
+                                option(value="Rusak" selected=assetEdit.condition_status=='Rusak') Rusak
+                                option(value="Maintenance" selected=assetEdit.condition_status=='Maintenance') Maintenance
+                                option(value="Dihapus" selected=assetEdit.condition_status=='Dihapus') Dihapus
+                        .form-group
+                            label Status Aktif (Tampil di sistem)
+                            select.form-control(name="is_active" required)
+                                option(value="1" selected=assetEdit.is_active==1) Ya
+                                option(value="0" selected=assetEdit.is_active==0) Tidak
+                    .card-footer
+                        a.btn.btn-default(href="/stafadmin/assets") Batal
+                        button.btn.btn-primary.float-right(type="submit") Simpan Perubahan

@@ -1,0 +1,25 @@
+extends ../layouts/starter
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Tambah Ruangan Baru
+
+    .content
+        .container-fluid
+            .card.card-primary
+                .card-header
+                    h3.card-title Form Ruangan Baru
+                form(action="/admin/rooms/add" method="POST")
+                    .card-body
+                        .form-group
+                            label Nama Ruangan
+                            input.form-control(type="text" name="room_name" placeholder="Misal: Lab Basis Data R5" required)
+                        .form-group
+                            label Deskripsi
+                            textarea.form-control(name="description" rows="3" placeholder="Deskripsi atau lokasi ruangan" required)
+                    .card-footer
+                        a.btn.btn-default(href="/admin/rooms") Batal
+                        button.btn.btn-primary.float-right(type="submit") Simpan Ruangan

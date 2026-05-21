@@ -1,0 +1,36 @@
+extends ../layouts/starter
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Tambah Aset Baru
+
+    .content
+        .container-fluid
+            .card.card-primary
+                .card-header
+                    h3.card-title Form Aset Baru
+                form(action="/stafadmin/assets/add" method="POST")
+                    .card-body
+                        .form-group
+                            label Kode Label / Barcode
+                            input.form-control(type="text" name="label_code" placeholder="Misal: INV-R4-PC-002" required)
+                        .form-group
+                            label Nama Barang
+                            input.form-control(type="text" name="item_name" placeholder="Misal: PC Desktop Merek X" required)
+                        .form-group
+                            label Lokasi Ruangan
+                            select.form-control(name="room_id" required)
+                                option(value="" disabled selected) -- Pilih Ruangan --
+                                each r in rooms
+                                    option(value=r.id)= r.room_name
+                        .form-group
+                            label Kondisi Awal
+                            select.form-control(name="condition_status" required)
+                                option(value="Baik" selected) Baik
+                                option(value="Rusak") Rusak
+                    .card-footer
+                        a.btn.btn-default(href="/stafadmin/assets") Batal
+                        button.btn.btn-primary.float-right(type="submit") Simpan Aset
