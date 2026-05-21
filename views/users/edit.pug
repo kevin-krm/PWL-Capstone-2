@@ -1,0 +1,36 @@
+extends ../layouts/starter
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Edit Data Pengguna
+
+    .content
+        .container-fluid
+            .card.card-warning
+                .card-header
+                    h3.card-title Form Edit Pengguna
+                form(action=`/admin/users/edit/${userEdit.id}` method="POST")
+                    .card-body
+                        .form-group
+                            label Nama Lengkap
+                            input.form-control(type="text" name="name" value=userEdit.name required)
+                        .form-group
+                            label Email
+                            input.form-control(type="email" name="email" value=userEdit.email required)
+                        .form-group
+                            label Password (Ketik ulang jika ingin diubah)
+                            input.form-control(type="text" name="password" value=userEdit.password required)
+                        .form-group
+                            label Hak Akses (Role)
+                            select.form-control(name="role" required)
+                                option(value="Administrator" selected=userEdit.role=='Administrator') Administrator
+                                option(value="Kepala Laboratorium" selected=userEdit.role=='Kepala Laboratorium') Kepala Laboratorium
+                                option(value="Ketua Program Studi" selected=userEdit.role=='Ketua Program Studi') Ketua Program Studi
+                                option(value="Staf Administrasi" selected=userEdit.role=='Staf Administrasi') Staf Administrasi
+                                option(value="Staf Laboratorium" selected=userEdit.role=='Staf Laboratorium') Staf Laboratorium
+                    .card-footer
+                        a.btn.btn-default(href="/admin/users") Batal
+                        button.btn.btn-primary.float-right(type="submit") Simpan Perubahan

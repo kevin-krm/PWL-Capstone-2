@@ -1,0 +1,37 @@
+extends ../layouts/starter
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Tambah Pengguna Baru
+
+    .content
+        .container-fluid
+            .card.card-primary
+                .card-header
+                    h3.card-title Form Pengguna Baru
+                form(action="/admin/users/add" method="POST")
+                    .card-body
+                        .form-group
+                            label Nama Lengkap
+                            input.form-control(type="text" name="name" placeholder="Masukkan nama" required)
+                        .form-group
+                            label Email
+                            input.form-control(type="email" name="email" placeholder="contoh@lab.ac.id" required)
+                        .form-group
+                            label Password
+                            input.form-control(type="password" name="password" placeholder="Minimal 6 karakter" required)
+                        .form-group
+                            label Hak Akses (Role)
+                            select.form-control(name="role" required)
+                                option(value="" disabled selected) -- Pilih Role --
+                                option(value="Administrator") Administrator
+                                option(value="Kepala Laboratorium") Kepala Laboratorium
+                                option(value="Ketua Program Studi") Ketua Program Studi
+                                option(value="Staf Administrasi") Staf Administrasi
+                                option(value="Staf Laboratorium") Staf Laboratorium
+                    .card-footer
+                        a.btn.btn-default(href="/admin/users") Batal
+                        button.btn.btn-primary.float-right(type="submit") Simpan
