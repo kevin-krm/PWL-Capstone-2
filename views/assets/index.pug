@@ -13,7 +13,7 @@ block content
                 .card-header
                     h3.card-title Daftar Aset GWT 8
                     .card-tools
-                        button.btn.btn-primary.btn-sm(data-toggle="modal" data-target="#modal-tambah")
+                        a.btn.btn-primary.btn-sm(href="/stafadmin/assets/create")
                             i.fas.fa-plus
                             |  Tambah Aset
                 .card-body
@@ -45,74 +45,6 @@ block content
                                             span.badge.badge-secondary Dihapus
                                     td= a.is_active ? 'Ya' : 'Tidak'
                                     td
-                                        button.btn.btn-sm.btn-warning(data-toggle="modal" data-target=`#modal-edit-${a.id}`) Edit
-                                        form(action=`/admin/assets/delete/${a.id}` method="POST" style="display:inline;")
+                                        a.btn.btn-sm.btn-warning(href=`/stafadmin/assets/edit/${a.id}`) Edit
+                                        form(action=`/stafadmin/assets/delete/${a.id}` method="POST" style="display:inline;")
                                             button.btn.btn-sm.btn-danger.ml-1(type="submit" onclick="return confirm('Yakin ingin menghapus aset ini?');") Hapus
-
-                                // MODAL EDIT ASET
-                                .modal.fade(id=`modal-edit-${a.id}`)
-                                    .modal-dialog
-                                        .modal-content
-                                            .modal-header
-                                                h4.modal-title Edit Aset
-                                                button.close(type="button" data-dismiss="modal" aria-label="Close")
-                                                    span(aria-hidden="true") &times;
-                                            form(action=`/admin/assets/edit/${a.id}` method="POST")
-                                                .modal-body
-                                                    .form-group
-                                                        label Kode Label / Barcode
-                                                        input.form-control(type="text" name="label_code" value=a.label_code required)
-                                                    .form-group
-                                                        label Nama Barang
-                                                        input.form-control(type="text" name="item_name" value=a.item_name required)
-                                                    .form-group
-                                                        label Lokasi Ruangan
-                                                        select.form-control(name="room_id" required)
-                                                            each r in rooms
-                                                                option(value=r.id selected=a.room_id==r.id)= r.room_name
-                                                    .form-group
-                                                        label Kondisi
-                                                        select.form-control(name="condition_status" required)
-                                                            option(value="Baik" selected=a.condition_status=='Baik') Baik
-                                                            option(value="Rusak" selected=a.condition_status=='Rusak') Rusak
-                                                            option(value="Maintenance" selected=a.condition_status=='Maintenance') Maintenance
-                                                            option(value="Dihapus" selected=a.condition_status=='Dihapus') Dihapus
-                                                    .form-group
-                                                        label Status Aktif (Tampil di sistem)
-                                                        select.form-control(name="is_active" required)
-                                                            option(value="1" selected=a.is_active==1) Ya
-                                                            option(value="0" selected=a.is_active==0) Tidak
-                                                .modal-footer.justify-content-between
-                                                    button.btn.btn-default(type="button" data-dismiss="modal") Batal
-                                                    button.btn.btn-primary(type="submit") Simpan Perubahan
-
-            // MODAL TAMBAH ASET
-            .modal.fade#modal-tambah
-                .modal-dialog
-                    .modal-content
-                        .modal-header
-                            h4.modal-title Tambah Aset Baru
-                            button.close(type="button" data-dismiss="modal" aria-label="Close")
-                                span(aria-hidden="true") &times;
-                        form(action="/admin/assets/add" method="POST")
-                            .modal-body
-                                .form-group
-                                    label Kode Label / Barcode
-                                    input.form-control(type="text" name="label_code" placeholder="Misal: INV-R4-PC-002" required)
-                                .form-group
-                                    label Nama Barang
-                                    input.form-control(type="text" name="item_name" placeholder="Misal: PC Desktop Merek X" required)
-                                .form-group
-                                    label Lokasi Ruangan
-                                    select.form-control(name="room_id" required)
-                                        option(value="" disabled selected) -- Pilih Ruangan --
-                                        each r in rooms
-                                            option(value=r.id)= r.room_name
-                                .form-group
-                                    label Kondisi Awal
-                                    select.form-control(name="condition_status" required)
-                                        option(value="Baik" selected) Baik
-                                        option(value="Rusak") Rusak
-                            .modal-footer.justify-content-between
-                                button.btn.btn-default(type="button" data-dismiss="modal") Batal
-                                button.btn.btn-primary(type="submit") Simpan Aset
