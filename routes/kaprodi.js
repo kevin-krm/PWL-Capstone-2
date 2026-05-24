@@ -6,15 +6,8 @@ const { checkAuth } = require('../middlewares/authMiddleware');
 // Pengecekan Role
 router.use(checkAuth('Ketua Program Studi'));
 
-// Dashboard
-router.get('/dashboard', (req, res) => {
-    res.render('kaprodi/dashboard', {
-        user: req.session.user
-    });
-});
-
-// List Procurement Draft
-router.get('/procurement-drafts', (req, res) => {
+// List Procurement Review
+router.get('/procurement-review', (req, res) => {
     const query = `
         SELECT
             procurement_drafts.*,
@@ -30,16 +23,15 @@ router.get('/procurement-drafts', (req, res) => {
             return res.send(err);
         }
 
-        res.render('kaprodi/procurement_drafts', {
+        res.render('procurement_review/index', {
             user: req.session.user,
             drafts: results
         });
     });
 });
 
-// Detail drafts
-router.get('/procurement-drafts/:id', (req, res) => {
-
+// Detail & Edit Persetujuan (Review Draft)
+router.get('/procurement-review/edit/:id', (req, res) => {
     const draftId = req.params.id;
 
     const draftQuery = `
@@ -73,7 +65,7 @@ router.get('/procurement-drafts/:id', (req, res) => {
                 return res.send(err);
             }
 
-            res.render('kaprodi/procurement_review', {
+            res.render('procurement_review/edit', {
                 user: req.session.user,
                 draft: draftResult[0],
                 items: itemResult
@@ -82,9 +74,8 @@ router.get('/procurement-drafts/:id', (req, res) => {
     });
 });
 
-// Finalisasi
-router.post('/procurement-drafts/:id/finalize', async (req, res) => {
-
+// Finalisasi Persetujuan
+router.post('/procurement-review/edit/:id/finalize', async (req, res) => {
     try {
         const draftId = req.params.id;
         const itemIds = req.body.item_ids || [];
@@ -143,7 +134,7 @@ router.post('/procurement-drafts/:id/finalize', async (req, res) => {
                 }
             );
         });
-        res.redirect('/kaprodi/procurement-drafts');
+        res.redirect('/kaprodi/procurement-review');
 
     } catch (err) {
         res.send(err);

@@ -14,7 +14,6 @@ block content
                     h3.card-title Detail Draft Pengadaan
 
                 .card-body
-
                     .row.mb-3
                         .col-md-4
                             strong Tahun:
@@ -33,11 +32,10 @@ block content
                                 span.badge.badge-warning Draft
 
                     form(
-                        action=`/kaprodi/procurement-drafts/${draft.id}/finalize`
+                        action=`/kaprodi/procurement-review/edit/${draft.id}/finalize`
                         method='POST'
                     )
                         table.table.table-bordered.table-striped
-
                             thead
                                 tr
                                     th ID
@@ -51,22 +49,15 @@ block content
 
                             tbody
                                 each item, index in items
-
                                     tr
                                         td= item.id
-
                                         td= index + 1
-
                                         td= item.item_name
-
                                         td= item.item_type
-
                                         td
                                             | Rp.
                                             = Number(item.price).toLocaleString('id-ID')
-
                                         td= item.quantity
-
                                         td
                                             if item.purchase_link
                                                 a(
@@ -75,30 +66,21 @@ block content
                                                 ) Lihat Link
                                             else
                                                 span.text-muted Tidak ada link
-
                                         td
-
                                             if draft.status === 'Locked'
-
                                                 if item.status === 'Disetujui'
                                                     span.badge.badge-success Disetujui
-
                                                 else if item.status === 'Ditolak'
                                                     span.badge.badge-danger Ditolak
-
                                                 else
                                                     span.badge.badge-secondary Pending
-
                                             else
-
                                                 input(
                                                     type='hidden'
                                                     name='item_ids[]'
                                                     value=item.id
                                                 )
-
                                                 select.form-control(name='statuses[]')
-
                                                     option(
                                                         value='Pending'
                                                         selected=(item.status === 'Pending')
@@ -119,7 +101,6 @@ block content
                                 button.btn.btn-success(type='submit')
                                     i.fas.fa-lock
                                     |  Finalisasi Draft
-
                         else
                             .alert.alert-success.mt-3
                                 i.fas.fa-check-circle

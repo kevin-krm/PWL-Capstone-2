@@ -27,7 +27,7 @@ router.post('/login', (req, res) => {
                 res.redirect('/staflab/consumables');
 
             } else if (userRole === 'Ketua Program Studi') {
-                res.redirect('/kaprodi/procurement-drafts');
+                res.redirect('/kaprodi/procurement-review');
 
             } else if (userRole === 'Kepala Laboratorium') {
                 res.redirect('/kalab/procurement-drafts');
