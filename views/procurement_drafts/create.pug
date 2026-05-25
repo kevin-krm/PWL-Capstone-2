@@ -1,0 +1,112 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Tambah Draf Pengadaan
+
+    .content
+        .container-fluid
+            .card.card-primary
+                .card-header
+                    h3.card-title Form Draf Pengadaan Baru
+
+                form(action="/kalab/procurement-drafts/create" method="POST")
+                    .card-body
+                        .row.mb-4
+                            .col-md-6
+                                .form-group
+                                    label Kepala Laboratorium (Pembuat)
+                                    input.form-control(type="text" value=user.name readonly)
+                            .col-md-6
+                                .form-group
+                                    label Tahun Pengadaan
+                                    input.form-control(type="text" value=currentYear readonly)
+
+                        h5.border-bottom.pb-2.mb-3 Daftar Barang yang Diajukan
+
+                        .table-responsive
+                            table#items-table.table.table-bordered.table-striped
+                                thead
+                                    tr
+                                        th Jenis Barang
+                                        th Nama Barang
+                                        th Harga Satuan (Rp)
+                                        th Jumlah (Qty)
+                                        th Link Pembelian
+                                        th Aset yang Diganti (Opsional)
+                                        th Aksi
+                                tbody
+                                    tr
+                                        td(style="min-width: 150px;")
+                                            select.form-control(name="item_type" required)
+                                                option(value="Inventaris") Inventaris
+                                                option(value="BHP") BHP
+                                        td
+                                            input.form-control(type="text" name="item_name" placeholder="Nama barang" required)
+                                        td(style="min-width: 150px;")
+                                            input.form-control(type="number" name="price" placeholder="Harga" min="0" required)
+                                        td(style="min-width: 90px;")
+                                            input.form-control(type="number" name="quantity" placeholder="Qty" min="1" required)
+                                        td
+                                            input.form-control(type="url" name="purchase_link" placeholder="https://...")
+                                        td(style="min-width: 200px;")
+                                            select.form-control(name="target_replacement_asset_id")
+                                                option(value="") -- Tidak Ada / None --
+                                                each asset in assets
+                                                    option(value=asset.id) #{asset.item_name} (#{asset.label_code || 'No Label'})
+                                        td
+                                            button.btn.btn-danger.btn-sm.remove-row-btn(type="button")
+                                                i.fas.fa-trash
+                                                |  Hapus
+
+                        .mt-3.mb-3
+                            button#add-row-btn.btn.btn-success.btn-sm(type="button")
+                                i.fas.fa-plus
+                                |  Tambah Baris Barang
+
+                    .card-footer
+                        a.btn.btn-default(href="/kalab/procurement-drafts") Batal
+                        button.btn.btn-primary.float-right(type="submit") Simpan Draf
+
+    script.
+        document.addEventListener('DOMContentLoaded', function() {
+            const tbody = document.querySelector('#items-table tbody');
+            const addBtn = document.querySelector('#add-row-btn');
+
+            // Function to bind remove event
+            function bindRemoveEvent(btn) {
+                btn.addEventListener('click', function() {
+                    const rows = tbody.querySelectorAll('tr');
+                    if (rows.length > 1) {
+                        btn.closest('tr').remove();
+                    } else {
+                        alert('Minimal harus ada 1 barang yang diajukan.');
+                    }
+                });
+            }
+
+            // Bind for initial row
+            const initialRemoveBtn = tbody.querySelector('.remove-row-btn');
+            if (initialRemoveBtn) {
+                bindRemoveEvent(initialRemoveBtn);
+            }
+
+            // Add new row
+            addBtn.addEventListener('click', function() {
+                const firstRow = tbody.querySelector('tr');
+                const newRow = firstRow.cloneNode(true);
+
+                // Reset values of the cloned row
+                newRow.querySelectorAll('input').forEach(input => input.value = '');
+                newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+
+                tbody.appendChild(newRow);
+
+                // Bind remove event to new button
+                const removeBtn = newRow.querySelector('.remove-row-btn');
+                bindRemoveEvent(removeBtn);
+            });
+        });

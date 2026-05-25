@@ -24,6 +24,7 @@ const adminRoutes = require('./routes/admin');
 const kaprodiRoutes = require('./routes/kaprodi');
 const stafadminRoutes = require('./routes/stafadmin');
 const staflabRoutes = require('./routes/staflab');
+const kalabRoutes = require('./routes/kalab');
 
 // Gunakan Routes
 app.use('/', authRoutes);
@@ -31,6 +32,7 @@ app.use('/admin', adminRoutes);
 app.use('/kaprodi', kaprodiRoutes);
 app.use('/stafadmin', stafadminRoutes);
 app.use('/staflab', staflabRoutes);
+app.use('/kalab', kalabRoutes);
 
 // Redirect otomatis dari rute root (/) ke halaman /login
 app.get('/', (req, res) => {

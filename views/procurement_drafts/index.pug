@@ -1,0 +1,67 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Draf Pengadaan (Kalab)
+
+    .content
+        .container-fluid
+            .card
+                .card-header
+                    h3.card-title Daftar Draf Pengadaan Tahunan
+                    .card-tools
+                        a.btn.btn-primary.btn-sm(href="/kalab/procurement-drafts/create")
+                            i.fas.fa-plus
+                            |  Tambah Draf Pengadaan
+
+                .card-body
+                    if drafts.length === 0
+                        .alert.alert-info.mb-0
+                            i.fas.fa-info-circle
+                            |  Tidak ada draf pengadaan yang diajukan.
+                    else
+                        table.table.table-bordered.table-striped
+                            thead
+                                tr
+                                    th No
+                                    th Tahun
+                                    th Status
+                                    th Tanggal Dibuat
+                                    th Aksi
+
+                            tbody
+                                each draft, index in drafts
+                                    tr
+                                        td= index + 1
+                                        td= draft.year
+                                        td
+                                            if draft.status == 'Draft'
+                                                span.badge.badge-warning Draft
+                                            else if draft.status == 'Reviewed'
+                                                span.badge.badge-info Reviewed
+                                            else if draft.status == 'Locked'
+                                                span.badge.badge-success Locked
+
+                                        td= new Date(draft.created_at).toLocaleDateString('id-ID')
+
+                                        td
+                                            a.btn.btn-info.btn-sm.mr-1(href=`/kalab/procurement-drafts/${draft.id}`)
+                                                i.fas.fa-eye
+                                                |  Detail
+
+                                            if draft.status !== 'Locked'
+                                                a.btn.btn-warning.btn-sm.mr-1(href=`/kalab/procurement-drafts/edit/${draft.id}`)
+                                                    i.fas.fa-edit
+                                                    |  Edit
+
+                                                form(action=`/kalab/procurement-drafts/delete/${draft.id}` method="POST" style="display:inline;")
+                                                    button.btn.btn-danger.btn-sm(type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus draf pengadaan ini? Semua barang di dalamnya juga akan terhapus.');")
+                                                        i.fas.fa-trash
+                                                        |  Hapus
+                                            else
+                                                button.btn.btn-secondary.btn-sm.mr-1(disabled)
+                                                    i.fas.fa-lock
+                                                    |  Locked

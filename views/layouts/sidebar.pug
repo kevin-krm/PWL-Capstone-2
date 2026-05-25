@@ -46,6 +46,13 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                             i.nav-icon.fas.fa-clipboard-list
                             p Draft Pengadaan
 
+                // 5. MENU KALAB
+                if user.role === 'Kepala Laboratorium'
+                    li.nav-item
+                        a.nav-link(href='/kalab/procurement-drafts')
+                            i.nav-icon.fas.fa-file-invoice
+                            p Draf Pengadaan
+
                 li.nav-item
                     a.nav-link(href="/logout" class="text-danger")
                         i.nav-icon.fas.fa-sign-out-alt
