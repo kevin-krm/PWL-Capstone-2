@@ -1,0 +1,90 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 Registrasi Aset & Labeling
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item
+                            a(href="/stafadmin/assets") Home
+                        li.breadcrumb-item
+                            a(href="/stafadmin/penerimaan") Penerimaan
+                        li.breadcrumb-item.active Registrasi Aset
+
+    .content
+        .container-fluid
+            .row
+                .col-md-8
+                    .card.card-success
+                        .card-header
+                            h3.card-title Form Registrasi Aset Baru (Inventaris)
+                        form(action=`/stafadmin/receipt/${receipt.receipt_id}/register-asset` method="POST")
+                            .card-body
+                                .form-group
+                                    label Nama Barang
+                                    input.form-control(type="text" value=receipt.item_name disabled)
+                                .form-group
+                                    label Tahun Pengadaan
+                                    input.form-control(type="text" value=receipt.year disabled)
+                                .form-group
+                                    label Jumlah Diterima (Pada Penerimaan Ini)
+                                    input.form-control(type="text" value=`${receipt.quantity_received} unit` disabled)
+                                
+                                hr
+                                
+                                .form-group
+                                    label(for="room_id") Lokasi Ruangan *
+                                    select#room_id.form-control(name="room_id" required)
+                                        option(value="") -- Pilih Ruangan --
+                                        each room in rooms
+                                            option(value=room.id data-name=room.room_name)= room.room_name
+                                
+                                .form-group
+                                    label(for="label_code") Kode Label / Barcode *
+                                    .input-group
+                                        input#label_code.form-control(type="text" name="label_code" required placeholder="Masukkan atau scan kode label (misal: INV-R4-PC-001)")
+                                        .input-group-append
+                                            button#btn-generate-label.btn.btn-info(type="button")
+                                                i.fas.fa-magic.mr-1
+                                                | Auto-Generate
+                                    small.text-muted Masukkan kode label manual (menggunakan scanner barcode) atau tekan tombol Auto-Generate untuk membuat kode otomatis.
+                                    
+                            .card-footer
+                                button.btn.btn-success(type="submit") Daftarkan Aset
+                                a.btn.btn-default.float-right(href="/stafadmin/penerimaan") Batal
+
+    script.
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnGenerate = document.getElementById('btn-generate-label');
+            const roomSelect = document.getElementById('room_id');
+            const labelInput = document.getElementById('label_code');
+
+            btnGenerate.addEventListener('click', function() {
+                const selectedVal = roomSelect.value;
+                if (!selectedVal) {
+                    alert('Silakan pilih lokasi ruangan terlebih dahulu!');
+                    return;
+                }
+                
+                const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+                const roomNameRaw = selectedOption.getAttribute('data-name');
+                
+                // Format Nama Ruangan: ambil inisial ruangan/bersihkan string
+                // Misalnya "Lab Pemrograman 1" -> "LAB-PEMROGRAMAN-1" atau disingkat
+                // Kita ganti spasi dengan tanda hubung dan ubah ke uppercase
+                const roomNameFormatted = roomNameRaw
+                    .trim()
+                    .toUpperCase()
+                    .replace(/\s+/g, '-');
+                
+                const year = "#{receipt.year}";
+                const increment = "#{paddedIncrement}";
+                
+                // Format: INV-[ROOM_NAME]-[YEAR]-[AUTO_INCREMENT]
+                const generatedCode = `INV-${roomNameFormatted}-${year}-${increment}`;
+                labelInput.value = generatedCode;
+            });
+        });

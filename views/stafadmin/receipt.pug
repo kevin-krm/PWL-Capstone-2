@@ -1,0 +1,57 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 Input Penerimaan Barang
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item
+                            a(href="/stafadmin/assets") Home
+                        li.breadcrumb-item
+                            a(href="/stafadmin/penerimaan") Penerimaan
+                        li.breadcrumb-item.active Input Penerimaan
+
+    .content
+        .container-fluid
+            .row
+                .col-md-8
+                    .card.card-primary
+                        .card-header
+                            h3.card-title Form Penerimaan Parsial
+                        form(action=`/stafadmin/procurement/${item.item_id}/receipt` method="POST")
+                            .card-body
+                                .form-group
+                                    label Nama Barang
+                                    input.form-control(type="text" value=item.item_name disabled)
+                                .row
+                                    .col-md-4
+                                        .form-group
+                                            label Target Pengadaan (Qty)
+                                            input.form-control(type="text" value=item.target_quantity disabled)
+                                    .col-md-4
+                                        .form-group
+                                            label Sudah Diterima (Qty)
+                                            input.form-control(type="text" value=totalReceived disabled)
+                                    .col-md-4
+                                        .form-group
+                                            label Sisa Harus Diterima (Qty)
+                                            input.form-control(type="text" value=remainingQuantity disabled)
+                                
+                                hr
+                                
+                                .form-group
+                                    label(for="quantity_received") Jumlah Diterima Saat Ini *
+                                    input#quantity_received.form-control(type="number" name="quantity_received" min="1" max=remainingQuantity required placeholder="Masukkan jumlah barang yang datang")
+                                    small.text-muted Jumlah barang tidak boleh melebihi sisa harus diterima (#{remainingQuantity}).
+                                
+                                .form-group
+                                    label(for="received_date") Tanggal Penerimaan *
+                                    - const today = new Date().toISOString().split('T')[0];
+                                    input#received_date.form-control(type="date" name="received_date" value=today required)
+                            
+                            .card-footer
+                                button.btn.btn-primary(type="submit") Simpan Penerimaan
+                                a.btn.btn-default.float-right(href="/stafadmin/penerimaan") Batal

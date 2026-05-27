@@ -26,7 +26,7 @@ CREATE TABLE assets (
     room_id INT,
     item_name VARCHAR(100) NOT NULL,
     label_code VARCHAR(50) UNIQUE, -- Nomor label / Barcode
-    qr_code_url VARCHAR(255),
+    qr_code_url TEXT,
     condition_status ENUM('Baik', 'Rusak', 'Maintenance', 'Dihapus') DEFAULT 'Baik',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

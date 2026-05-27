@@ -1,0 +1,122 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 Penerimaan & Labeling Barang
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item
+                            a(href="/stafadmin/assets") Home
+                        li.breadcrumb-item.active Penerimaan & Labeling
+
+    .content
+        .container-fluid
+            .card.card-primary.card-outline
+                .card-header
+                    h3.card-title
+                        i.fas.fa-boxes.mr-1
+                        | Daftar Barang Pengadaan Disetujui (Draf Locked)
+                .card-body
+                    if items.length === 0
+                        .alert.alert-info.mb-0
+                            i.icon.fas.fa-info-circle
+                            | Belum ada barang pengadaan yang disetujui dan berstatus locked.
+                    else
+                        .table-responsive
+                            table.table.table-striped.table-bordered.table-hover
+                                thead
+                                    tr
+                                        th.text-center(style="width: 5%") No.
+                                        th.text-center(style="width: 8%") Tahun
+                                        th Nama Barang
+                                        th.text-center(style="width: 10%") Jenis
+                                        th.text-right(style="width: 13%") Harga Estimasi
+                                        th.text-center(style="width: 8%") Target
+                                        th.text-center(style="width: 8%") Diterima
+                                        th.text-center(style="width: 12%") Status
+                                        th.text-center(style="width: 8%") Link
+                                        th.text-center(style="width: 12%") Aksi
+                                tbody
+                                    each item, index in items
+                                        tr
+                                            td.text-center= index + 1
+                                            td.text-center
+                                                span.badge.badge-secondary= item.year
+                                            td.font-weight-bold= item.item_name
+                                            td.text-center
+                                                if item.item_type === 'Inventaris'
+                                                    span.badge.badge-primary
+                                                        i.fas.fa-desktop.mr-1
+                                                        | Inventaris
+                                                else
+                                                    span.badge.badge-warning
+                                                        i.fas.fa-box-open.mr-1
+                                                        | BHP
+                                            td.text-right= 'Rp ' + Number(item.price).toLocaleString('id-ID')
+                                            td.text-center.font-weight-bold= item.target_quantity
+                                            td.text-center= item.quantity_received
+                                            td.text-center
+                                                if item.quantity_received == 0
+                                                    span.badge.badge-danger.p-2
+                                                        i.fas.fa-times-circle.mr-1
+                                                        | Belum Diterima
+                                                else if item.quantity_received < item.target_quantity
+                                                    span.badge.badge-warning.p-2
+                                                        i.fas.fa-hourglass-half.mr-1
+                                                        | Diterima Sebagian
+                                                else
+                                                    span.badge.badge-success.p-2
+                                                        i.fas.fa-check-circle.mr-1
+                                                        | Selesai Diterima
+                                            td.text-center
+                                                if item.purchase_link
+                                                    a.btn.btn-xs.btn-info(href=item.purchase_link target="_blank" title="Buka Link Pembelian")
+                                                        i.fas.fa-external-link-alt.mr-1
+                                                        | Link
+                                                else
+                                                    span.text-muted -
+                                            td.text-center
+                                                if item.quantity_received < item.target_quantity
+                                                    a.btn.btn-sm.btn-primary(href=`/stafadmin/procurement/${item.item_id}/receipt`)
+                                                        i.fas.fa-plus-circle.mr-1
+                                                        | Terima
+                                                else
+                                                    span.text-success
+                                                        i.fas.fa-check-double
+                                                        |  Lengkap
+                                        tr
+                                            td(colspan="10" style="padding: 10px 10px 10px 50px; background-color: #fdfdfd;")
+                                                .card.card-outline.card-secondary.mb-0
+                                                    .card-header.p-2
+                                                        h3.card-title.text-sm
+                                                            i.fas.fa-history.mr-1
+                                                            | Riwayat Penerimaan & Registrasi
+                                                    .card-body.p-0
+                                                        if receiptsByItem[item.item_id] && receiptsByItem[item.item_id].length > 0
+                                                            table.table.table-sm.table-valign-middle.mb-0
+                                                                thead
+                                                                    tr
+                                                                        th No.
+                                                                        th Tanggal Diterima
+                                                                        th Jumlah Diterima
+                                                                        th Petugas
+                                                                        if item.item_type === 'Inventaris'
+                                                                            th.text-center Registrasi Aset
+                                                                tbody
+                                                                    each rec, rIdx in receiptsByItem[item.item_id]
+                                                                        tr
+                                                                            td= rIdx + 1
+                                                                            td= new Date(rec.received_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+                                                                            td.font-weight-bold= `${rec.quantity_received} unit`
+                                                                            td= rec.receiver_name
+                                                                            if item.item_type === 'Inventaris'
+                                                                                td.text-center
+                                                                                    a.btn.btn-xs.btn-success(href=`/stafadmin/receipt/${rec.receipt_id}/register-asset`)
+                                                                                        i.fas.fa-barcode.mr-1
+                                                                                        | Daftarkan ke Inventaris
+                                                        else
+                                                            .p-2.text-muted.text-center Belum ada penerimaan yang diinput.
+
