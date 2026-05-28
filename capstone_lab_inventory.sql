@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS capstone_lab_inventory;
 -- Membuat Database
 CREATE DATABASE IF NOT EXISTS capstone_lab_inventory;
 USE capstone_lab_inventory;
@@ -112,18 +113,27 @@ INSERT INTO users (name, email, password, role) VALUES
 ('Ferdi', 'ferdi@lab.ac.id', 'hashpassword123', 'Staf Administrasi'),
 ('Jayden Marvel Ethanael', 'jayden@lab.ac.id', 'hashpassword123', 'Staf Laboratorium');
 
--- Insert Rooms (GWT 8 Layout)
+-- Insert Rooms (Hanya ruangan Lab/Kelas Praktek)
 INSERT INTO rooms (room_name, description) VALUES
-('Lab Pemrograman 1', 'GWT 8 Pintu Kaca Kanan'),
-('Lab Pemrograman 2', 'GWT 8 Pintu Kaca Kanan'),
-('Lab Basis Data R4', 'GWT 8 Tengah'),
-('Lab Jaringan Pro 1', 'GWT 8 Ujung Kiri');
+('Computer Network Lab', 'Lantai 8 - Ruang H08 A02'),
+('Programming Lab 1', 'Lantai 8 - Ruang H08 A03'),
+('Programming Lab 2', 'Lantai 8 - Ruang H08 A04'),
+('Enterprise Lab 2', 'Lantai 8 - Ruang H08 A06'),
+('Enterprise Lab 1', 'Lantai 8 - Ruang H08 A07'),
+('Advance Programming Lab 1', 'Lantai 8 - Ruang H08 B02'),
+('Advance Programming Lab 2', 'Lantai 8 - Ruang H08 B03'),
+('Advance Programming Lab 3', 'Lantai 8 - Ruang H08 B08'),
+('Advance Programming Lab 4', 'Lantai 8 - Ruang H08 B09'),
+('Internet Lab 1', 'Lantai 8 - Ruang H08 B10'),
+('Internet Lab 2', 'Lantai 8 - Ruang H08 B11'),
+('Database Lab', 'Lantai 8 - Ruang H08 C03'),
+('Multimedia Lab', 'Lantai 8 - Ruang H08 C04');
 
--- Insert Assets (Inventaris yang ada di lab)
+-- Insert Assets (Relasi room_id disesuaikan: 12 = Database Lab, 2 = Programming Lab 1)
 INSERT INTO assets (room_id, item_name, label_code, condition_status) VALUES
-(3, 'PC Desktop R4-01', 'INV-R4-PC-001', 'Baik'),
-(3, 'Monitor LG 24 Inch', 'INV-R4-MN-001', 'Rusak'),
-(1, 'Smart TV Display', 'INV-R1-TV-001', 'Baik');
+(12, 'PC Desktop R4-01', 'INV-R4-PC-001', 'Baik'),
+(12, 'Monitor LG 24 Inch', 'INV-R4-MN-001', 'Rusak'),
+(2, 'Smart TV Display', 'INV-R1-TV-001', 'Baik');
 
 -- Insert Consumables (BHP)
 INSERT INTO consumables (item_name, stock, unit) VALUES
@@ -142,7 +152,6 @@ INSERT INTO procurement_items (draft_id, item_type, item_name, price, quantity, 
 (1, 'BHP', 'SSD Samsung 500GB', 800000, 20, 'https://samsung.com/ssd', 'Ditolak', NULL); -- Contoh barang yang ditolak Kaprodi
 
 -- Insert Item Receipts (Staf Admin mencatat penerimaan barang yang datang tidak bersamaan)
--- Contoh: Beli 10 PC, datang 5 di bulan Juni, 5 di bulan Agustus
 INSERT INTO item_receipts (procurement_item_id, staf_admin_id, quantity_received, received_date) VALUES
 (1, 4, 5, '2026-06-15'),
 (1, 4, 5, '2026-08-10');
