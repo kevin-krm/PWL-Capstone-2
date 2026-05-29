@@ -10,6 +10,7 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role ENUM('Administrator', 'Kepala Laboratorium', 'Ketua Program Studi', 'Staf Administrasi', 'Staf Laboratorium') NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -105,13 +106,14 @@ CREATE TABLE maintenance_bhp_usage (
 -- INSERT DUMMY DATA
 -- ==========================================
 
--- Insert Users (Administrator, Kalab, Kaprodi, Admin, Lab Staff)
-INSERT INTO users (name, email, password, role) VALUES
-('Richard Vincentius', 'richard@lab.ac.id', 'hashpassword123', 'Administrator'),
-('Kevin Kornelius', 'kevin@lab.ac.id', 'hashpassword123', 'Kepala Laboratorium'),
-('Buro Sembil', 'kaprodi@lab.ac.id', 'hashpassword123', 'Ketua Program Studi'),
-('Ferdi', 'ferdi@lab.ac.id', 'hashpassword123', 'Staf Administrasi'),
-('Jayden Marvel Ethanael', 'jayden@lab.ac.id', 'hashpassword123', 'Staf Laboratorium');
+-- Insert Users (Administrator, Kalab, Kaprodi, Admin, Lab Staff, dan Akun Nonaktif)
+INSERT INTO users (name, email, password, role, is_active) VALUES
+('Richard Vincentius', 'richard@lab.ac.id', 'hashpassword123', 'Administrator', TRUE),
+('Kevin Kornelius', 'kevin@lab.ac.id', 'hashpassword123', 'Kepala Laboratorium', TRUE),
+('Buro Sembil', 'kaprodi@lab.ac.id', 'hashpassword123', 'Ketua Program Studi', TRUE),
+('Ferdi', 'ferdi@lab.ac.id', 'hashpassword123', 'Staf Administrasi', TRUE),
+('Jayden Marvel Ethanael', 'jayden@lab.ac.id', 'hashpassword123', 'Staf Laboratorium', TRUE),
+('Staf Resign', 'resign@lab.ac.id', 'hashpassword123', 'Staf Administrasi', FALSE);
 
 -- Insert Rooms (Hanya ruangan Lab/Kelas Praktek)
 INSERT INTO rooms (room_name, description) VALUES
