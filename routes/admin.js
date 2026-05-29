@@ -96,7 +96,18 @@ router.post('/users/edit/:id', (req, res) => {
 // DELETE: Proses hapus pengguna
 router.post('/users/delete/:id', (req, res) => {
     db.query('DELETE FROM users WHERE id=?', [req.params.id], (err) => {
-        if (err) throw err;
+        if (err) {
+            // Tangkap error jika user masih memiliki relasi di tabel lain (Foreign Key Constraint)
+            if (err.code === 'ER_ROW_IS_REFERENCED_2' || err.code === 'ER_ROW_IS_REFERENCED') {
+                return res.send(`
+                    <script>
+                        alert('Gagal menghapus: Pengguna ini tidak bisa dihapus karena masih memiliki riwayat aktivitas (seperti pengadaan/maintenance) di dalam sistem!');
+                        window.history.back();
+                    </script>
+                `);
+            }
+            throw err;
+        }
         res.redirect('/admin/users');
     });
 });
@@ -152,10 +163,27 @@ router.post('/rooms/edit/:id', (req, res) => {
 
 // DELETE: Proses hapus ruangan
 router.post('/rooms/delete/:id', (req, res) => {
-    db.query('DELETE FROM rooms WHERE id=?', [req.params.id], (err) => {
+    const roomId = req.params.id;
+
+    // 1. Cek secara manual apakah masih ada aset di ruangan ini
+    db.query('SELECT * FROM assets WHERE room_id = ?', [roomId], (err, results) => {
         if (err) throw err;
-        res.redirect('/admin/rooms');
+
+        if (results.length > 0) {
+            // Jika ada aset, tolak penghapusan dan beritahu jumlah asetnya
+            return res.send(`
+                <script>
+                    alert('Gagal menghapus: Ruangan ini tidak bisa dihapus karena masih berisi ${results.length} aset laboratorium!');
+                    window.history.back();
+                </script>
+            `);
+        }
+
+        // 2. Jika ruangan kosong (aman), jalankan proses hapus
+        db.query('DELETE FROM rooms WHERE id=?', [roomId], (err) => {
+            if (err) throw err;
+            res.redirect('/admin/rooms');
+        });
     });
 });
-
 module.exports = router;
