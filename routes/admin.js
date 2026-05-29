@@ -38,24 +38,59 @@ router.get('/users/edit/:id', (req, res) => {
     });
 });
 
-// CREATE: Proses tambah pengguna
+// CREATE: Proses tambah pengguna (Dengan Validasi Email)
 router.post('/users/add', (req, res) => {
     const { name, email, password, role, is_active } = req.body;
-    db.query('INSERT INTO users (name, email, password, role, is_active) VALUES (?, ?, ?, ?, ?)',
-        [name, email, password, role, is_active], (err) => {
-            if (err) throw err;
-            res.redirect('/admin/users');
-        });
+
+    // 1. Cek apakah email sudah terdaftar
+    db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
+        if (err) throw err;
+
+        if (results.length > 0) {
+            // Jika email sudah ada, tolak dan kembalikan ke form
+            return res.send(`
+                <script>
+                    alert('Gagal: Email "${email}" sudah terdaftar di sistem! Gunakan email lain.');
+                    window.history.back();
+                </script>
+            `);
+        }
+
+        // 2. Jika email aman, jalankan insert
+        db.query('INSERT INTO users (name, email, password, role, is_active) VALUES (?, ?, ?, ?, ?)',
+            [name, email, password, role, is_active], (err) => {
+                if (err) throw err;
+                res.redirect('/admin/users');
+            });
+    });
 });
 
-// UPDATE: Proses edit pengguna
+// UPDATE: Proses edit pengguna (Dengan Validasi Email)
 router.post('/users/edit/:id', (req, res) => {
     const { name, email, password, role, is_active } = req.body;
-    db.query('UPDATE users SET name=?, email=?, password=?, role=?, is_active=? WHERE id=?',
-        [name, email, password, role, is_active, req.params.id], (err) => {
-            if (err) throw err;
-            res.redirect('/admin/users');
-        });
+    const userId = req.params.id;
+
+    // 1. Cek apakah email baru sudah dipakai oleh orang LAIN
+    db.query('SELECT * FROM users WHERE email = ? AND id != ?', [email, userId], (err, results) => {
+        if (err) throw err;
+
+        if (results.length > 0) {
+            // Jika bentrok dengan pengguna lain, tolak
+            return res.send(`
+                <script>
+                    alert('Gagal: Email "${email}" sudah digunakan oleh pengguna lain!');
+                    window.history.back();
+                </script>
+            `);
+        }
+
+        // 2. Jika email aman, jalankan update
+        db.query('UPDATE users SET name=?, email=?, password=?, role=?, is_active=? WHERE id=?',
+            [name, email, password, role, is_active, userId], (err) => {
+                if (err) throw err;
+                res.redirect('/admin/users');
+            });
+    });
 });
 
 // DELETE: Proses hapus pengguna
