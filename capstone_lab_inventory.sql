@@ -106,14 +106,14 @@ CREATE TABLE maintenance_bhp_usage (
 -- INSERT DUMMY DATA
 -- ==========================================
 
--- Insert Users (Administrator, Kalab, Kaprodi, Admin, Lab Staff, dan Akun Nonaktif)
+-- Insert Users (Password sudah di-hash: hashpassword123)
 INSERT INTO users (name, email, password, role, is_active) VALUES
-('Richard Vincentius', 'richard@lab.ac.id', 'hashpassword123', 'Administrator', TRUE),
-('Kevin Kornelius', 'kevin@lab.ac.id', 'hashpassword123', 'Kepala Laboratorium', TRUE),
-('Buro Sembil', 'kaprodi@lab.ac.id', 'hashpassword123', 'Ketua Program Studi', TRUE),
-('Ferdi', 'ferdi@lab.ac.id', 'hashpassword123', 'Staf Administrasi', TRUE),
-('Jayden Marvel Ethanael', 'jayden@lab.ac.id', 'hashpassword123', 'Staf Laboratorium', TRUE),
-('Staf Resign', 'resign@lab.ac.id', 'hashpassword123', 'Staf Administrasi', FALSE);
+('Richard Vincentius', 'richard@lab.ac.id', '$2b$10$e1FWi.dkGfvvo1nj/mX1u.ylR4zH.UpRs1MRVc76gkafhebzFTLii', 'Administrator', TRUE),
+('Kevin Kornelius', 'kevin@lab.ac.id', '$2b$10$e1FWi.dkGfvvo1nj/mX1u.ylR4zH.UpRs1MRVc76gkafhebzFTLii', 'Kepala Laboratorium', TRUE),
+('Buro Sembil', 'kaprodi@lab.ac.id', '$2b$10$e1FWi.dkGfvvo1nj/mX1u.ylR4zH.UpRs1MRVc76gkafhebzFTLii', 'Ketua Program Studi', TRUE),
+('Ferdi', 'ferdi@lab.ac.id', '$2b$10$e1FWi.dkGfvvo1nj/mX1u.ylR4zH.UpRs1MRVc76gkafhebzFTLii', 'Staf Administrasi', TRUE),
+('Jayden Marvel Ethanael', 'jayden@lab.ac.id', '$2b$10$e1FWi.dkGfvvo1nj/mX1u.ylR4zH.UpRs1MRVc76gkafhebzFTLii', 'Staf Laboratorium', TRUE),
+('Staf Resign', 'resign@lab.ac.id', '$2b$10$e1FWi.dkGfvvo1nj/mX1u.ylR4zH.UpRs1MRVc76gkafhebzFTLii', 'Staf Administrasi', FALSE);
 
 -- Insert Rooms (Hanya ruangan Lab/Kelas Praktek)
 INSERT INTO rooms (room_name, description) VALUES

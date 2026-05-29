@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const { checkAuth } = require('../middlewares/authMiddleware');
+const bcrypt = require('bcryptjs');
 
 // Hanya 'Administrator' yang bisa akses
 router.use(checkAuth('Administrator'));
@@ -38,7 +39,7 @@ router.get('/users/edit/:id', (req, res) => {
     });
 });
 
-// CREATE: Proses tambah pengguna (Dengan Validasi Email)
+// CREATE: Proses tambah pengguna (Dengan Validasi Email & Password Hashing)
 router.post('/users/add', (req, res) => {
     const { name, email, password, role, is_active } = req.body;
 
@@ -47,7 +48,6 @@ router.post('/users/add', (req, res) => {
         if (err) throw err;
 
         if (results.length > 0) {
-            // Jika email sudah ada, tolak dan kembalikan ke form
             return res.send(`
                 <script>
                     alert('Gagal: Email "${email}" sudah terdaftar di sistem! Gunakan email lain.');
@@ -56,16 +56,19 @@ router.post('/users/add', (req, res) => {
             `);
         }
 
-        // 2. Jika email aman, jalankan insert
+        // 2. HASH PASSWORD SEBELUM DISIMPAN
+        const hashedPassword = bcrypt.hashSync(password, 10);
+
+        // 3. Jika email aman, jalankan insert dengan hashedPassword
         db.query('INSERT INTO users (name, email, password, role, is_active) VALUES (?, ?, ?, ?, ?)',
-            [name, email, password, role, is_active], (err) => {
+            [name, email, hashedPassword, role, is_active], (err) => {
                 if (err) throw err;
                 res.redirect('/admin/users');
             });
     });
 });
 
-// UPDATE: Proses edit pengguna (Dengan Validasi Email)
+// UPDATE: Proses edit pengguna (Dengan Validasi Email & Pengecekan Password)
 router.post('/users/edit/:id', (req, res) => {
     const { name, email, password, role, is_active } = req.body;
     const userId = req.params.id;
@@ -75,7 +78,6 @@ router.post('/users/edit/:id', (req, res) => {
         if (err) throw err;
 
         if (results.length > 0) {
-            // Jika bentrok dengan pengguna lain, tolak
             return res.send(`
                 <script>
                     alert('Gagal: Email "${email}" sudah digunakan oleh pengguna lain!');
@@ -84,12 +86,23 @@ router.post('/users/edit/:id', (req, res) => {
             `);
         }
 
-        // 2. Jika email aman, jalankan update
-        db.query('UPDATE users SET name=?, email=?, password=?, role=?, is_active=? WHERE id=?',
-            [name, email, password, role, is_active, userId], (err) => {
-                if (err) throw err;
-                res.redirect('/admin/users');
-            });
+        // 2. Logika Update berdasarkan isi kolom password
+        if (password) {
+            // Jika kolom password diisi teks baru, lakukan hashing
+            const hashedPassword = bcrypt.hashSync(password, 10);
+            db.query('UPDATE users SET name=?, email=?, password=?, role=?, is_active=? WHERE id=?',
+                [name, email, hashedPassword, role, is_active, userId], (err) => {
+                    if (err) throw err;
+                    res.redirect('/admin/users');
+                });
+        } else {
+            // Jika password dikosongkan, JANGAN sentuh kolom password di database
+            db.query('UPDATE users SET name=?, email=?, role=?, is_active=? WHERE id=?',
+                [name, email, role, is_active, userId], (err) => {
+                    if (err) throw err;
+                    res.redirect('/admin/users');
+                });
+        }
     });
 });
 
@@ -97,7 +110,6 @@ router.post('/users/edit/:id', (req, res) => {
 router.post('/users/delete/:id', (req, res) => {
     db.query('DELETE FROM users WHERE id=?', [req.params.id], (err) => {
         if (err) {
-            // Tangkap error jika user masih memiliki relasi di tabel lain (Foreign Key Constraint)
             if (err.code === 'ER_ROW_IS_REFERENCED_2' || err.code === 'ER_ROW_IS_REFERENCED') {
                 return res.send(`
                     <script>
@@ -113,27 +125,21 @@ router.post('/users/delete/:id', (req, res) => {
 });
 
 // PROSES CRUD RUANGAN
-
-// Rute Kelola Ruangan
 router.get('/rooms', (req, res) => {
     db.query('SELECT * FROM rooms', (err, results) => {
         if (err) throw err;
-        // PENTING: Menggunakan 'rooms/index'
         res.render('rooms/index', { user: req.session.user, rooms: results });
     });
 });
 
-// Form Tambah Ruangan
 router.get('/rooms/create', (req, res) => {
     res.render('rooms/create', { user: req.session.user });
 });
 
-// Form Edit Ruangan
 router.get('/rooms/edit/:id', (req, res) => {
     db.query('SELECT * FROM rooms WHERE id = ?', [req.params.id], (err, results) => {
         if (err) throw err;
         if (results.length > 0) {
-            // Mengirim data ruangan lama dengan variabel 'roomEdit'
             res.render('rooms/edit', { user: req.session.user, roomEdit: results[0] });
         } else {
             res.redirect('/admin/rooms');
@@ -141,7 +147,6 @@ router.get('/rooms/edit/:id', (req, res) => {
     });
 });
 
-// CREATE: Proses tambah ruangan
 router.post('/rooms/add', (req, res) => {
     const { room_name, description } = req.body;
     db.query('INSERT INTO rooms (room_name, description) VALUES (?, ?)',
@@ -151,7 +156,6 @@ router.post('/rooms/add', (req, res) => {
         });
 });
 
-// UPDATE: Proses edit ruangan
 router.post('/rooms/edit/:id', (req, res) => {
     const { room_name, description } = req.body;
     db.query('UPDATE rooms SET room_name=?, description=? WHERE id=?',
@@ -161,16 +165,11 @@ router.post('/rooms/edit/:id', (req, res) => {
         });
 });
 
-// DELETE: Proses hapus ruangan
 router.post('/rooms/delete/:id', (req, res) => {
     const roomId = req.params.id;
-
-    // 1. Cek secara manual apakah masih ada aset di ruangan ini
     db.query('SELECT * FROM assets WHERE room_id = ?', [roomId], (err, results) => {
         if (err) throw err;
-
         if (results.length > 0) {
-            // Jika ada aset, tolak penghapusan dan beritahu jumlah asetnya
             return res.send(`
                 <script>
                     alert('Gagal menghapus: Ruangan ini tidak bisa dihapus karena masih berisi ${results.length} aset laboratorium!');
@@ -178,12 +177,11 @@ router.post('/rooms/delete/:id', (req, res) => {
                 </script>
             `);
         }
-
-        // 2. Jika ruangan kosong (aman), jalankan proses hapus
         db.query('DELETE FROM rooms WHERE id=?', [roomId], (err) => {
             if (err) throw err;
             res.redirect('/admin/rooms');
         });
     });
 });
+
 module.exports = router;
