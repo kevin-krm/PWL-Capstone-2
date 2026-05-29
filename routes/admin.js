@@ -40,9 +40,9 @@ router.get('/users/edit/:id', (req, res) => {
 
 // CREATE: Proses tambah pengguna
 router.post('/users/add', (req, res) => {
-    const { name, email, password, role } = req.body;
-    db.query('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-        [name, email, password, role], (err) => {
+    const { name, email, password, role, is_active } = req.body;
+    db.query('INSERT INTO users (name, email, password, role, is_active) VALUES (?, ?, ?, ?, ?)',
+        [name, email, password, role, is_active], (err) => {
             if (err) throw err;
             res.redirect('/admin/users');
         });
@@ -50,9 +50,9 @@ router.post('/users/add', (req, res) => {
 
 // UPDATE: Proses edit pengguna
 router.post('/users/edit/:id', (req, res) => {
-    const { name, email, password, role } = req.body;
-    db.query('UPDATE users SET name=?, email=?, password=?, role=? WHERE id=?',
-        [name, email, password, role, req.params.id], (err) => {
+    const { name, email, password, role, is_active } = req.body;
+    db.query('UPDATE users SET name=?, email=?, password=?, role=?, is_active=? WHERE id=?',
+        [name, email, password, role, is_active, req.params.id], (err) => {
             if (err) throw err;
             res.redirect('/admin/users');
         });
