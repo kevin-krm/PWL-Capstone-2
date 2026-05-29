@@ -13,8 +13,22 @@ router.post('/login', (req, res) => {
         if (err) throw err;
 
         if (results.length > 0) {
-            req.session.user = results[0];
-            const userRole = results[0].role;
+            const user = results[0];
+
+            // Pengecekan Status Aktif
+            // Di MySQL, tipe BOOLEAN disimpan sebagai 1 (True) atau 0 (False)
+            if (!user.is_active || user.is_active === 0) {
+                return res.send(`
+                    <script>
+                        alert('Login Gagal: Akun Anda telah dinonaktifkan. Silakan hubungi Administrator.');
+                        window.location.href = '/login';
+                    </script>
+                `);
+            }
+
+            // Jika akun aktif, buat sesi dan redirect
+            req.session.user = user;
+            const userRole = user.role;
 
             // REDIRECT BERDASARKAN ROLE
             if (userRole === 'Administrator') {
@@ -36,7 +50,13 @@ router.post('/login', (req, res) => {
                 res.send('Dashboard untuk role ini belum tersedia.');
             }
         } else {
-            res.send('Email atau Password salah!');
+            // Berikan alert jika email/password salah agar UI tetap rapi
+            res.send(`
+                <script>
+                    alert('Login Gagal: Email atau Password salah!');
+                    window.location.href = '/login';
+                </script>
+            `);
         }
     });
 });
