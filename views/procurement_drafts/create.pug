@@ -109,9 +109,8 @@ block content
     template#row-template-replacement
         tr
             td(style="min-width: 150px;")
-                select.form-control(name="item_type" required)
-                    option(value="Inventaris") Inventaris
-                    option(value="BHP") BHP
+                span Inventaris
+                input(type="hidden" name="item_type" value="Inventaris")
             td
                 input.form-control(type="text" name="item_name" placeholder="Nama barang" required)
             td(style="min-width: 150px;")

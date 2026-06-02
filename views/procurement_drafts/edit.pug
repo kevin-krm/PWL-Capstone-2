@@ -102,9 +102,8 @@ block content
                                     each item in replacementItems
                                         tr
                                             td(style="min-width: 150px;")
-                                                select.form-control(name="item_type" required)
-                                                    option(value="Inventaris" selected=(item.item_type === 'Inventaris')) Inventaris
-                                                    option(value="BHP" selected=(item.item_type === 'BHP')) BHP
+                                                 span Inventaris
+                                                 input(type="hidden" name="item_type" value="Inventaris")
                                             td
                                                 input.form-control(type="text" name="item_name" value=item.item_name placeholder="Nama barang" required)
                                             td(style="min-width: 150px;")
