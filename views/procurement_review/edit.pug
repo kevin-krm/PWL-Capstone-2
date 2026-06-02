@@ -28,6 +28,8 @@ block content
 
                             if draft.status === 'Locked'
                                 span.badge.badge-success Locked
+                            else if draft.status === 'Reviewed'
+                                span.badge.badge-info Reviewed
                             else
                                 span.badge.badge-warning Draft
 
@@ -38,7 +40,6 @@ block content
                         table.table.table-bordered.table-striped
                             thead
                                 tr
-                                    th ID
                                     th No
                                     th Nama Barang
                                     th Jenis
@@ -50,7 +51,6 @@ block content
                             tbody
                                 each item, index in items
                                     tr
-                                        td= item.id
                                         td= index + 1
                                         td= item.item_name
                                         td= item.item_type
@@ -82,11 +82,6 @@ block content
                                                 )
                                                 select.form-control(name='statuses[]')
                                                     option(
-                                                        value='Pending'
-                                                        selected=(item.status === 'Pending')
-                                                    ) Pending
-
-                                                    option(
                                                         value='Disetujui'
                                                         selected=(item.status === 'Disetujui')
                                                     ) Disetujui
@@ -96,12 +91,21 @@ block content
                                                         selected=(item.status === 'Ditolak')
                                                     ) Ditolak
 
-                        if draft.status !== 'Locked'
-                            .mt-3
-                                button.btn.btn-success(type='submit')
-                                    i.fas.fa-lock
-                                    |  Finalisasi Draft
-                        else
+                        if draft.status === 'Locked'
                             .alert.alert-success.mt-3
                                 i.fas.fa-check-circle
                                 |  Draft sudah difinalisasi dan tidak dapat diubah lagi.
+
+                        .card-footer.mt-4.px-0.pb-0(style="background: transparent; border-top: 1px solid #dee2e6;")
+                            a.btn.btn-default(href="/kaprodi/procurement-review")
+                                i.fas.fa-arrow-left
+                                |  Kembali
+
+                            if draft.status !== 'Locked'
+                                button.btn.btn-success.float-right(type='submit')
+                                    i.fas.fa-check
+                                    |  Simpan Hasil Review
+                            else
+                                button.btn.btn-secondary.float-right(disabled)
+                                    i.fas.fa-lock
+                                    |  Sudah Difinalisasi
