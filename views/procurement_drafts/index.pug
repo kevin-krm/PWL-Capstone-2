@@ -5,23 +5,23 @@ block content
         .container-fluid
             .row.mb-2
                 .col-sm-6
-                    h1 Draf Pengadaan (Kalab)
+                    h1 Draft Pengadaan
 
     .content
         .container-fluid
             .card
                 .card-header
-                    h3.card-title Daftar Draf Pengadaan Tahunan
+                    h3.card-title Daftar Draft Pengadaan Tahunan
                     .card-tools
                         a.btn.btn-primary.btn-sm(href="/kalab/procurement-drafts/create")
                             i.fas.fa-plus
-                            |  Tambah Draf Pengadaan
+                            |  Tambah Draft Pengadaan
 
                 .card-body
                     if drafts.length === 0
                         .alert.alert-info.mb-0
                             i.fas.fa-info-circle
-                            |  Tidak ada draf pengadaan yang diajukan.
+                            |  Tidak ada draft pengadaan yang diajukan.
                     else
                         table.table.table-bordered.table-striped
                             thead
@@ -58,7 +58,7 @@ block content
                                                     |  Edit
 
                                                 form(action=`/kalab/procurement-drafts/delete/${draft.id}` method="POST" style="display:inline;")
-                                                    button.btn.btn-danger.btn-sm(type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus draf pengadaan ini? Semua barang di dalamnya juga akan terhapus.');")
+                                                    button.btn.btn-danger.btn-sm(type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus draft pengadaan ini? Semua barang di dalamnya juga akan terhapus.');")
                                                         i.fas.fa-trash
                                                         |  Hapus
                                             else

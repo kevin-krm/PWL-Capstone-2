@@ -5,7 +5,7 @@ block content
         .container-fluid
             .row.mb-2
                 .col-sm-6
-                    h1 Detail Draf Pengadaan
+                    h1 Detail Draft Pengadaan
 
     .content
         .container-fluid
@@ -22,7 +22,7 @@ block content
                             strong Tahun Pengadaan:
                             p= draft.year
                         .col-md-4
-                            strong Status Draf:
+                            strong Status Draft:
                             p
                                 if draft.status == 'Draft'
                                     span.badge.badge-warning Draft
@@ -49,7 +49,7 @@ block content
                             tbody
                                 if items.length === 0
                                     tr
-                                        td.text-center(colspan="9") Tidak ada barang di draf pengadaan ini.
+                                        td.text-center(colspan="9") Tidak ada barang di draft pengadaan ini.
                                 else
                                     each item, index in items
                                         tr
@@ -87,8 +87,8 @@ block content
                     if draft.status !== 'Locked'
                         a.btn.btn-warning.float-right(href=`/kalab/procurement-drafts/edit/${draft.id}`)
                             i.fas.fa-edit
-                            |  Edit Draf
+                            |  Edit Draft
                     else
                         button.btn.btn-secondary.float-right(disabled)
                             i.fas.fa-lock
-                            |  Draf Terkunci (Locked)
+                            |  Draft Terkunci (Locked)

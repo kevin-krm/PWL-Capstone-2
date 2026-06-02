@@ -5,13 +5,13 @@ block content
         .container-fluid
             .row.mb-2
                 .col-sm-6
-                    h1 Tambah Draf Pengadaan
+                    h1 Tambah Draft Pengadaan
 
     .content
         .container-fluid
             .card.card-primary
                 .card-header
-                    h3.card-title Form Draf Pengadaan Baru
+                    h3.card-title Form Draft Pengadaan Baru
 
                 form(action="/kalab/procurement-drafts/create" method="POST")
                     .card-body
@@ -25,10 +25,10 @@ block content
                                     label Tahun Pengadaan
                                     input.form-control(type="text" value=currentYear readonly)
 
-                        h5.border-bottom.pb-2.mb-3 Daftar Barang yang Diajukan
-
-                        .table-responsive
-                            table#items-table.table.table-bordered.table-striped
+                        // SECTION 1: BARANG BARU
+                        h5.border-bottom.pb-2.mb-3 1. Pengadaan Barang Baru
+                        .table-responsive.mb-4
+                            table#items-table-regular.table.table-bordered.table-striped
                                 thead
                                     tr
                                         th Jenis Barang
@@ -36,7 +36,6 @@ block content
                                         th Harga Satuan (Rp)
                                         th Jumlah (Qty)
                                         th Link Pembelian
-                                        th Aset yang Diganti (Opsional)
                                         th Aksi
                                 tbody
                                     tr
@@ -52,35 +51,99 @@ block content
                                             input.form-control(type="number" name="quantity" placeholder="Qty" min="1" required)
                                         td
                                             input.form-control(type="url" name="purchase_link" placeholder="https://...")
-                                        td(style="min-width: 200px;")
-                                            select.form-control(name="target_replacement_asset_id")
-                                                option(value="") -- Tidak Ada / None --
-                                                each asset in assets
-                                                    option(value=asset.id) #{asset.item_name} (#{asset.label_code || 'No Label'})
+                                            input(type="hidden" name="target_replacement_asset_id" value="")
                                         td
                                             button.btn.btn-danger.btn-sm.remove-row-btn(type="button")
                                                 i.fas.fa-trash
                                                 |  Hapus
-
-                        .mt-3.mb-3
-                            button#add-row-btn.btn.btn-success.btn-sm(type="button")
+                        .mb-4
+                            button#add-row-regular-btn.btn.btn-success.btn-sm(type="button")
                                 i.fas.fa-plus
-                                |  Tambah Baris Barang
+                                |  Tambah Pengadaan Baru
+
+                        // SECTION 2: BARANG PENGGANTI
+                        h5.border-bottom.pb-2.mb-3 2. Pengadaan Barang Pengganti
+                        .table-responsive.mb-4
+                            table#items-table-replacement.table.table-bordered.table-striped
+                                thead
+                                    tr
+                                        th Jenis Barang
+                                        th Nama Barang
+                                        th Harga Satuan (Rp)
+                                        th Jumlah (Qty)
+                                        th Link Pembelian
+                                        th Aset yang Diganti
+                                        th Aksi
+                                tbody
+
+                        .mb-4
+                            button#add-row-replacement-btn.btn.btn-info.btn-sm(type="button")
+                                i.fas.fa-plus
+                                |  Tambah Barang Pengganti
 
                     .card-footer
                         a.btn.btn-default(href="/kalab/procurement-drafts") Batal
-                        button.btn.btn-primary.float-right(type="submit") Simpan Draf
+                        button.btn.btn-primary.float-right(type="submit") Simpan Draft
+
+    // Row Templates
+    template#row-template-regular
+        tr
+            td(style="min-width: 150px;")
+                select.form-control(name="item_type" required)
+                    option(value="Inventaris") Inventaris
+                    option(value="BHP") BHP
+            td
+                input.form-control(type="text" name="item_name" placeholder="Nama barang" required)
+            td(style="min-width: 150px;")
+                input.form-control(type="number" name="price" placeholder="Harga" min="0" required)
+            td(style="min-width: 90px;")
+                input.form-control(type="number" name="quantity" placeholder="Qty" min="1" required)
+            td
+                input.form-control(type="url" name="purchase_link" placeholder="https://...")
+                input(type="hidden" name="target_replacement_asset_id" value="")
+            td
+                button.btn.btn-danger.btn-sm.remove-row-btn(type="button")
+                    i.fas.fa-trash
+                    |  Hapus
+
+    template#row-template-replacement
+        tr
+            td(style="min-width: 150px;")
+                select.form-control(name="item_type" required)
+                    option(value="Inventaris") Inventaris
+                    option(value="BHP") BHP
+            td
+                input.form-control(type="text" name="item_name" placeholder="Nama barang" required)
+            td(style="min-width: 150px;")
+                input.form-control(type="number" name="price" placeholder="Harga" min="0" required)
+            td(style="min-width: 90px;")
+                input.form-control(type="number" name="quantity" value="1" readonly required)
+            td
+                input.form-control(type="url" name="purchase_link" placeholder="https://...")
+            td(style="min-width: 200px;")
+                select.form-control(name="target_replacement_asset_id" required)
+                    option(value="") -- Pilih Aset yang Diganti --
+                    each asset in assets
+                        option(value=asset.id) #{asset.item_name} (#{asset.label_code || 'No Label'})
+            td
+                button.btn.btn-danger.btn-sm.remove-row-btn(type="button")
+                    i.fas.fa-trash
+                    |  Hapus
 
     script.
         document.addEventListener('DOMContentLoaded', function() {
-            const tbody = document.querySelector('#items-table tbody');
-            const addBtn = document.querySelector('#add-row-btn');
+            const regularTbody = document.querySelector('#items-table-regular tbody');
+            const replacementTbody = document.querySelector('#items-table-replacement tbody');
+            const addRegularBtn = document.querySelector('#add-row-regular-btn');
+            const addReplacementBtn = document.querySelector('#add-row-replacement-btn');
+            const regularTemplate = document.querySelector('#row-template-regular');
+            const replacementTemplate = document.querySelector('#row-template-replacement');
 
             // Function to bind remove event
             function bindRemoveEvent(btn) {
                 btn.addEventListener('click', function() {
-                    const rows = tbody.querySelectorAll('tr');
-                    if (rows.length > 1) {
+                    const totalRows = regularTbody.querySelectorAll('tr').length + replacementTbody.querySelectorAll('tr').length;
+                    if (totalRows > 1) {
                         btn.closest('tr').remove();
                     } else {
                         alert('Minimal harus ada 1 barang yang diajukan.');
@@ -89,24 +152,24 @@ block content
             }
 
             // Bind for initial row
-            const initialRemoveBtn = tbody.querySelector('.remove-row-btn');
+            const initialRemoveBtn = regularTbody.querySelector('.remove-row-btn');
             if (initialRemoveBtn) {
                 bindRemoveEvent(initialRemoveBtn);
             }
 
-            // Add new row
-            addBtn.addEventListener('click', function() {
-                const firstRow = tbody.querySelector('tr');
-                const newRow = firstRow.cloneNode(true);
+            // Add new regular row
+            addRegularBtn.addEventListener('click', function() {
+                const clone = regularTemplate.content.cloneNode(true);
+                const row = clone.querySelector('tr');
+                bindRemoveEvent(row.querySelector('.remove-row-btn'));
+                regularTbody.appendChild(clone);
+            });
 
-                // Reset values of the cloned row
-                newRow.querySelectorAll('input').forEach(input => input.value = '');
-                newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-
-                tbody.appendChild(newRow);
-
-                // Bind remove event to new button
-                const removeBtn = newRow.querySelector('.remove-row-btn');
-                bindRemoveEvent(removeBtn);
+            // Add new replacement row
+            addReplacementBtn.addEventListener('click', function() {
+                const clone = replacementTemplate.content.cloneNode(true);
+                const row = clone.querySelector('tr');
+                bindRemoveEvent(row.querySelector('.remove-row-btn'));
+                replacementTbody.appendChild(clone);
             });
         });
