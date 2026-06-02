@@ -45,33 +45,45 @@ router.get('/assets/edit/:id', (req, res) => {
 });
 
 // POST CREATE
-router.post('/assets/add', (req, res) => {
-    const { room_id, item_name, label_code, condition_status } = req.body;
-    db.query('INSERT INTO assets (room_id, item_name, label_code, condition_status) VALUES (?, ?, ?, ?)',
-        [room_id, item_name, label_code, condition_status], (err) => {
-            if (err) {
-                if (err.code === 'ER_DUP_ENTRY') {
-                    return res.send("<script>alert('Gagal: Kode Label / Barcode tersebut sudah digunakan!'); window.history.back();</script>");
-                }
-                throw err;
-            }
-            res.redirect('/stafadmin/assets');
-        });
+router.post('/assets/add', async (req, res) => {
+    try {
+        const { room_id, item_name, label_code, condition_status } = req.body;
+        let qrCodeUrl = null;
+        if (label_code && label_code.trim() !== '') {
+            qrCodeUrl = await QRCode.toDataURL(label_code);
+        }
+        await db.promise().query(
+            'INSERT INTO assets (room_id, item_name, label_code, qr_code_url, condition_status) VALUES (?, ?, ?, ?, ?)',
+            [room_id, item_name, label_code, qrCodeUrl, condition_status]
+        );
+        res.redirect('/stafadmin/assets');
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.send("<script>alert('Gagal: Kode Label / Barcode tersebut sudah digunakan!'); window.history.back();</script>");
+        }
+        throw err;
+    }
 });
 
 // POST EDIT
-router.post('/assets/edit/:id', (req, res) => {
-    const { room_id, item_name, label_code, condition_status, is_active } = req.body;
-    db.query('UPDATE assets SET room_id=?, item_name=?, label_code=?, condition_status=?, is_active=? WHERE id=?',
-        [room_id, item_name, label_code, condition_status, is_active, req.params.id], (err) => {
-            if (err) {
-                if (err.code === 'ER_DUP_ENTRY') {
-                    return res.send("<script>alert('Gagal: Kode Label bentrok dengan barang lain!'); window.history.back();</script>");
-                }
-                throw err;
-            }
-            res.redirect('/stafadmin/assets');
-        });
+router.post('/assets/edit/:id', async (req, res) => {
+    try {
+        const { room_id, item_name, label_code, condition_status, is_active } = req.body;
+        let qrCodeUrl = null;
+        if (label_code && label_code.trim() !== '') {
+            qrCodeUrl = await QRCode.toDataURL(label_code);
+        }
+        await db.promise().query(
+            'UPDATE assets SET room_id=?, item_name=?, label_code=?, qr_code_url=?, condition_status=?, is_active=? WHERE id=?',
+            [room_id, item_name, label_code, qrCodeUrl, condition_status, is_active, req.params.id]
+        );
+        res.redirect('/stafadmin/assets');
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.send("<script>alert('Gagal: Kode Label bentrok dengan barang lain!'); window.history.back();</script>");
+        }
+        throw err;
+    }
 });
 
 // POST DELETE
@@ -111,6 +123,7 @@ router.get('/penerimaan', async (req, res) => {
                 ir.procurement_item_id,
                 ir.quantity_received,
                 ir.received_date,
+                ir.is_registered,
                 u.name AS receiver_name
             FROM item_receipts ir
             LEFT JOIN users u ON ir.staf_admin_id = u.id
@@ -203,9 +216,9 @@ router.post('/procurement/:id/receipt', async (req, res) => {
         // Start database transaction
         await conn.beginTransaction();
 
-        // Lock item and get quantity details
+        // Lock item and get quantity + type details
         const queryItem = `
-            SELECT quantity 
+            SELECT quantity, item_type, item_name 
             FROM procurement_items 
             WHERE id = ? AND status = 'Disetujui' 
             FOR UPDATE
@@ -216,6 +229,8 @@ router.post('/procurement/:id/receipt', async (req, res) => {
             return res.send("<script>alert('Gagal: Barang tidak ditemukan.'); window.location.href='/stafadmin/penerimaan';</script>");
         }
         const targetQuantity = items[0].quantity;
+        const itemType = items[0].item_type;
+        const itemName = items[0].item_name;
 
         // Lock and get current receipts sum
         const queryReceived = `
@@ -238,6 +253,16 @@ router.post('/procurement/:id/receipt', async (req, res) => {
         `;
         await conn.query(insertQuery, [itemId, stafAdminId, quantityReceived, receivedDate]);
 
+        // Jika BHP, otomatis masukkan/update ke tabel consumables
+        if (itemType === 'BHP') {
+            const [existing] = await conn.query('SELECT id FROM consumables WHERE item_name = ?', [itemName]);
+            if (existing.length > 0) {
+                await conn.query('UPDATE consumables SET stock = stock + ? WHERE id = ?', [quantityReceived, existing[0].id]);
+            } else {
+                await conn.query('INSERT INTO consumables (item_name, stock, unit) VALUES (?, ?, ?)', [itemName, quantityReceived, 'Pcs']);
+            }
+        }
+
         await conn.commit();
         return res.send("<script>alert('Berhasil menginput penerimaan barang!'); window.location.href='/stafadmin/penerimaan';</script>");
     } catch (err) {
@@ -257,6 +282,7 @@ router.get('/receipt/:id/register-asset', async (req, res) => {
             SELECT 
                 ir.id AS receipt_id,
                 ir.quantity_received,
+                ir.is_registered,
                 pi.id AS item_id,
                 pi.item_name,
                 pi.item_type,
@@ -276,6 +302,11 @@ router.get('/receipt/:id/register-asset', async (req, res) => {
         // Restrict only to Inventaris
         if (receipt.item_type !== 'Inventaris') {
             return res.send("<script>alert('Gagal: Registrasi aset hanya diperbolehkan untuk barang bertipe Inventaris.'); window.location.href='/stafadmin/penerimaan';</script>");
+        }
+
+        // Block if already registered
+        if (receipt.is_registered) {
+            return res.send("<script>alert('Penerimaan ini sudah didaftarkan ke inventaris.'); window.location.href='/stafadmin/penerimaan';</script>");
         }
 
         // Fetch rooms dropdown data
@@ -298,24 +329,25 @@ router.get('/receipt/:id/register-asset', async (req, res) => {
     }
 });
 
-// Fitur 2: POST Form Registrasi Aset & Generate Label/Barcode
+// Fitur 2: POST Form Registrasi Aset & Generate Label/Barcode (MULTI-ROW)
 router.post('/receipt/:id/register-asset', async (req, res) => {
+    const conn = db.promise();
     try {
         const receiptId = req.params.id;
-        const { room_id, label_code } = req.body;
+        const { room_id, label_prefix } = req.body;
 
-        if (!room_id || !label_code || label_code.trim() === '') {
-            return res.send("<script>alert('Gagal: Ruangan dan Kode Label harus diisi.'); window.history.back();</script>");
+        if (!room_id || !label_prefix || label_prefix.trim() === '') {
+            return res.send("<script>alert('Gagal: Ruangan dan Prefix Label harus diisi.'); window.history.back();</script>");
         }
 
-        // Fetch receipt to get item_name
+        // Fetch receipt to get item_name and quantity
         const queryReceipt = `
-            SELECT pi.item_name, pi.item_type
+            SELECT ir.quantity_received, ir.is_registered, pi.item_name, pi.item_type
             FROM item_receipts ir
             JOIN procurement_items pi ON ir.procurement_item_id = pi.id
             WHERE ir.id = ?
         `;
-        const [receipts] = await db.promise().query(queryReceipt, [receiptId]);
+        const [receipts] = await conn.query(queryReceipt, [receiptId]);
         if (receipts.length === 0) {
             return res.send("<script>alert('Gagal: Penerimaan barang tidak ditemukan.'); window.location.href='/stafadmin/penerimaan';</script>");
         }
@@ -324,22 +356,40 @@ router.post('/receipt/:id/register-asset', async (req, res) => {
         if (receipt.item_type !== 'Inventaris') {
             return res.send("<script>alert('Gagal: Hanya barang bertipe Inventaris yang bisa diregistrasikan.'); window.location.href='/stafadmin/penerimaan';</script>");
         }
+        if (receipt.is_registered) {
+            return res.send("<script>alert('Penerimaan ini sudah didaftarkan ke inventaris.'); window.location.href='/stafadmin/penerimaan';</script>");
+        }
 
-        // Generate QR Code Base64
-        const qrCodeUrl = await QRCode.toDataURL(label_code);
+        await conn.beginTransaction();
 
-        // Insert into assets table
+        // Get current max ID for auto-increment numbering
+        const [maxResult] = await conn.query('SELECT MAX(id) AS max_id FROM assets');
+        let nextId = (maxResult[0].max_id || 0) + 1;
+
+        const quantityReceived = receipt.quantity_received;
+
+        // Insert N rows into assets, one per unit received
         const insertAssetQuery = `
             INSERT INTO assets (room_id, item_name, label_code, qr_code_url, condition_status, is_active)
             VALUES (?, ?, ?, ?, 'Baik', TRUE)
         `;
-        
-        await db.promise().query(insertAssetQuery, [room_id, receipt.item_name, label_code, qrCodeUrl]);
 
-        return res.send("<script>alert('Berhasil mendaftarkan aset baru!'); window.location.href='/stafadmin/assets';</script>");
+        for (let i = 0; i < quantityReceived; i++) {
+            const paddedNum = String(nextId + i).padStart(3, '0');
+            const labelCode = `${label_prefix}-${paddedNum}`;
+            const qrCodeUrl = await QRCode.toDataURL(labelCode);
+            await conn.query(insertAssetQuery, [room_id, receipt.item_name, labelCode, qrCodeUrl]);
+        }
+
+        // Mark receipt as registered
+        await conn.query('UPDATE item_receipts SET is_registered = TRUE WHERE id = ?', [receiptId]);
+
+        await conn.commit();
+        return res.send(`<script>alert('Berhasil mendaftarkan ${quantityReceived} unit aset baru!'); window.location.href='/stafadmin/penerimaan';</script>`);
     } catch (err) {
+        await conn.rollback();
         if (err.code === 'ER_DUP_ENTRY') {
-            return res.send("<script>alert('Gagal: Kode Label / Barcode tersebut sudah digunakan!'); window.history.back();</script>");
+            return res.send("<script>alert('Gagal: Salah satu Kode Label yang di-generate sudah digunakan! Coba prefix yang berbeda.'); window.history.back();</script>");
         }
         console.error(err);
         return res.send("<script>alert('Terjadi kesalahan sistem saat mendaftarkan aset.'); window.history.back();</script>");

@@ -76,6 +76,7 @@ CREATE TABLE item_receipts (
     staf_admin_id INT,
     quantity_received INT NOT NULL,
     received_date DATE NOT NULL,
+    is_registered BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (procurement_item_id) REFERENCES procurement_items(id) ON DELETE CASCADE,
     FOREIGN KEY (staf_admin_id) REFERENCES users(id)
 );

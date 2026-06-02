@@ -33,6 +33,19 @@ block content
                                     label Jumlah Diterima (Pada Penerimaan Ini)
                                     input.form-control(type="text" value=`${receipt.quantity_received} unit` disabled)
                                 
+                                .alert.alert-info
+                                    i.fas.fa-info-circle.mr-2
+                                    strong Info:
+                                    |  Sistem akan membuat #{receipt.quantity_received} aset sekaligus dengan kode label bernomor urut otomatis.
+                                    br
+                                    | Contoh: Jika prefix = 
+                                    code INV-LAB-2026
+                                    |  maka label akan menjadi 
+                                    code INV-LAB-2026-001
+                                    | , 
+                                    code INV-LAB-2026-002
+                                    | , dst.
+                                
                                 hr
                                 
                                 .form-group
@@ -43,24 +56,49 @@ block content
                                             option(value=room.id data-name=room.room_name)= room.room_name
                                 
                                 .form-group
-                                    label(for="label_code") Kode Label / Barcode *
+                                    label(for="label_prefix") Prefix Kode Label *
                                     .input-group
-                                        input#label_code.form-control(type="text" name="label_code" required placeholder="Masukkan atau scan kode label (misal: INV-R4-PC-001)")
+                                        input#label_prefix.form-control(type="text" name="label_prefix" required placeholder="Masukkan prefix label (misal: INV-LAB-2026)")
                                         .input-group-append
                                             button#btn-generate-label.btn.btn-info(type="button")
                                                 i.fas.fa-magic.mr-1
                                                 | Auto-Generate
-                                    small.text-muted Masukkan kode label manual (menggunakan scanner barcode) atau tekan tombol Auto-Generate untuk membuat kode otomatis.
+                                    small.text-muted Masukkan prefix label, nomor urut akan di-generate otomatis oleh sistem per unit.
+                                
+                                .form-group
+                                    label Preview Kode Label yang Akan Di-generate
+                                    #label-preview.border.rounded.p-3.bg-light
+                                        span.text-muted Isi prefix dan klik "Auto-Generate" atau ketik manual untuk melihat preview.
                                     
                             .card-footer
-                                button.btn.btn-success(type="submit") Daftarkan Aset
+                                button.btn.btn-success(type="submit")
+                                    i.fas.fa-save.mr-1
+                                    | Daftarkan #{receipt.quantity_received} Aset
                                 a.btn.btn-default.float-right(href="/stafadmin/penerimaan") Batal
 
     script.
         document.addEventListener('DOMContentLoaded', function() {
             const btnGenerate = document.getElementById('btn-generate-label');
             const roomSelect = document.getElementById('room_id');
-            const labelInput = document.getElementById('label_code');
+            const prefixInput = document.getElementById('label_prefix');
+            const previewDiv = document.getElementById('label-preview');
+            const quantity = #{receipt.quantity_received};
+            const startNum = parseInt("#{paddedIncrement}", 10);
+
+            function updatePreview() {
+                const prefix = prefixInput.value.trim();
+                if (!prefix) {
+                    previewDiv.innerHTML = '<span class="text-muted">Isi prefix untuk melihat preview.</span>';
+                    return;
+                }
+                let html = '<ul class="list-unstyled mb-0">';
+                for (let i = 0; i < quantity; i++) {
+                    const num = String(startNum + i).padStart(3, '0');
+                    html += `<li><i class="fas fa-tag text-success mr-1"></i> <code>${prefix}-${num}</code></li>`;
+                }
+                html += '</ul>';
+                previewDiv.innerHTML = html;
+            }
 
             btnGenerate.addEventListener('click', function() {
                 const selectedVal = roomSelect.value;
@@ -72,19 +110,18 @@ block content
                 const selectedOption = roomSelect.options[roomSelect.selectedIndex];
                 const roomNameRaw = selectedOption.getAttribute('data-name');
                 
-                // Format Nama Ruangan: ambil inisial ruangan/bersihkan string
-                // Misalnya "Lab Pemrograman 1" -> "LAB-PEMROGRAMAN-1" atau disingkat
-                // Kita ganti spasi dengan tanda hubung dan ubah ke uppercase
                 const roomNameFormatted = roomNameRaw
                     .trim()
                     .toUpperCase()
                     .replace(/\s+/g, '-');
                 
                 const year = "#{receipt.year}";
-                const increment = "#{paddedIncrement}";
                 
-                // Format: INV-[ROOM_NAME]-[YEAR]-[AUTO_INCREMENT]
-                const generatedCode = `INV-${roomNameFormatted}-${year}-${increment}`;
-                labelInput.value = generatedCode;
+                // Format: INV-[ROOM_NAME]-[YEAR]
+                const generatedPrefix = `INV-${roomNameFormatted}-${year}`;
+                prefixInput.value = generatedPrefix;
+                updatePreview();
             });
+
+            prefixInput.addEventListener('input', updatePreview);
         });

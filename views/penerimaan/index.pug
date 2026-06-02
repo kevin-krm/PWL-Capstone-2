@@ -19,6 +19,13 @@ block content
                     h3.card-title
                         i.fas.fa-boxes.mr-1
                         | Daftar Barang Pengadaan Disetujui (Draf Locked)
+                    .card-tools
+                        button#btn-expand-all.btn.btn-sm.btn-outline-primary.mr-1(type="button" title="Buka Semua Riwayat")
+                            i.fas.fa-chevron-down.mr-1
+                            | Buka Semua
+                        button#btn-collapse-all.btn.btn-sm.btn-outline-secondary(type="button" title="Tutup Semua Riwayat")
+                            i.fas.fa-chevron-up.mr-1
+                            | Tutup Semua
                 .card-body
                     if items.length === 0
                         .alert.alert-info.mb-0
@@ -26,9 +33,9 @@ block content
                             | Belum ada barang pengadaan yang disetujui dan berstatus locked.
                     else
                         .table-responsive
-                            table.table.table-striped.table-bordered.table-hover
+                            table.table.table-striped.table-bordered
                                 thead
-                                    tr
+                                    tr.bg-primary
                                         th.text-center(style="width: 5%") No.
                                         th.text-center(style="width: 8%") Tahun
                                         th Nama Barang
@@ -41,6 +48,7 @@ block content
                                         th.text-center(style="width: 12%") Aksi
                                 tbody
                                     each item, index in items
+                                        - const hasReceipts = receiptsByItem[item.item_id] && receiptsByItem[item.item_id].length > 0
                                         tr
                                             td.text-center= index + 1
                                             td.text-center
@@ -87,36 +95,91 @@ block content
                                                     span.text-success
                                                         i.fas.fa-check-double
                                                         |  Lengkap
-                                        tr
-                                            td(colspan="10" style="padding: 10px 10px 10px 50px; background-color: #fdfdfd;")
-                                                .card.card-outline.card-secondary.mb-0
-                                                    .card-header.p-2
-                                                        h3.card-title.text-sm
-                                                            i.fas.fa-history.mr-1
-                                                            | Riwayat Penerimaan & Registrasi
-                                                    .card-body.p-0
-                                                        if receiptsByItem[item.item_id] && receiptsByItem[item.item_id].length > 0
-                                                            table.table.table-sm.table-valign-middle.mb-0
-                                                                thead
-                                                                    tr
-                                                                        th No.
-                                                                        th Tanggal Diterima
-                                                                        th Jumlah Diterima
-                                                                        th Petugas
-                                                                        if item.item_type === 'Inventaris'
-                                                                            th.text-center Registrasi Aset
-                                                                tbody
-                                                                    each rec, rIdx in receiptsByItem[item.item_id]
-                                                                        tr
-                                                                            td= rIdx + 1
-                                                                            td= new Date(rec.received_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
-                                                                            td.font-weight-bold= `${rec.quantity_received} unit`
-                                                                            td= rec.receiver_name
-                                                                            if item.item_type === 'Inventaris'
-                                                                                td.text-center
-                                                                                    a.btn.btn-xs.btn-success(href=`/stafadmin/receipt/${rec.receipt_id}/register-asset`)
-                                                                                        i.fas.fa-barcode.mr-1
-                                                                                        | Daftarkan ke Inventaris
-                                                        else
-                                                            .p-2.text-muted.text-center Belum ada penerimaan yang diinput.
 
+                                        //- Row riwayat penerimaan (collapsible)
+                                        tr
+                                            td(colspan="10" style="padding: 0; border-top: none;")
+                                                - const collapseId = 'collapse-receipt-' + item.item_id
+                                                .d-flex.justify-content-center.py-1(style="background-color: #f1f3f5; border-bottom: 1px solid #dee2e6;")
+                                                    button.btn.btn-sm.btn-link.btn-toggle-receipt.text-secondary(type="button" data-toggle="collapse" data-target=`#${collapseId}` aria-expanded="false")
+                                                        i.fas.fa-chevron-down.mr-1
+                                                        | Riwayat Penerimaan & Registrasi
+                                                        if hasReceipts
+                                                            span.badge.badge-secondary.ml-1= receiptsByItem[item.item_id].length
+
+                                                .collapse.receipt-collapse(id=collapseId)
+                                                    .px-4.py-3(style="background-color: #efe9e9ff;")
+                                                        .card.card-outline.card-info.mb-0
+                                                            .card-body.p-0
+                                                                if hasReceipts
+                                                                    table.table.table-sm.table-valign-middle.table-striped.mb-0
+                                                                        thead.bg-info.text-white
+                                                                            tr
+                                                                                th.pl-3 No.
+                                                                                th Tanggal Diterima
+                                                                                th Jumlah Diterima
+                                                                                th Petugas
+                                                                                if item.item_type === 'Inventaris'
+                                                                                    th.text-center.pr-3 Registrasi Aset
+                                                                        tbody
+                                                                            each rec, rIdx in receiptsByItem[item.item_id]
+                                                                                tr
+                                                                                    td.pl-3= rIdx + 1
+                                                                                    td= new Date(rec.received_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+                                                                                    td.font-weight-bold= `${rec.quantity_received} unit`
+                                                                                    td= rec.receiver_name
+                                                                                    if item.item_type === 'Inventaris'
+                                                                                        td.text-center.pr-3
+                                                                                            if rec.is_registered
+                                                                                                span.badge.badge-secondary.p-2
+                                                                                                    i.fas.fa-lock.mr-1
+                                                                                                    | Sudah Terdaftar
+                                                                                            else
+                                                                                                a.btn.btn-xs.btn-success(href=`/stafadmin/receipt/${rec.receipt_id}/register-asset`)
+                                                                                                    i.fas.fa-barcode.mr-1
+                                                                                                    | Daftarkan ke Inventaris
+                                                                else
+                                                                    .p-3.text-muted.text-center(style="background-color: #fff;")
+                                                                        i.fas.fa-inbox.mr-1
+                                                                        | Belum ada penerimaan yang diinput.
+
+    script.
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle icon rotation on collapse show/hide
+            document.querySelectorAll('.receipt-collapse').forEach(function(el) {
+                el.addEventListener('show.bs.collapse', function() {
+                    const btn = document.querySelector('[data-target="#' + el.id + '"]');
+                    if (btn) {
+                        const icon = btn.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-chevron-down');
+                            icon.classList.add('fa-chevron-up');
+                        }
+                    }
+                });
+                el.addEventListener('hide.bs.collapse', function() {
+                    const btn = document.querySelector('[data-target="#' + el.id + '"]');
+                    if (btn) {
+                        const icon = btn.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-chevron-up');
+                            icon.classList.add('fa-chevron-down');
+                        }
+                    }
+                });
+            });
+
+            // Expand All
+            document.getElementById('btn-expand-all').addEventListener('click', function() {
+                document.querySelectorAll('.receipt-collapse').forEach(function(el) {
+                    $(el).collapse('show');
+                });
+            });
+
+            // Collapse All
+            document.getElementById('btn-collapse-all').addEventListener('click', function() {
+                document.querySelectorAll('.receipt-collapse').forEach(function(el) {
+                    $(el).collapse('hide');
+                });
+            });
+        });
