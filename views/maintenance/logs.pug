@@ -1,0 +1,70 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 Log Maintenance
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item
+                            a(href="/staflab/consumables") Home
+                        li.breadcrumb-item.active Log Maintenance
+
+    .content
+        .container-fluid
+            .card.card-primary.card-outline
+                .card-header
+                    h3.card-title
+                        i.fas.fa-tools.mr-1
+                        | Riwayat Maintenance Laboratorium
+                .card-body
+                    if logs.length === 0
+                        .alert.alert-info.mb-0
+                            i.icon.fas.fa-info-circle
+                            |  Belum ada log maintenance yang tercatat.
+                    else
+                        .table-responsive
+                            table.table.table-striped.table-bordered
+                                thead
+                                    tr.bg-primary
+                                        th.text-center(style="width: 5%") No.
+                                        th.text-center(style="width: 12%") Tanggal
+                                        th(style="width: 15%") Nama Aset
+                                        th(style="width: 10%") Kode Label
+                                        th(style="width: 12%") Ruangan
+                                        th Deskripsi
+                                        th.text-center(style="width: 10%") Petugas
+                                        th.text-center(style="width: 8%") Detail
+                                tbody
+                                    each log, index in logs
+                                        - const hasUsages = usagesByLog[log.id] && usagesByLog[log.id].length > 0
+                                        tr
+                                            td.text-center= index + 1
+                                            td.text-center= new Date(log.maintenance_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })
+                                            td.font-weight-bold= log.asset_name
+                                            td
+                                                code= log.label_code || '-'
+                                            td= log.room_name || '-'
+                                            td
+                                                if log.description
+                                                    | #{log.description.length > 60 ? log.description.substring(0, 60) + '...' : log.description}
+                                                else
+                                                    span.text-muted -
+                                            td.text-center= log.staf_name
+                                            td.text-center
+                                                a.btn.btn-xs.btn-info(href=`/staflab/maintenance-logs/${log.id}` title="Lihat Detail")
+                                                    i.fas.fa-eye.mr-1
+                                                    | Detail
+
+                                        //- Row BHP usage (collapsible inline)
+                                        if hasUsages
+                                            tr
+                                                td(colspan="8" style="padding: 4px 16px; background-color: #f8f9fa; border-top: none;")
+                                                    small.text-muted
+                                                        i.fas.fa-box-open.mr-1
+                                                        | BHP Digunakan: 
+                                                    each usage, uIdx in usagesByLog[log.id]
+                                                        span.badge.badge-warning.mr-1.mb-1.p-1
+                                                            | #{usage.consumable_name} (#{usage.quantity_used} #{usage.unit})

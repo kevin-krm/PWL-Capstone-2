@@ -1,0 +1,114 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 Detail Maintenance
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item
+                            a(href="/staflab/maintenance-logs") Log Maintenance
+                        li.breadcrumb-item.active Detail
+
+    .content
+        .container-fluid
+            .row
+                .col-lg-6
+                    //- Info Maintenance
+                    .card.card-primary
+                        .card-header
+                            h3.card-title
+                                i.fas.fa-clipboard-list.mr-1
+                                | Informasi Maintenance
+                        .card-body
+                            table.table.table-sm.table-borderless.mb-0
+                                tr
+                                    td.font-weight-bold(style="width: 35%") ID Log
+                                    td ##{log.id}
+                                tr
+                                    td.font-weight-bold Tanggal Maintenance
+                                    td= new Date(log.maintenance_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+                                tr
+                                    td.font-weight-bold Petugas
+                                    td
+                                        i.fas.fa-user.mr-1
+                                        | #{log.staf_name}
+                                tr
+                                    td.font-weight-bold Dicatat Pada
+                                    td= new Date(log.created_at).toLocaleString('id-ID')
+                                tr
+                                    td.font-weight-bold Deskripsi
+                                    td= log.description || '-'
+
+                .col-lg-6
+                    //- Info Aset
+                    .card.card-info
+                        .card-header
+                            h3.card-title
+                                i.fas.fa-desktop.mr-1
+                                | Aset yang Di-maintenance
+                        .card-body
+                            table.table.table-sm.table-borderless.mb-0
+                                tr
+                                    td.font-weight-bold(style="width: 35%") Nama Barang
+                                    td= log.asset_name
+                                tr
+                                    td.font-weight-bold Kode Label
+                                    td
+                                        code= log.label_code || '-'
+                                tr
+                                    td.font-weight-bold Ruangan
+                                    td= log.room_name || 'Belum Ditempatkan'
+                                tr
+                                    td.font-weight-bold Kondisi Saat Ini
+                                    td
+                                        if log.condition_status == 'Baik'
+                                            span.badge.badge-success.p-2
+                                                i.fas.fa-check-circle.mr-1
+                                                | Baik
+                                        else if log.condition_status == 'Rusak'
+                                            span.badge.badge-danger.p-2
+                                                i.fas.fa-times-circle.mr-1
+                                                | Rusak
+                                        else if log.condition_status == 'Maintenance'
+                                            span.badge.badge-warning.p-2
+                                                i.fas.fa-wrench.mr-1
+                                                | Maintenance
+                                        else
+                                            span.badge.badge-secondary.p-2
+                                                i.fas.fa-ban.mr-1
+                                                | Dihapus
+
+            //- BHP yang digunakan
+            .card.card-warning
+                .card-header
+                    h3.card-title
+                        i.fas.fa-box-open.mr-1
+                        | BHP yang Digunakan
+                .card-body
+                    if usages.length === 0
+                        .alert.alert-secondary.mb-0
+                            i.fas.fa-info-circle.mr-1
+                            | Tidak ada BHP yang digunakan dalam maintenance ini.
+                    else
+                        table.table.table-bordered.table-striped
+                            thead
+                                tr.bg-warning
+                                    th.text-center(style="width: 5%") No.
+                                    th Nama BHP
+                                    th.text-center(style="width: 20%") Jumlah Digunakan
+                                    th.text-center(style="width: 15%") Satuan
+                            tbody
+                                each usage, index in usages
+                                    tr
+                                        td.text-center= index + 1
+                                        td.font-weight-bold= usage.consumable_name
+                                        td.text-center= usage.quantity_used
+                                        td.text-center= usage.unit
+
+            //- Tombol kembali
+            a.btn.btn-default(href="/staflab/maintenance-logs")
+                i.fas.fa-arrow-left.mr-1
+                | Kembali ke Log Maintenance

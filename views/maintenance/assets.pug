@@ -1,0 +1,66 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 Data Inventaris Laboratorium
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item
+                            a(href="/staflab/consumables") Home
+                        li.breadcrumb-item.active Data Inventaris
+
+    .content
+        .container-fluid
+            .card.card-primary.card-outline
+                .card-header
+                    h3.card-title
+                        i.fas.fa-desktop.mr-1
+                        | Daftar Aset Laboratorium GWT 8
+                .card-body
+                    if assets.length === 0
+                        .alert.alert-info.mb-0
+                            i.icon.fas.fa-info-circle
+                            |  Belum ada data aset yang terdaftar.
+                    else
+                        .table-responsive
+                            table.table.table-striped.table-bordered
+                                thead
+                                    tr.bg-primary
+                                        th.text-center(style="width: 5%") No.
+                                        th(style="width: 12%") Kode Label
+                                        th Nama Barang
+                                        th(style="width: 18%") Lokasi Ruangan
+                                        th.text-center(style="width: 12%") Kondisi
+                                        th.text-center(style="width: 12%") Aksi
+                                tbody
+                                    each a, index in assets
+                                        tr
+                                            td.text-center= index + 1
+                                            td
+                                                code= a.label_code || '-'
+                                            td.font-weight-bold= a.item_name
+                                            td= a.room_name ? a.room_name : 'Belum Ditempatkan'
+                                            td.text-center
+                                                if a.condition_status == 'Baik'
+                                                    span.badge.badge-success.p-2
+                                                        i.fas.fa-check-circle.mr-1
+                                                        | Baik
+                                                else if a.condition_status == 'Rusak'
+                                                    span.badge.badge-danger.p-2
+                                                        i.fas.fa-times-circle.mr-1
+                                                        | Rusak
+                                                else if a.condition_status == 'Maintenance'
+                                                    span.badge.badge-warning.p-2
+                                                        i.fas.fa-wrench.mr-1
+                                                        | Maintenance
+                                                else
+                                                    span.badge.badge-secondary.p-2
+                                                        i.fas.fa-ban.mr-1
+                                                        | Dihapus
+                                            td.text-center
+                                                a.btn.btn-sm.btn-info(href=`/staflab/assets/maintenance/${a.id}`)
+                                                    i.fas.fa-tools.mr-1
+                                                    | Maintenance

@@ -1,0 +1,160 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 Form Maintenance Aset
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item
+                            a(href="/staflab/assets") Data Inventaris
+                        li.breadcrumb-item.active Maintenance
+
+    .content
+        .container-fluid
+            .row
+                .col-lg-4
+                    //- Info Aset Card
+                    .card.card-primary
+                        .card-header
+                            h3.card-title
+                                i.fas.fa-info-circle.mr-1
+                                | Informasi Aset
+                        .card-body
+                            table.table.table-sm.table-borderless.mb-0
+                                tr
+                                    td.font-weight-bold(style="width: 40%") Nama Barang
+                                    td= asset.item_name
+                                tr
+                                    td.font-weight-bold Kode Label
+                                    td
+                                        code= asset.label_code || '-'
+                                tr
+                                    td.font-weight-bold Ruangan
+                                    td= asset.room_name || 'Belum Ditempatkan'
+                                tr
+                                    td.font-weight-bold Kondisi Saat Ini
+                                    td
+                                        if asset.condition_status == 'Baik'
+                                            span.badge.badge-success= asset.condition_status
+                                        else if asset.condition_status == 'Rusak'
+                                            span.badge.badge-danger= asset.condition_status
+                                        else if asset.condition_status == 'Maintenance'
+                                            span.badge.badge-warning= asset.condition_status
+                                        else
+                                            span.badge.badge-secondary= asset.condition_status
+
+                .col-lg-8
+                    //- Form Maintenance
+                    .card.card-warning
+                        .card-header
+                            h3.card-title
+                                i.fas.fa-tools.mr-1
+                                | Catat Maintenance
+                        form(action=`/staflab/assets/maintenance/${asset.id}` method="POST")
+                            .card-body
+                                .row
+                                    .col-md-6
+                                        .form-group
+                                            label(for="condition_status")
+                                                i.fas.fa-heartbeat.mr-1
+                                                | Kondisi Setelah Maintenance
+                                            select#condition_status.form-control(name="condition_status" required)
+                                                option(value="Baik" selected=(asset.condition_status=='Baik')) Baik
+                                                option(value="Rusak" selected=(asset.condition_status=='Rusak')) Rusak
+                                                option(value="Maintenance" selected=(asset.condition_status=='Maintenance')) Maintenance
+                                                option(value="Dihapus" selected=(asset.condition_status=='Dihapus')) Dihapus
+                                    .col-md-6
+                                        .form-group
+                                            label(for="maintenance_date")
+                                                i.fas.fa-calendar-alt.mr-1
+                                                | Tanggal Maintenance
+                                            input#maintenance_date.form-control(type="date" name="maintenance_date" required)
+                                .form-group
+                                    label(for="description")
+                                        i.fas.fa-pencil-alt.mr-1
+                                        | Deskripsi / Catatan Perbaikan
+                                    textarea#description.form-control(name="description" rows="3" placeholder="Misal: Penggantian SSD karena bad sector")
+
+                                //- Bagian BHP yang digunakan
+                                hr
+                                h5.mb-3
+                                    i.fas.fa-box-open.mr-1
+                                    | BHP yang Digunakan
+                                    small.text-muted.ml-2 (Opsional — stok akan otomatis berkurang)
+
+                                if consumables.length === 0
+                                    .alert.alert-warning.mb-0
+                                        i.fas.fa-exclamation-triangle.mr-1
+                                        | Tidak ada BHP yang tersedia di gudang saat ini.
+                                else
+                                    #bhp-container
+                                        .bhp-row.row.mb-2(data-row="0")
+                                            .col-md-6
+                                                select.form-control(name="bhp_id[]")
+                                                    option(value="") -- Pilih BHP --
+                                                    each c in consumables
+                                                        option(value=c.id)= `${c.item_name} (Stok: ${c.stock} ${c.unit})`
+                                            .col-md-3
+                                                input.form-control(type="number" name="bhp_qty[]" min="1" placeholder="Jumlah")
+                                            .col-md-3
+                                                button.btn.btn-danger.btn-remove-bhp(type="button")
+                                                    i.fas.fa-trash
+                                                    |  Hapus
+
+                                    .mt-2
+                                        button#btn-add-bhp.btn.btn-sm.btn-outline-primary(type="button")
+                                            i.fas.fa-plus.mr-1
+                                            | Tambah BHP
+
+                            .card-footer
+                                a.btn.btn-default(href="/staflab/assets") Batal
+                                button.btn.btn-primary.float-right(type="submit")
+                                    i.fas.fa-save.mr-1
+                                    | Simpan Maintenance
+
+    //- Script untuk dynamic BHP rows
+    script.
+        document.addEventListener('DOMContentLoaded', function() {
+            var bhpContainer = document.getElementById('bhp-container');
+            var addBtn = document.getElementById('btn-add-bhp');
+
+            if (addBtn) {
+                addBtn.addEventListener('click', function() {
+                    var rows = bhpContainer.querySelectorAll('.bhp-row');
+                    var newIndex = rows.length;
+                    var firstRow = rows[0];
+                    var newRow = firstRow.cloneNode(true);
+                    newRow.setAttribute('data-row', newIndex);
+
+                    // Reset values
+                    var select = newRow.querySelector('select');
+                    if (select) select.selectedIndex = 0;
+                    var input = newRow.querySelector('input');
+                    if (input) input.value = '';
+
+                    bhpContainer.appendChild(newRow);
+                });
+            }
+
+            // Event delegation untuk tombol hapus
+            if (bhpContainer) {
+                bhpContainer.addEventListener('click', function(e) {
+                    var btn = e.target.closest('.btn-remove-bhp');
+                    if (btn) {
+                        var rows = bhpContainer.querySelectorAll('.bhp-row');
+                        if (rows.length > 1) {
+                            btn.closest('.bhp-row').remove();
+                        } else {
+                            // Reset row terakhir instead of removing
+                            var select = rows[0].querySelector('select');
+                            if (select) select.selectedIndex = 0;
+                            var input = rows[0].querySelector('input');
+                            if (input) input.value = '';
+                        }
+                    }
+                });
+            }
+        });
