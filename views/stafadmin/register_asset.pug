@@ -17,12 +17,16 @@ block content
     .content
         .container-fluid
             .row
-                .col-md-8
+                .col-md-10.offset-md-1
                     .card.card-success
                         .card-header
                             h3.card-title Form Registrasi Aset Baru (Inventaris)
                         form(action=`/stafadmin/receipt/${receipt.receipt_id}/register-asset` method="POST")
                             .card-body
+
+                                //- ==========================================
+                                //- INFO PENERIMAAN (ALWAYS SHOWN)
+                                //- ==========================================
                                 .form-group
                                     label Nama Barang
                                     input.form-control(type="text" value=receipt.item_name disabled)
@@ -32,44 +36,148 @@ block content
                                 .form-group
                                     label Jumlah Diterima (Pada Penerimaan Ini)
                                     input.form-control(type="text" value=`${receipt.quantity_received} unit` disabled)
-                                
-                                .alert.alert-info
-                                    i.fas.fa-info-circle.mr-2
-                                    strong Info:
-                                    |  Sistem akan membuat #{receipt.quantity_received} aset sekaligus dengan kode label bernomor urut otomatis.
-                                    br
-                                    | Contoh: Jika prefix = 
-                                    code INV-LAB-2026
-                                    |  maka label akan menjadi 
-                                    code INV-LAB-2026-001
-                                    | , 
-                                    code INV-LAB-2026-002
-                                    | , dst.
-                                
+
+                                //- ==========================================
+                                //- REPLACEMENT ASSET SECTION
+                                //- ==========================================
+                                if replacementAsset
+                                    .alert.alert-warning
+                                        i.fas.fa-exchange-alt.mr-2
+                                        strong Barang Pengganti!
+                                        |  Barang ini akan menggantikan aset yang sudah ada. Lokasi aset baru akan otomatis sama dengan lokasi aset lama.
+
+                                    .card.card-outline.card-danger.mb-3
+                                        .card-header.bg-danger.text-white
+                                            h5.card-title.mb-0
+                                                i.fas.fa-archive.mr-2
+                                                | Tindakan untuk Aset Lama yang Digantikan
+                                        .card-body
+                                            .alert.alert-info.mb-3
+                                                i.fas.fa-info-circle.mr-1
+                                                | Aset lama perlu dipindahkan ke ruang penyimpanan/gudang dan diberi label baru agar tidak tertukar dengan aset baru.
+                                            .row
+                                                .col-md-4
+                                                    .form-group.mb-0
+                                                        label Nama Aset Lama
+                                                        input.form-control(type="text" value=replacementAsset.item_name disabled)
+                                                .col-md-4
+                                                    .form-group.mb-0
+                                                        label Label Lama
+                                                        input.form-control(type="text" value=replacementAsset.label_code disabled)
+                                                .col-md-4
+                                                    .form-group.mb-0
+                                                        label Lokasi Lama
+                                                        input.form-control(type="text" value=(replacementAsset.room_name || 'Tidak Diketahui') disabled)
+
+                                            hr
+                                            .row
+                                                .col-md-6
+                                                    .form-group
+                                                        label(for="old_asset_new_room_id")
+                                                            i.fas.fa-map-marker-alt.mr-1
+                                                            | Pindahkan Aset Lama ke Ruangan *
+                                                        select#old_asset_new_room_id.form-control(name="old_asset_new_room_id" required)
+                                                            option(value="") -- Pilih Ruangan Tujuan --
+                                                            each room in rooms
+                                                                option(value=room.id)= room.room_name
+                                                .col-md-6
+                                                    .form-group
+                                                        label(for="old_asset_new_label")
+                                                            i.fas.fa-tag.mr-1
+                                                            | Kode Label Baru untuk Aset Lama *
+                                                        input#old_asset_new_label.form-control(
+                                                            type="text"
+                                                            name="old_asset_new_label"
+                                                            required
+                                                            value=`${replacementAsset.label_code}-BEKAS`
+                                                            placeholder="Contoh: INV-ADV1-2024-001-BEKAS"
+                                                        )
+                                                        small.text-muted Kode label harus unik dan belum digunakan aset lain.
+
+                                    .card.card-outline.card-success.mb-3
+                                        .card-header.bg-success.text-white
+                                            h5.card-title.mb-0
+                                                i.fas.fa-plus-circle.mr-2
+                                                | Lokasi Aset Baru (Otomatis)
+                                        .card-body
+                                            .alert.alert-success.mb-0
+                                                i.fas.fa-map-marker-alt.mr-2
+                                                | Aset baru akan ditempatkan di:
+                                                strong.ml-1 #{replacementAsset.room_name || 'Tidak Diketahui'}
+                                                |  (lokasi aset lama sebelumnya)
+
+                                else
+                                    //- ==========================================
+                                    //- REGULAR ASSET: DYNAMIC ROOM ALLOCATION
+                                    //- ==========================================
+                                    .alert.alert-info
+                                        i.fas.fa-info-circle.mr-2
+                                        strong Info:
+                                        |  Sistem akan membuat
+                                        strong.mx-1 #{receipt.quantity_received} aset
+                                        | sekaligus dengan kode label bernomor urut otomatis.
+                                        br
+                                        | Anda dapat mengassign setiap unit ke ruangan yang berbeda. Gunakan tombol
+                                        strong.mx-1 "+ Tambah Alokasi Ruangan"
+                                        | untuk menambah baris ruangan. Maksimum
+                                        strong.mx-1 #{receipt.quantity_received}
+                                        | baris (1 per unit).
+
+                                    .card.card-outline.card-primary.mb-3
+                                        .card-header
+                                            h5.card-title.mb-0
+                                                i.fas.fa-map-marker-alt.mr-1
+                                                | Alokasi Ruangan per Unit
+                                            .card-tools
+                                                small.text-muted
+                                                    span#room-counter 1
+                                                    | / #{receipt.quantity_received} ruangan dikonfigurasi
+                                        .card-body
+                                            #room-allocation-list
+                                                .room-allocation-row.input-group.mb-2(data-index="0")
+                                                    .input-group-prepend
+                                                        span.input-group-text
+                                                            i.fas.fa-map-marker-alt
+                                                    select.form-control(name="room_id" required)
+                                                        option(value="") -- Pilih Ruangan --
+                                                        each room in rooms
+                                                            option(value=room.id)= room.room_name
+                                                    .input-group-append.d-none.remove-btn-wrapper
+                                                        button.btn.btn-danger.btn-remove-room(type="button" title="Hapus baris ini")
+                                                            i.fas.fa-trash
+
+                                            button#btn-add-room.btn.btn-outline-primary.btn-sm.mt-2(type="button")
+                                                i.fas.fa-plus.mr-1
+                                                | Tambah Alokasi Ruangan
+                                            small.text-muted.d-block.mt-1#room-limit-note(style="display: none !important;")
+                                                i.fas.fa-lock.mr-1
+                                                | Batas maksimum ruangan tercapai (#{receipt.quantity_received} unit).
+
                                 hr
-                                
-                                .form-group
-                                    label(for="room_id") Lokasi Ruangan *
-                                    select#room_id.form-control(name="room_id" required)
-                                        option(value="") -- Pilih Ruangan --
-                                        each room in rooms
-                                            option(value=room.id data-name=room.room_name)= room.room_name
-                                
+
+                                //- ==========================================
+                                //- LABEL PREFIX (ALWAYS SHOWN)
+                                //- ==========================================
                                 .form-group
                                     label(for="label_prefix") Prefix Kode Label *
                                     .input-group
                                         input#label_prefix.form-control(type="text" name="label_prefix" required placeholder="Masukkan prefix label (misal: INV-LAB-2026)")
                                         .input-group-append
-                                            button#btn-generate-label.btn.btn-info(type="button")
-                                                i.fas.fa-magic.mr-1
-                                                | Auto-Generate
+                                            if replacementAsset
+                                                button#btn-generate-label.btn.btn-info(type="button")
+                                                    i.fas.fa-magic.mr-1
+                                                    | Auto-Generate
+                                            else
+                                                button#btn-generate-label.btn.btn-info(type="button")
+                                                    i.fas.fa-magic.mr-1
+                                                    | Auto-Generate (dari Ruangan ke-1)
                                     small.text-muted Masukkan prefix label, nomor urut akan di-generate otomatis oleh sistem per unit.
-                                
+
                                 .form-group
                                     label Preview Kode Label yang Akan Di-generate
                                     #label-preview.border.rounded.p-3.bg-light
                                         span.text-muted Isi prefix dan klik "Auto-Generate" atau ketik manual untuk melihat preview.
-                                    
+
                             .card-footer
                                 button.btn.btn-success(type="submit")
                                     i.fas.fa-save.mr-1
@@ -78,50 +186,183 @@ block content
 
     script.
         document.addEventListener('DOMContentLoaded', function() {
-            const btnGenerate = document.getElementById('btn-generate-label');
-            const roomSelect = document.getElementById('room_id');
-            const prefixInput = document.getElementById('label_prefix');
-            const previewDiv = document.getElementById('label-preview');
-            const quantity = #{receipt.quantity_received};
-            const startNum = parseInt("#{paddedIncrement}", 10);
+            const btnGenerate    = document.getElementById('btn-generate-label');
+            const prefixInput    = document.getElementById('label_prefix');
+            const previewDiv     = document.getElementById('label-preview');
+            const quantity       = #{receipt.quantity_received};
+            const startNum       = parseInt("#{paddedIncrement}", 10);
+            const isReplacement  = !{replacementAsset ? 'true' : 'false'};
 
+            // -------------------------------------------------------
+            // HELPER: get room names for each unit slot
+            // -------------------------------------------------------
+            function getRoomAssignments() {
+                if (isReplacement) {
+                    // For replacement, all new assets go to the old asset's room
+                    const replacementRoomName = "#{replacementAsset ? replacementAsset.room_name : ''}";
+                    return Array(quantity).fill(replacementRoomName);
+                }
+                const selects = document.querySelectorAll('#room-allocation-list select');
+                const names = [];
+                selects.forEach(function(sel) {
+                    const opt = sel.options[sel.selectedIndex];
+                    names.push(opt && opt.value ? opt.text : null);
+                });
+                // If fewer rows than quantity, fill rest with last available name
+                const lastRoom = names.filter(Boolean).pop() || null;
+                const result = [];
+                for (let i = 0; i < quantity; i++) {
+                    result.push(names[i] || lastRoom || '(belum dipilih)');
+                }
+                return result;
+            }
+
+            // -------------------------------------------------------
+            // PREVIEW UPDATER
+            // -------------------------------------------------------
             function updatePreview() {
                 const prefix = prefixInput.value.trim();
                 if (!prefix) {
                     previewDiv.innerHTML = '<span class="text-muted">Isi prefix untuk melihat preview.</span>';
                     return;
                 }
+                const roomNames = getRoomAssignments();
                 let html = '<ul class="list-unstyled mb-0">';
                 for (let i = 0; i < quantity; i++) {
                     const num = String(startNum + i).padStart(3, '0');
-                    html += `<li><i class="fas fa-tag text-success mr-1"></i> <code>${prefix}-${num}</code></li>`;
+                    const roomBadge = roomNames[i]
+                        ? `<span class="badge badge-secondary ml-2">${roomNames[i]}</span>`
+                        : `<span class="badge badge-danger ml-2">Ruangan belum dipilih</span>`;
+                    html += `<li><i class="fas fa-tag text-success mr-1"></i> <code>${prefix}-${num}</code> ${roomBadge}</li>`;
                 }
                 html += '</ul>';
                 previewDiv.innerHTML = html;
             }
 
+            prefixInput.addEventListener('input', updatePreview);
+
+            // -------------------------------------------------------
+            // AUTO-GENERATE BUTTON
+            // -------------------------------------------------------
             btnGenerate.addEventListener('click', function() {
-                const selectedVal = roomSelect.value;
-                if (!selectedVal) {
-                    alert('Silakan pilih lokasi ruangan terlebih dahulu!');
-                    return;
+                let roomNameFormatted;
+
+                if (isReplacement) {
+                    roomNameFormatted = "#{replacementAsset ? replacementAsset.room_name : 'UNKNOWN'}"
+                        .trim().toUpperCase().replace(/\s+/g, '-');
+                } else {
+                    const firstSelect = document.querySelector('#room-allocation-list select');
+                    if (!firstSelect || !firstSelect.value) {
+                        alert('Silakan pilih lokasi ruangan pada baris pertama terlebih dahulu!');
+                        return;
+                    }
+                    const selectedOption = firstSelect.options[firstSelect.selectedIndex];
+                    roomNameFormatted = selectedOption.getAttribute('data-name') || selectedOption.text;
+                    roomNameFormatted = roomNameFormatted.trim().toUpperCase().replace(/\s+/g, '-');
                 }
-                
-                const selectedOption = roomSelect.options[roomSelect.selectedIndex];
-                const roomNameRaw = selectedOption.getAttribute('data-name');
-                
-                const roomNameFormatted = roomNameRaw
-                    .trim()
-                    .toUpperCase()
-                    .replace(/\s+/g, '-');
-                
+
                 const year = "#{receipt.year}";
-                
-                // Format: INV-[ROOM_NAME]-[YEAR]
                 const generatedPrefix = `INV-${roomNameFormatted}-${year}`;
                 prefixInput.value = generatedPrefix;
                 updatePreview();
             });
 
-            prefixInput.addEventListener('input', updatePreview);
+            // -------------------------------------------------------
+            // DYNAMIC ROOM ROWS (Regular mode only)
+            // -------------------------------------------------------
+            if (!isReplacement) {
+                const roomList      = document.getElementById('room-allocation-list');
+                const btnAddRoom    = document.getElementById('btn-add-room');
+                const roomCounter   = document.getElementById('room-counter');
+                const roomLimitNote = document.getElementById('room-limit-note');
+
+                function updateRoomCounter() {
+                    const rows = roomList.querySelectorAll('.room-allocation-row');
+                    const count = rows.length;
+                    roomCounter.textContent = count;
+
+                    // Show/hide remove buttons (only show if more than 1 row)
+                    rows.forEach(function(row, idx) {
+                        const removeBtn = row.querySelector('.remove-btn-wrapper');
+                        if (removeBtn) {
+                            if (count > 1) {
+                                removeBtn.classList.remove('d-none');
+                            } else {
+                                removeBtn.classList.add('d-none');
+                            }
+                        }
+                    });
+
+                    // Disable add button and show note when at maximum
+                    if (count >= quantity) {
+                        btnAddRoom.disabled = true;
+                        btnAddRoom.classList.add('disabled');
+                        roomLimitNote.style.display = '';
+                    } else {
+                        btnAddRoom.disabled = false;
+                        btnAddRoom.classList.remove('disabled');
+                        roomLimitNote.style.display = 'none';
+                    }
+
+                    updatePreview();
+                }
+
+                btnAddRoom.addEventListener('click', function() {
+                    const rows = roomList.querySelectorAll('.room-allocation-row');
+                    if (rows.length >= quantity) return;
+
+                    const idx = rows.length;
+                    const newRow = document.createElement('div');
+                    newRow.className = 'room-allocation-row input-group mb-2';
+                    newRow.setAttribute('data-index', idx);
+
+                    // Build room options from existing first select
+                    const firstSelect = roomList.querySelector('select');
+                    const optionsHtml = Array.from(firstSelect.options).map(function(opt) {
+                        return `<option value="${opt.value}">${opt.text}</option>`;
+                    }).join('');
+
+                    newRow.innerHTML = `
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                        </div>
+                        <select class="form-control" name="room_id" required>
+                            ${optionsHtml}
+                        </select>
+                        <div class="input-group-append remove-btn-wrapper">
+                            <button class="btn btn-danger btn-remove-room" type="button" title="Hapus baris ini">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+
+                    // Attach change listener
+                    newRow.querySelector('select').addEventListener('change', updatePreview);
+
+                    // Attach remove listener
+                    newRow.querySelector('.btn-remove-room').addEventListener('click', function() {
+                        newRow.remove();
+                        updateRoomCounter();
+                    });
+
+                    roomList.appendChild(newRow);
+                    updateRoomCounter();
+                });
+
+                // Attach change listener on the initial select
+                roomList.querySelector('select').addEventListener('change', updatePreview);
+
+                // Attach remove listener on existing remove buttons
+                roomList.querySelectorAll('.btn-remove-room').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        btn.closest('.room-allocation-row').remove();
+                        updateRoomCounter();
+                    });
+                });
+
+                updateRoomCounter();
+            } else {
+                // For replacement mode, listen to preview updates when anything changes
+                updatePreview();
+            }
         });

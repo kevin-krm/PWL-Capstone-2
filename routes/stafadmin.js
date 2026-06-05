@@ -277,7 +277,7 @@ router.get('/receipt/:id/register-asset', async (req, res) => {
     try {
         const receiptId = req.params.id;
 
-        // Fetch receipt and corresponding item details
+        // Fetch receipt and corresponding item details (including replacement target)
         const queryReceipt = `
             SELECT 
                 ir.id AS receipt_id,
@@ -286,6 +286,7 @@ router.get('/receipt/:id/register-asset', async (req, res) => {
                 pi.id AS item_id,
                 pi.item_name,
                 pi.item_type,
+                pi.target_replacement_asset_id,
                 pd.year
             FROM item_receipts ir
             JOIN procurement_items pi ON ir.procurement_item_id = pi.id
@@ -317,11 +318,27 @@ router.get('/receipt/:id/register-asset', async (req, res) => {
         const nextId = (maxResult[0].max_id || 0) + 1;
         const paddedIncrement = String(nextId).padStart(3, '0');
 
+        // If this is a replacement item, fetch info about the old asset being replaced
+        let replacementAsset = null;
+        if (receipt.target_replacement_asset_id) {
+            const queryOldAsset = `
+                SELECT a.id, a.item_name, a.label_code, a.room_id, r.room_name
+                FROM assets a
+                LEFT JOIN rooms r ON a.room_id = r.id
+                WHERE a.id = ?
+            `;
+            const [oldAssets] = await db.promise().query(queryOldAsset, [receipt.target_replacement_asset_id]);
+            if (oldAssets.length > 0) {
+                replacementAsset = oldAssets[0];
+            }
+        }
+
         res.render('stafadmin/register_asset', {
             user: req.session.user,
             receipt,
             rooms,
-            paddedIncrement
+            paddedIncrement,
+            replacementAsset
         });
     } catch (err) {
         console.error(err);
@@ -329,20 +346,26 @@ router.get('/receipt/:id/register-asset', async (req, res) => {
     }
 });
 
-// Fitur 2: POST Form Registrasi Aset & Generate Label/Barcode (MULTI-ROW)
+// Fitur 2: POST Form Registrasi Aset & Generate Label/Barcode (MULTI-ROW, PER-UNIT ROOM)
 router.post('/receipt/:id/register-asset', async (req, res) => {
     const conn = db.promise();
     try {
         const receiptId = req.params.id;
-        const { room_id, label_prefix } = req.body;
+        const { label_prefix, old_asset_new_room_id, old_asset_new_label } = req.body;
 
-        if (!room_id || !label_prefix || label_prefix.trim() === '') {
-            return res.send("<script>alert('Gagal: Ruangan dan Prefix Label harus diisi.'); window.history.back();</script>");
+        // room_id can be a single value or an array (per-unit allocation)
+        let roomIds = req.body.room_id;
+        if (!roomIds) roomIds = [];
+        if (!Array.isArray(roomIds)) roomIds = [roomIds];
+
+        if (!label_prefix || label_prefix.trim() === '') {
+            return res.send("<script>alert('Gagal: Prefix Label harus diisi.'); window.history.back();</script>");
         }
 
-        // Fetch receipt to get item_name and quantity
+        // Fetch receipt to get item_name, quantity, and replacement target
         const queryReceipt = `
-            SELECT ir.quantity_received, ir.is_registered, pi.item_name, pi.item_type
+            SELECT ir.quantity_received, ir.is_registered, pi.item_name, pi.item_type,
+                   pi.target_replacement_asset_id
             FROM item_receipts ir
             JOIN procurement_items pi ON ir.procurement_item_id = pi.id
             WHERE ir.id = ?
@@ -360,25 +383,78 @@ router.post('/receipt/:id/register-asset', async (req, res) => {
             return res.send("<script>alert('Penerimaan ini sudah didaftarkan ke inventaris.'); window.location.href='/stafadmin/penerimaan';</script>");
         }
 
+        const quantityReceived = receipt.quantity_received;
+        const isReplacement = !!receipt.target_replacement_asset_id;
+
+        // Validate room allocation only for non-replacement items
+        if (!isReplacement && (roomIds.length === 0 || roomIds.some(r => !r))) {
+            return res.send("<script>alert('Gagal: Semua alokasi ruangan harus dipilih.'); window.history.back();</script>");
+        }
+
         await conn.beginTransaction();
 
-        // Get current max ID for auto-increment numbering
-        const [maxResult] = await conn.query('SELECT MAX(id) AS max_id FROM assets');
-        let nextId = (maxResult[0].max_id || 0) + 1;
+        // --- Handle Replacement Asset ---
+        if (isReplacement) {
+            const oldAssetId = receipt.target_replacement_asset_id;
 
-        const quantityReceived = receipt.quantity_received;
+            // Fetch old asset's current room (this will be the new asset's room)
+            const [oldAssets] = await conn.query(
+                'SELECT id, room_id, label_code FROM assets WHERE id = ?',
+                [oldAssetId]
+            );
+            if (oldAssets.length === 0) {
+                await conn.rollback();
+                return res.send("<script>alert('Gagal: Aset lama yang digantikan tidak ditemukan.'); window.history.back();</script>");
+            }
+            const oldAsset = oldAssets[0];
+            const newAssetRoomId = oldAsset.room_id; // new assets go to old asset's room
 
-        // Insert N rows into assets, one per unit received
-        const insertAssetQuery = `
-            INSERT INTO assets (room_id, item_name, label_code, qr_code_url, condition_status, is_active)
-            VALUES (?, ?, ?, ?, 'Baik', TRUE)
-        `;
+            // Validate old asset relocation fields
+            if (!old_asset_new_room_id || !old_asset_new_label || old_asset_new_label.trim() === '') {
+                await conn.rollback();
+                return res.send("<script>alert('Gagal: Ruangan baru dan Kode Label baru untuk aset lama harus diisi.'); window.history.back();</script>");
+            }
 
-        for (let i = 0; i < quantityReceived; i++) {
-            const paddedNum = String(nextId + i).padStart(3, '0');
-            const labelCode = `${label_prefix}-${paddedNum}`;
-            const qrCodeUrl = await QRCode.toDataURL(labelCode);
-            await conn.query(insertAssetQuery, [room_id, receipt.item_name, labelCode, qrCodeUrl]);
+            // Update the old asset: move it to the new room and assign a new label
+            const newOldQrUrl = await QRCode.toDataURL(old_asset_new_label.trim());
+            await conn.query(
+                'UPDATE assets SET room_id = ?, label_code = ?, qr_code_url = ?, condition_status = ? WHERE id = ?',
+                [old_asset_new_room_id, old_asset_new_label.trim(), newOldQrUrl, 'Rusak', oldAssetId]
+            );
+
+            // Insert new assets all in the old asset's original room
+            const [maxResult] = await conn.query('SELECT MAX(id) AS max_id FROM assets');
+            let nextId = (maxResult[0].max_id || 0) + 1;
+
+            const insertAssetQuery = `
+                INSERT INTO assets (room_id, item_name, label_code, qr_code_url, condition_status, is_active)
+                VALUES (?, ?, ?, ?, 'Baik', TRUE)
+            `;
+            for (let i = 0; i < quantityReceived; i++) {
+                const paddedNum = String(nextId + i).padStart(3, '0');
+                const labelCode = `${label_prefix}-${paddedNum}`;
+                const qrCodeUrl = await QRCode.toDataURL(labelCode);
+                await conn.query(insertAssetQuery, [newAssetRoomId, receipt.item_name, labelCode, qrCodeUrl]);
+            }
+
+        } else {
+            // --- Handle Regular Registration with Per-Unit Room Assignment ---
+            const [maxResult] = await conn.query('SELECT MAX(id) AS max_id FROM assets');
+            let nextId = (maxResult[0].max_id || 0) + 1;
+
+            const insertAssetQuery = `
+                INSERT INTO assets (room_id, item_name, label_code, qr_code_url, condition_status, is_active)
+                VALUES (?, ?, ?, ?, 'Baik', TRUE)
+            `;
+
+            for (let i = 0; i < quantityReceived; i++) {
+                // If fewer room selectors were added than units, use the last specified room for the remainder
+                const assignedRoomId = roomIds[i] || roomIds[roomIds.length - 1];
+                const paddedNum = String(nextId + i).padStart(3, '0');
+                const labelCode = `${label_prefix}-${paddedNum}`;
+                const qrCodeUrl = await QRCode.toDataURL(labelCode);
+                await conn.query(insertAssetQuery, [assignedRoomId, receipt.item_name, labelCode, qrCodeUrl]);
+            }
         }
 
         // Mark receipt as registered
@@ -389,7 +465,7 @@ router.post('/receipt/:id/register-asset', async (req, res) => {
     } catch (err) {
         await conn.rollback();
         if (err.code === 'ER_DUP_ENTRY') {
-            return res.send("<script>alert('Gagal: Salah satu Kode Label yang di-generate sudah digunakan! Coba prefix yang berbeda.'); window.history.back();</script>");
+            return res.send("<script>alert('Gagal: Salah satu Kode Label sudah digunakan! Coba prefix atau label yang berbeda.'); window.history.back();</script>");
         }
         console.error(err);
         return res.send("<script>alert('Terjadi kesalahan sistem saat mendaftarkan aset.'); window.history.back();</script>");
