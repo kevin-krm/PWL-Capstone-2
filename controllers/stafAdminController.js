@@ -6,18 +6,18 @@ const Consumable = require('../models/Consumable');
 const ProcurementItem = require('../models/ProcurementItem');
 const ItemReceipt = require('../models/ItemReceipt');
 
+// READ: Daftar BHP/Consumables (read-only untuk StafAdmin)
+exports.listConsumables = async (req, res) => {
+    const consumables = await Consumable.findAll();
+    res.render('consumables/index', { user: req.session.user, consumables });
+};
+
 // CRUD INVENTARIS (ASSETS)
 
 // READ: Menampilkan daftar aset
 exports.listAssets = async (req, res) => {
     const assets = await Asset.findAllWithRoom();
     res.render('assets/index', { user: req.session.user, assets });
-};
-
-// CREATE FORM: Halaman tambah aset
-exports.showCreateAsset = async (req, res) => {
-    const rooms = await Room.findAll();
-    res.render('assets/create', { user: req.session.user, rooms });
 };
 
 // EDIT FORM: Halaman edit aset
@@ -28,24 +28,6 @@ exports.showEditAsset = async (req, res) => {
         res.render('assets/edit', { user: req.session.user, assetEdit, rooms });
     } else {
         res.redirect('/stafadmin/assets');
-    }
-};
-
-// POST CREATE
-exports.createAsset = async (req, res) => {
-    try {
-        const { room_id, item_name, label_code, condition_status } = req.body;
-        let qrCodeUrl = null;
-        if (label_code && label_code.trim() !== '') {
-            qrCodeUrl = await QRCode.toDataURL(label_code);
-        }
-        await Asset.create({ room_id, item_name, label_code, qr_code_url: qrCodeUrl, condition_status });
-        res.redirect('/stafadmin/assets');
-    } catch (err) {
-        if (err.code === 'ER_DUP_ENTRY') {
-            return res.send("<script>alert('Gagal: Kode Label / Barcode tersebut sudah digunakan!'); window.history.back();</script>");
-        }
-        throw err;
     }
 };
 

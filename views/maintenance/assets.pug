@@ -7,9 +7,14 @@ block content
                 .col-sm-6
                     h1.m-0 Data Inventaris Laboratorium
                 .col-sm-6
+                    - var homeHref = '/staflab/consumables'
+                    if user.role === 'Kepala Laboratorium'
+                        - homeHref = '/kalab/procurement-drafts'
+                    else if user.role === 'Ketua Program Studi'
+                        - homeHref = '/kaprodi/procurement-review'
                     ol.breadcrumb.float-sm-right
                         li.breadcrumb-item
-                            a(href="/staflab/consumables") Home
+                            a(href=homeHref) Home
                         li.breadcrumb-item.active Data Inventaris
 
     .content
@@ -61,6 +66,9 @@ block content
                                                         i.fas.fa-ban.mr-1
                                                         | Dihapus
                                             td.text-center
-                                                a.btn.btn-sm.btn-info(href=`/staflab/assets/maintenance/${a.id}`)
-                                                    i.fas.fa-tools.mr-1
-                                                    | Maintenance
+                                                if user.role === 'Staf Laboratorium'
+                                                    a.btn.btn-sm.btn-info(href=`/staflab/assets/maintenance/${a.id}`)
+                                                        i.fas.fa-tools.mr-1
+                                                        | Maintenance
+                                                else
+                                                    span.text-muted -

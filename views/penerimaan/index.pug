@@ -45,7 +45,7 @@ block content
                                         th.text-center(style="width: 8%") Diterima
                                         th.text-center(style="width: 12%") Status
                                         th.text-center(style="width: 8%") Link
-                                        th.text-center(style="width: 12%") Aksi
+                                        th.text-center(style="width: 12%") Terima
                                 tbody
                                     each item, index in items
                                         - const hasReceipts = receiptsByItem[item.item_id] && receiptsByItem[item.item_id].length > 0
@@ -88,9 +88,9 @@ block content
                                                     span.text-muted -
                                             td.text-center
                                                 if item.quantity_received < item.target_quantity
-                                                    a.btn.btn-sm.btn-primary(href=`/stafadmin/procurement/${item.item_id}/receipt`)
+                                                    a.btn.btn-sm.btn-primary.w-100(href=`/stafadmin/procurement/${item.item_id}/receipt`)
                                                         i.fas.fa-plus-circle.mr-1
-                                                        | Terima
+                                                        | (#{item.target_quantity - item.quantity_received}/#{item.target_quantity})
                                                 else
                                                     span.text-success
                                                         i.fas.fa-check-double

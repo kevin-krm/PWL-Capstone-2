@@ -1,0 +1,53 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Log Riwayat Pemakaian BHP
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item
+                            a(href="/staflab/consumables") Daftar BHP
+                        li.breadcrumb-item.active Riwayat Pemakaian
+
+    .content
+        .container-fluid
+            .card.card-primary.card-outline
+                .card-header
+                    h3.card-title
+                        i.fas.fa-history.mr-1
+                        | Riwayat Pemakaian BHP per Aset & Ruangan
+                .card-body
+                    if usages.length === 0
+                        .alert.alert-info.mb-0
+                            i.icon.fas.fa-info-circle
+                            |  Belum ada riwayat pemakaian BHP yang tercatat.
+                    else
+                        .table-responsive
+                            table.table.table-striped.table-bordered
+                                thead
+                                    tr.bg-primary
+                                        th.text-center(style="width: 5%") No.
+                                        th Nama BHP
+                                        th.text-center(style="width: 8%") Jumlah
+                                        th.text-center(style="width: 8%") Satuan
+                                        th Nama Aset
+                                        th(style="width: 12%") Kode Label
+                                        th(style="width: 16%") Ruangan
+                                        th.text-center(style="width: 12%") Tanggal
+                                        th(style="width: 14%") Petugas
+                                tbody
+                                    each u, index in usages
+                                        tr
+                                            td.text-center= index + 1
+                                            td.font-weight-bold= u.consumable_name
+                                            td.text-center= u.quantity_used
+                                            td.text-center= u.unit
+                                            td= u.asset_name
+                                            td
+                                                code= u.label_code || '-'
+                                            td= u.room_name || 'Belum Ditempatkan'
+                                            td.text-center= u.maintenance_date ? new Date(u.maintenance_date).toLocaleDateString('id-ID') : '-'
+                                            td= u.staf_name

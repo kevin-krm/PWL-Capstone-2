@@ -6,11 +6,12 @@ const stafAdminController = require('../controllers/stafAdminController');
 // Kunci akses HANYA untuk Staf Administrasi
 router.use(checkAuth('Staf Administrasi'));
 
+// BHP (read-only)
+router.get('/consumables', stafAdminController.listConsumables);
+
 // CRUD Inventaris (Assets)
 router.get('/assets', stafAdminController.listAssets);
-router.get('/assets/create', stafAdminController.showCreateAsset);
 router.get('/assets/edit/:id', stafAdminController.showEditAsset);
-router.post('/assets/add', stafAdminController.createAsset);
 router.post('/assets/edit/:id', stafAdminController.updateAsset);
 router.post('/assets/delete/:id', stafAdminController.deleteAsset);
 

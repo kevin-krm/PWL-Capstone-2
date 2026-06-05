@@ -1,6 +1,7 @@
 const ProcurementDraft = require('../models/ProcurementDraft');
 const ProcurementItem = require('../models/ProcurementItem');
 const Asset = require('../models/Asset');
+const Consumable = require('../models/Consumable');
 
 // Membangun array nilai item draf dari body form (dipakai create & edit)
 function buildItemValues(body, draftId) {
@@ -33,6 +34,18 @@ function buildItemValues(body, draftId) {
     }
     return values;
 }
+
+// READ: Daftar inventaris (read-only)
+exports.listAssets = async (req, res) => {
+    const assets = await Asset.findActiveWithRoomOrdered();
+    res.render('maintenance/assets', { user: req.session.user, assets });
+};
+
+// READ: Daftar BHP (read-only)
+exports.listConsumables = async (req, res) => {
+    const consumables = await Consumable.findAll();
+    res.render('consumables/index', { user: req.session.user, consumables });
+};
 
 // Menampilkan daftar draft pengadaan
 exports.listDrafts = async (req, res) => {

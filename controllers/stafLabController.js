@@ -185,6 +185,20 @@ exports.listLogs = async (req, res) => {
     }
 };
 
+// READ: Log riwayat pemakaian BHP (ke ruangan mana BHP dipakai)
+exports.listBhpUsageLog = async (req, res) => {
+    try {
+        const usages = await MaintenanceLog.findAllBhpUsageWithRoom();
+        res.render('consumables/usage-log', {
+            user: req.session.user,
+            usages
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Terjadi kesalahan pada server.');
+    }
+};
+
 // READ: Detail satu log maintenance
 exports.showLogDetail = async (req, res) => {
     try {

@@ -6,6 +6,10 @@ const kalabController = require('../controllers/kalabController');
 // Akses hanya untuk Kepala Laboratorium
 router.use(checkAuth('Kepala Laboratorium'));
 
+// Inventaris & BHP (read-only)
+router.get('/assets', kalabController.listAssets);
+router.get('/consumables', kalabController.listConsumables);
+
 router.get('/procurement-drafts', kalabController.listDrafts);
 router.get('/procurement-drafts/create', kalabController.showCreateDraft);
 router.post('/procurement-drafts/create', kalabController.createDraft);

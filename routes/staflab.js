@@ -8,6 +8,7 @@ router.use(checkAuth('Staf Laboratorium'));
 
 // CRUD BHP (Consumables)
 router.get('/consumables', stafLabController.listConsumables);
+router.get('/bhp-usage-log', stafLabController.listBhpUsageLog);
 router.get('/consumables/create', stafLabController.showCreateConsumable);
 router.get('/consumables/edit/:id', stafLabController.showEditConsumable);
 router.post('/consumables/add', stafLabController.createConsumable);

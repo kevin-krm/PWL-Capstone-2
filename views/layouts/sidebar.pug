@@ -35,6 +35,10 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                         a.nav-link(href="/stafadmin/penerimaan")
                             i.nav-icon.fas.fa-boxes
                             p Penerimaan & Labeling
+                    li.nav-item
+                        a.nav-link(href="/stafadmin/consumables")
+                            i.nav-icon.fas.fa-box
+                            p Data BHP
 
                 // 3. MENU STAF LABORATORIUM
                 if user.role === 'Staf Laboratorium'
@@ -42,6 +46,10 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                         a.nav-link(href="/staflab/consumables")
                             i.nav-icon.fas.fa-box
                             p Data BHP
+                    li.nav-item
+                        a.nav-link(href="/staflab/bhp-usage-log")
+                            i.nav-icon.fas.fa-history
+                            p Riwayat Pemakaian BHP
                     li.nav-item
                         a.nav-link(href="/staflab/assets")
                             i.nav-icon.fas.fa-desktop
@@ -61,6 +69,14 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                         a.nav-link(href='/kaprodi/procurement-approval')
                             i.nav-icon.fas.fa-check-double
                             p Pengesahan Draft
+                    li.nav-item
+                        a.nav-link(href='/kaprodi/assets')
+                            i.nav-icon.fas.fa-desktop
+                            p Data Inventaris
+                    li.nav-item
+                        a.nav-link(href='/kaprodi/consumables')
+                            i.nav-icon.fas.fa-box
+                            p Data BHP
 
                 // 5. MENU KALAB
                 if user.role === 'Kepala Laboratorium'
@@ -68,6 +84,14 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                         a.nav-link(href='/kalab/procurement-drafts')
                             i.nav-icon.fas.fa-file-invoice
                             p Draft Pengadaan
+                    li.nav-item
+                        a.nav-link(href='/kalab/assets')
+                            i.nav-icon.fas.fa-desktop
+                            p Data Inventaris
+                    li.nav-item
+                        a.nav-link(href='/kalab/consumables')
+                            i.nav-icon.fas.fa-box
+                            p Data BHP
 
                 li.nav-item
                     a.nav-link(href="/logout" class="text-danger")
