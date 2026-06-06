@@ -19,6 +19,7 @@ CREATE TABLE rooms (
     id INT AUTO_INCREMENT PRIMARY KEY,
     room_name VARCHAR(50) NOT NULL,
     description TEXT,
+    room_type ENUM('lab','storage') NOT NULL DEFAULT 'lab',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -131,6 +132,10 @@ INSERT INTO rooms (room_name, description) VALUES
 ('Internet Lab 2', 'Lantai 8 - Ruang H08 B11'),
 ('Database Lab', 'Lantai 8 - Ruang H08 C03'),
 ('Multimedia Lab', 'Lantai 8 - Ruang H08 C04');
+
+-- Insert Storage Room (Gudang penyimpanan aset lama/rusak yang digantikan)
+INSERT INTO rooms (room_name, description, room_type) VALUES
+('Gudang Penyimpanan', 'Lantai 8 - Penyimpanan aset lama/rusak yang telah digantikan', 'storage');
 
 -- Insert Assets (Relasi room_id disesuaikan: 12 = Database Lab, 2 = Programming Lab 1)
 INSERT INTO assets (room_id, item_name, label_code, condition_status) VALUES

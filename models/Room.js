@@ -17,6 +17,14 @@ const Room = {
         return rows[0] || null;
     },
 
+    // Ruang penyimpanan/gudang (tujuan otomatis aset lama yang digantikan)
+    async findStorageRoom(conn = pool) {
+        const [rows] = await conn.query(
+            "SELECT * FROM rooms WHERE room_type = 'storage' ORDER BY id ASC LIMIT 1"
+        );
+        return rows[0] || null;
+    },
+
     async create({ room_name, description }, conn = pool) {
         const [result] = await conn.query(
             'INSERT INTO rooms (room_name, description) VALUES (?, ?)',

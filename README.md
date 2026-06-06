@@ -57,26 +57,23 @@ Karena daftar library (seperti Express, MySQL2, Nodemon, dll) sudah terdaftar di
 npm install
 ```
 
-### 3. install stack spesifik untuk aplikasi Node.js
+### 3. Bila diperlukan, Install Dependency berikut
 
 ```bash
-# Install library utama
+# Install library utama stack spesifik untuk aplikasi Node.js
 npm install express pug mysql2 express-session body-parser
-```
 
-### 4. Install Dependency lainnya
-
-```bash
+# Library lainnya
 npm install nodemon
 npm install qrcode
 npm install bcryptjs
 ```
 
-### 5. Setup Database
+### 4. Setup Database
 
 Create/Import file `capstone_lab_inventory.sql` ke MySQL Workbench dan phpMyAdmin
 
-### 6. Konfigurasi Environment (`.env`)
+### 5. Konfigurasi Environment (`.env`)
 Pastikan Anda memiliki file `.env` di root direktori project. Sesuaikan isi file `.env` tersebut dengan kredensial database lokal Anda (host, user, password, nama database).
 ```
 PORT=3000
@@ -90,7 +87,7 @@ DB
 SESSION_SECRET=key_for_sessions
 ```
 
-### 7. Menjalankan Server
+### 6. Menjalankan Server
 Setelah semua langkah di atas selesai, Anda dapat menjalankan server dengan perintah:
 
 ```bash

@@ -90,7 +90,7 @@ block content
                                                 if item.quantity_received < item.target_quantity
                                                     a.btn.btn-sm.btn-primary.w-100(href=`/stafadmin/procurement/${item.item_id}/receipt`)
                                                         i.fas.fa-plus-circle.mr-1
-                                                        | (#{item.target_quantity - item.quantity_received}/#{item.target_quantity})
+                                                        | Sisa #{item.target_quantity - item.quantity_received}
                                                 else
                                                     span.text-success
                                                         i.fas.fa-check-double

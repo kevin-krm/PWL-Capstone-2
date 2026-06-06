@@ -73,13 +73,16 @@ block content
                                             .row
                                                 .col-md-6
                                                     .form-group
-                                                        label(for="old_asset_new_room_id")
+                                                        label
                                                             i.fas.fa-map-marker-alt.mr-1
-                                                            | Pindahkan Aset Lama ke Ruangan *
-                                                        select#old_asset_new_room_id.form-control(name="old_asset_new_room_id" required)
-                                                            option(value="") -- Pilih Ruangan Tujuan --
-                                                            each room in rooms
-                                                                option(value=room.id)= room.room_name
+                                                            | Pindahkan Aset Lama ke Ruangan
+                                                        if storageRoom
+                                                            input.form-control(type="text" value=storageRoom.room_name readonly)
+                                                            input(type="hidden" name="old_asset_new_room_id" value=storageRoom.id)
+                                                            small.text-muted Aset lama otomatis dipindahkan ke gudang penyimpanan.
+                                                        else
+                                                            input.form-control.is-invalid(type="text" value="Gudang penyimpanan belum tersedia" readonly)
+                                                            small.text-danger Ruang penyimpanan (Gudang) belum dibuat. Hubungi Admin.
                                                 .col-md-6
                                                     .form-group
                                                         label(for="old_asset_new_label")

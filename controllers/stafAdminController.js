@@ -196,9 +196,12 @@ exports.showRegisterAsset = async (req, res) => {
         const paddedIncrement = String(nextId).padStart(3, '0');
 
         // If this is a replacement item, fetch info about the old asset being replaced
+        // and the storage room (gudang) where the old asset will be relocated.
         let replacementAsset = null;
+        let storageRoom = null;
         if (receipt.target_replacement_asset_id) {
             replacementAsset = await Asset.findReplacementInfo(receipt.target_replacement_asset_id);
+            storageRoom = await Room.findStorageRoom();
         }
 
         res.render('stafadmin/register_asset', {
@@ -206,7 +209,8 @@ exports.showRegisterAsset = async (req, res) => {
             receipt,
             rooms,
             paddedIncrement,
-            replacementAsset
+            replacementAsset,
+            storageRoom
         });
     } catch (err) {
         console.error(err);
@@ -219,7 +223,9 @@ exports.registerAsset = async (req, res) => {
     const conn = db.promise();
     try {
         const receiptId = req.params.id;
-        const { label_prefix, old_asset_new_room_id, old_asset_new_label } = req.body;
+        // old_asset_new_room_id is no longer trusted from the form: the old asset is
+        // always relocated to the storage room (gudang) derived server-side.
+        const { label_prefix, old_asset_new_label } = req.body;
 
         // room_id can be a single value or an array (per-unit allocation)
         let roomIds = req.body.room_id;
@@ -265,16 +271,23 @@ exports.registerAsset = async (req, res) => {
             }
             const newAssetRoomId = oldAsset.room_id; // new assets go to old asset's room
 
-            // Validate old asset relocation fields
-            if (!old_asset_new_room_id || !old_asset_new_label || old_asset_new_label.trim() === '') {
+            // The old asset is automatically relocated to the storage room (gudang).
+            const storageRoom = await Room.findStorageRoom(conn);
+            if (!storageRoom) {
                 await conn.rollback();
-                return res.send("<script>alert('Gagal: Ruangan baru dan Kode Label baru untuk aset lama harus diisi.'); window.history.back();</script>");
+                return res.send("<script>alert('Gagal: Ruang penyimpanan (Gudang) belum tersedia di database. Hubungi Admin.'); window.history.back();</script>");
             }
 
-            // Update the old asset: move it to the new room and assign a new label
+            // Validate old asset's new label (destination room is server-derived)
+            if (!old_asset_new_label || old_asset_new_label.trim() === '') {
+                await conn.rollback();
+                return res.send("<script>alert('Gagal: Kode Label baru untuk aset lama harus diisi.'); window.history.back();</script>");
+            }
+
+            // Update the old asset: move it to the storage room and assign a new label
             const newOldQrUrl = await QRCode.toDataURL(old_asset_new_label.trim());
             await Asset.relocateOld(oldAssetId, {
-                room_id: old_asset_new_room_id,
+                room_id: storageRoom.id,
                 label_code: old_asset_new_label.trim(),
                 qr_code_url: newOldQrUrl,
                 condition_status: 'Rusak'
