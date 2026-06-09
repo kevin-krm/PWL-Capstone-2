@@ -81,6 +81,12 @@ block content
                                                     value=item.id
                                                 )
                                                 select.form-control(name='statuses[]')
+                                                    if item.status === 'Pending'
+                                                        option(
+                                                            value='Pending'
+                                                            disabled
+                                                            selected
+                                                        ) Pending
                                                     option(
                                                         value='Disetujui'
                                                         selected=(item.status === 'Disetujui')
@@ -104,7 +110,7 @@ block content
                             if draft.status !== 'Locked'
                                 button.btn.btn-success.float-right(type='submit')
                                     i.fas.fa-check
-                                    |  Simpan Hasil Review
+                                    |  Finalisasi
                             else
                                 button.btn.btn-secondary.float-right(disabled)
                                     i.fas.fa-lock
