@@ -26,10 +26,16 @@ exports.listConsumables = async (req, res) => {
 // List Procurement Review
 exports.listReview = async (req, res) => {
     try {
-        const drafts = await ProcurementDraft.findAllWithKalab();
+        const selectedYear = req.query.year || null;
+
+        const drafts = await ProcurementDraft.findAllWithKalab(selectedYear);
+        const years = await ProcurementDraft.findDistinctYears();
+
         res.render('procurement_review/index', {
             user: req.session.user,
-            drafts
+            drafts,
+            years,
+            selectedYear
         });
     } catch (err) {
         res.send(err);

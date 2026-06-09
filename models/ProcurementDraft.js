@@ -3,17 +3,29 @@ const pool = db.promise();
 
 const ProcurementDraft = {
     // Daftar semua draf + nama kalab (kaprodi review & approval)
-    async findAllWithKalab(conn = pool) {
-        const [rows] = await conn.query(`
+    async findAllWithKalab(year = null, conn = pool) {
+        let sql = `
             SELECT
                 procurement_drafts.*,
                 users.name AS kalab_name
             FROM procurement_drafts
             LEFT JOIN users
                 ON procurement_drafts.kalab_id = users.id
-            ORDER BY procurement_drafts.created_at DESC
-        `);
+        `;
+        const params = [];
+        if (year) {
+            sql += ' WHERE procurement_drafts.year = ?';
+            params.push(year);
+        }
+        sql += ' ORDER BY procurement_drafts.created_at DESC';
+
+        const [rows] = await conn.query(sql, params);
         return rows;
+    },
+
+    async findDistinctYears(conn = pool) {
+        const [rows] = await conn.query('SELECT DISTINCT year FROM procurement_drafts ORDER BY year DESC');
+        return rows.map(r => r.year);
     },
 
     async findByIdWithKalab(id, conn = pool) {
@@ -46,11 +58,16 @@ const ProcurementDraft = {
     },
 
     // Daftar draf milik seorang kalab
-    async findByKalab(kalabId, conn = pool) {
-        const [rows] = await conn.query(
-            'SELECT * FROM procurement_drafts WHERE kalab_id = ? ORDER BY created_at DESC',
-            [kalabId]
-        );
+    async findByKalab(kalabId, year = null, conn = pool) {
+        let sql = 'SELECT * FROM procurement_drafts WHERE kalab_id = ?';
+        const params = [kalabId];
+        if (year) {
+            sql += ' AND year = ?';
+            params.push(year);
+        }
+        sql += ' ORDER BY created_at DESC';
+
+        const [rows] = await conn.query(sql, params);
         return rows;
     },
 

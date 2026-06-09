@@ -18,6 +18,18 @@ block content
                             |  Tambah Draft Pengadaan
 
                 .card-body
+                    .row.mb-3
+                        .col-md-4
+                            form(method="GET" action="/kalab/procurement-drafts")
+                                .input-group
+                                    select.form-control(name="year" onchange="this.form.submit()")
+                                        option(value="" selected=(!selectedYear)) Semua Tahun
+                                        each year in years
+                                            option(value=year selected=(selectedYear == year))= year
+                                    .input-group-append
+                                        button.btn.btn-default(type="submit")
+                                            i.fas.fa-filter
+
                     if drafts.length === 0
                         .alert.alert-info.mb-0
                             i.fas.fa-info-circle

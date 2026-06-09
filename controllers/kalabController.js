@@ -54,10 +54,16 @@ exports.listConsumables = async (req, res) => {
 exports.listDrafts = async (req, res) => {
     try {
         const kalabId = req.session.user.id;
-        const drafts = await ProcurementDraft.findByKalab(kalabId);
+        const selectedYear = req.query.year || null;
+
+        const drafts = await ProcurementDraft.findByKalab(kalabId, selectedYear);
+        const years = await ProcurementDraft.findDistinctYears();
+
         res.render('procurement_drafts/index', {
             user: req.session.user,
-            drafts
+            drafts,
+            years,
+            selectedYear
         });
     } catch (err) {
         res.status(500).send(err);

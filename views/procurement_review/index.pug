@@ -14,6 +14,18 @@ block content
                     h3.card-title Daftar Draft Pengadaan
 
                 .card-body
+                    .row.mb-3
+                        .col-md-4
+                            form(method="GET" action="/kaprodi/procurement-review")
+                                .input-group
+                                    select.form-control(name="year" onchange="this.form.submit()")
+                                        option(value="" selected=(!selectedYear)) Semua Tahun
+                                        each year in years
+                                            option(value=year selected=(selectedYear == year))= year
+                                    .input-group-append
+                                        button.btn.btn-default(type="submit")
+                                            i.fas.fa-filter
+
                     table.table.table-bordered.table-striped
                         thead
                             tr
