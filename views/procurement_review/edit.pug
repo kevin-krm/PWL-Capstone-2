@@ -36,6 +36,7 @@ block content
                     form(
                         action=`/kaprodi/procurement-review/edit/${draft.id}/finalize`
                         method='POST'
+                        onsubmit="return confirm('Apakah Anda yakin ingin memfinalisasi draft pengadaan ini? Draft yang sudah difinalisasi akan dikunci (Locked) dan tidak dapat diubah lagi.')"
                     )
                         table.table.table-bordered.table-striped
                             thead
@@ -46,7 +47,9 @@ block content
                                     th Harga
                                     th Qty
                                     th Link Pembelian
+                                    th Alasan Pengadaan
                                     th Status Persetujuan
+                                    th Alasan Kaprodi
 
                             tbody
                                 each item, index in items
@@ -66,6 +69,7 @@ block content
                                                 ) Lihat Link
                                             else
                                                 span.text-muted Tidak ada link
+                                        td= item.reason
                                         td
                                             if draft.status === 'Locked'
                                                 if item.status === 'Disetujui'
@@ -96,6 +100,11 @@ block content
                                                         value='Ditolak'
                                                         selected=(item.status === 'Ditolak')
                                                     ) Ditolak
+                                        td
+                                            if draft.status === 'Locked'
+                                                = item.final_reason || '-'
+                                            else
+                                                input.form-control(type="text" name="final_reasons[]" value=item.final_reason placeholder="Alasan (opsional)")
 
                         if draft.status === 'Locked'
                             .alert.alert-success.mt-3

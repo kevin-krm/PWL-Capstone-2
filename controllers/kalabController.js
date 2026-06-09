@@ -11,6 +11,7 @@ function buildItemValues(body, draftId) {
     const quantities = body.quantity || [];
     const purchaseLinks = body.purchase_link || [];
     const targetReplacementAssetIds = body.target_replacement_asset_id || [];
+    const reasons = body.reason || [];
 
     const types = Array.isArray(itemTypes) ? itemTypes : [itemTypes];
     const names = Array.isArray(itemNames) ? itemNames : [itemNames];
@@ -18,6 +19,7 @@ function buildItemValues(body, draftId) {
     const qtyArr = Array.isArray(quantities) ? quantities : [quantities];
     const linkArr = Array.isArray(purchaseLinks) ? purchaseLinks : [purchaseLinks];
     const assetArr = Array.isArray(targetReplacementAssetIds) ? targetReplacementAssetIds : [targetReplacementAssetIds];
+    const reasonArr = Array.isArray(reasons) ? reasons : [reasons];
 
     const values = [];
     for (let i = 0; i < names.length; i++) {
@@ -28,8 +30,9 @@ function buildItemValues(body, draftId) {
             const quantity = parseInt(qtyArr[i]) || 1;
             const purchaseLink = linkArr[i] || null;
             const targetAssetId = assetArr[i] && assetArr[i] !== '' ? parseInt(assetArr[i]) : null;
+            const reason = reasonArr[i] || 'Alasan tidak diberikan';
 
-            values.push([draftId, itemType, itemName, price, quantity, purchaseLink, 'Pending', targetAssetId]);
+            values.push([draftId, itemType, itemName, price, quantity, purchaseLink, 'Pending', targetAssetId, reason]);
         }
     }
     return values;

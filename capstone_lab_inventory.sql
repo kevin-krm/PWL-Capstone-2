@@ -66,6 +66,8 @@ CREATE TABLE procurement_items (
     purchase_link VARCHAR(255),
     status ENUM('Pending', 'Disetujui', 'Ditolak') DEFAULT 'Pending',
     target_replacement_asset_id INT NULL, -- Jika ini menggantikan barang lama
+    reason VARCHAR(255) NOT NULL,
+    final_reason VARCHAR(255) NULL,
     FOREIGN KEY (draft_id) REFERENCES procurement_drafts(id) ON DELETE CASCADE,
     FOREIGN KEY (target_replacement_asset_id) REFERENCES assets(id) ON DELETE SET NULL
 );
@@ -154,10 +156,10 @@ INSERT INTO procurement_drafts (kalab_id, year, status) VALUES
 (2, 2026, 'Locked'); -- Draft sudah final/locked oleh Kaprodi
 
 -- Insert Procurement Items (Detail barang yang diajukan dalam draf)
-INSERT INTO procurement_items (draft_id, item_type, item_name, price, quantity, purchase_link, status, target_replacement_asset_id) VALUES
-(1, 'Inventaris', 'PC Desktop Lenovo', 15000000, 10, 'https://store.lenovo.com/pc', 'Disetujui', NULL),
-(1, 'Inventaris', 'Monitor LG 24 Inch', 2500000, 10, 'https://lg.com/monitor', 'Disetujui', 2), -- Menggantikan Monitor yang rusak
-(1, 'BHP', 'SSD Samsung 500GB', 800000, 20, 'https://samsung.com/ssd', 'Ditolak', NULL); -- Contoh barang yang ditolak Kaprodi
+INSERT INTO procurement_items (draft_id, item_type, item_name, price, quantity, purchase_link, status, target_replacement_asset_id, reason, final_reason) VALUES
+(1, 'Inventaris', 'PC Desktop Lenovo', 15000000, 10, 'https://store.lenovo.com/pc', 'Disetujui', NULL, 'Kebutuhan lab multimedia baru', 'Disetujui untuk meningkatkan fasilitas lab'),
+(1, 'Inventaris', 'Monitor LG 24 Inch', 2500000, 10, 'https://lg.com/monitor', 'Disetujui', 2, 'Menggantikan monitor rusak di lab database', 'Disetujui karena monitor yang digantikan memang rusak'),
+(1, 'BHP', 'SSD Samsung 500GB', 800000, 20, 'https://samsung.com/ssd', 'Ditolak', NULL, 'Stok cadangan upgrade PC', 'Ditolak karena stok SSD masih mencukupi'); -- Contoh barang yang ditolak Kaprodi
 
 -- Insert Item Receipts (Staf Admin mencatat penerimaan barang yang datang tidak bersamaan)
 INSERT INTO item_receipts (procurement_item_id, staf_admin_id, quantity_received, received_date) VALUES

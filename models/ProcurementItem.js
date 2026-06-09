@@ -22,10 +22,10 @@ const ProcurementItem = {
         return rows;
     },
 
-    async updateStatus(itemId, draftId, status, conn = pool) {
+    async updateStatus(itemId, draftId, status, finalReason = null, conn = pool) {
         const [result] = await conn.query(
-            'UPDATE procurement_items SET status = ? WHERE id = ? AND draft_id = ?',
-            [status, itemId, draftId]
+            'UPDATE procurement_items SET status = ?, final_reason = ? WHERE id = ? AND draft_id = ?',
+            [status, finalReason, itemId, draftId]
         );
         return result;
     },
@@ -42,7 +42,7 @@ const ProcurementItem = {
     async bulkInsert(values, conn = pool) {
         const [result] = await conn.query(`
             INSERT INTO procurement_items
-            (draft_id, item_type, item_name, price, quantity, purchase_link, status, target_replacement_asset_id)
+            (draft_id, item_type, item_name, price, quantity, purchase_link, status, target_replacement_asset_id, reason)
             VALUES ?
         `, [values]);
         return result;

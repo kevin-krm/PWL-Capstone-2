@@ -40,22 +40,25 @@ block content
                                     th No
                                     th Jenis Barang
                                     th Nama Barang
+                                    th Alasan Pengadaan
                                     th Harga Satuan
                                     th Qty
                                     th Subtotal
                                     th Link Pembelian
                                     th Aset yang Diganti
                                     th Status Persetujuan
+                                    th Alasan Kaprodi
                             tbody
                                 if items.length === 0
                                     tr
-                                        td.text-center(colspan="9") Tidak ada barang di draft pengadaan ini.
+                                        td.text-center(colspan="11") Tidak ada barang di draft pengadaan ini.
                                 else
                                     each item, index in items
                                         tr
                                             td= index + 1
                                             td= item.item_type
                                             td= item.item_name
+                                            td= item.reason
                                             td Rp. #{Number(item.price).toLocaleString('id-ID')}
                                             td= item.quantity
                                             td Rp. #{Number(item.price * item.quantity).toLocaleString('id-ID')}
@@ -78,6 +81,7 @@ block content
                                                     span.badge.badge-danger Ditolak
                                                 else
                                                     span.badge.badge-secondary Pending
+                                            td= item.final_reason || '-'
 
                 .card-footer
                     a.btn.btn-default(href="/kalab/procurement-drafts")

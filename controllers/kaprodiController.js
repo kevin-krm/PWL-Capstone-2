@@ -64,6 +64,7 @@ exports.finalizeReview = async (req, res) => {
         const draftId = req.params.id;
         const itemIds = req.body.item_ids || [];
         const statuses = req.body.statuses || [];
+        const finalReasons = req.body.final_reasons || [];
 
         const allowedStatuses = [
             'Pending',
@@ -74,13 +75,14 @@ exports.finalizeReview = async (req, res) => {
         for (let i = 0; i < itemIds.length; i++) {
             const itemId = itemIds[i];
             const status = statuses[i];
+            const finalReason = finalReasons[i] && finalReasons[i].trim() !== '' ? finalReasons[i] : null;
 
             if (!allowedStatuses.includes(status)) {
                 continue;
             }
 
-            // update item
-            await ProcurementItem.updateStatus(itemId, draftId, status);
+            // update item status & final reason
+            await ProcurementItem.updateStatus(itemId, draftId, status, finalReason);
         }
 
         // Cek jika ada item dengan status pending

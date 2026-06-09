@@ -33,6 +33,7 @@ block content
                                     tr
                                         th Jenis Barang
                                         th Nama Barang
+                                        th Alasan Pengadaan
                                         th Harga Satuan (Rp)
                                         th Jumlah (Qty)
                                         th Link Pembelian
@@ -45,6 +46,8 @@ block content
                                                 option(value="BHP") BHP
                                         td
                                             input.form-control(type="text" name="item_name" placeholder="Nama barang" required)
+                                        td
+                                            input.form-control(type="text" name="reason" placeholder="Alasan pengadaan" required)
                                         td(style="min-width: 150px;")
                                             input.form-control(type="number" name="price" placeholder="Harga" min="0" required)
                                         td(style="min-width: 90px;")
@@ -69,6 +72,7 @@ block content
                                     tr
                                         th Jenis Barang
                                         th Nama Barang
+                                        th Alasan Pengadaan
                                         th Harga Satuan (Rp)
                                         th Jumlah (Qty)
                                         th Link Pembelian
@@ -94,6 +98,8 @@ block content
                     option(value="BHP") BHP
             td
                 input.form-control(type="text" name="item_name" placeholder="Nama barang" required)
+            td
+                input.form-control(type="text" name="reason" placeholder="Alasan pengadaan" required)
             td(style="min-width: 150px;")
                 input.form-control(type="number" name="price" placeholder="Harga" min="0" required)
             td(style="min-width: 90px;")
@@ -113,6 +119,8 @@ block content
                 input(type="hidden" name="item_type" value="Inventaris")
             td
                 input.form-control(type="text" name="item_name" placeholder="Nama barang" required)
+            td
+                input.form-control(type="text" name="reason" placeholder="Alasan pengadaan" required)
             td(style="min-width: 150px;")
                 input.form-control(type="number" name="price" placeholder="Harga" min="0" required)
             td(style="min-width: 90px;")
