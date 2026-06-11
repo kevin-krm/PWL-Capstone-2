@@ -65,9 +65,6 @@ block content
                                                 |  Detail
 
                                             if draft.status !== 'Locked'
-                                                a.btn.btn-warning.btn-sm.mr-1(href=`/kalab/procurement-drafts/edit/${draft.id}`)
-                                                    i.fas.fa-edit
-                                                    |  Edit
 
                                                 form(action=`/kalab/procurement-drafts/delete/${draft.id}` method="POST" style="display:inline;")
                                                     button.btn.btn-danger.btn-sm(type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus draft pengadaan ini? Semua barang di dalamnya juga akan terhapus.');")
