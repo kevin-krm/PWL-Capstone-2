@@ -34,7 +34,9 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                     li.nav-item
                         a.nav-link(href="/stafadmin/penerimaan")
                             i.nav-icon.fas.fa-boxes
-                            p Penerimaan & Labeling
+                            p
+                                | Penerimaan & Labeling
+                                i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
                     li.nav-item
                         a.nav-link(href="/stafadmin/consumables")
                             i.nav-icon.fas.fa-box
@@ -57,14 +59,18 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                     li.nav-item
                         a.nav-link(href="/staflab/maintenance-logs")
                             i.nav-icon.fas.fa-tools
-                            p Log Maintenance
+                            p
+                                | Log Maintenance
+                                i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
 
                 // 4. MENU KAPRODI
                 if user.role === 'Ketua Program Studi'
                     li.nav-item
                         a.nav-link(href='/kaprodi/procurement-review')
                             i.nav-icon.fas.fa-clipboard-list
-                            p Draft Pengadaan
+                            p
+                                | Draft Pengadaan
+                                i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
                     li.nav-item
                         a.nav-link(href='/kaprodi/assets')
                             i.nav-icon.fas.fa-desktop
@@ -79,7 +85,9 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                     li.nav-item
                         a.nav-link(href='/kalab/procurement-drafts')
                             i.nav-icon.fas.fa-file-invoice
-                            p Draft Pengadaan
+                            p
+                                | Draft Pengadaan
+                                i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
                     li.nav-item
                         a.nav-link(href='/kalab/assets')
                             i.nav-icon.fas.fa-desktop

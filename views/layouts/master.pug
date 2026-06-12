@@ -11,6 +11,14 @@ html(lang="en")
         link(rel="stylesheet" href="/adminlte/plugins/fontawesome-free/css/all.min.css")
         // Theme style
         link(rel="stylesheet" href="/adminlte/dist/css/adminlte.min.css")
+        
+        style.
+            /* Custom Active Sidebar Style */
+            .nav-sidebar .nav-item > .nav-link.active-sidebar {
+                box-shadow: inset 4px 0 0 #007bff;
+                background-color: rgba(255,255,255,.05) !important;
+                color: #fff !important;
+            }
 
     body.hold-transition.sidebar-mini.layout-fixed.layout-navbar-fixed.layout-footer-fixed
         .wrapper
@@ -33,3 +41,21 @@ html(lang="en")
         script(src="/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js")
         // AdminLTE App
         script(src="/adminlte/dist/js/adminlte.min.js")
+
+        script.
+            $(document).ready(function() {
+                var currentUrl = window.location.href;
+                $('.nav-sidebar a.nav-link').each(function() {
+                    var href = $(this).attr('href');
+                    if (href && href !== '#' && href !== '/') {
+                        // Check if current URL contains the href to keep it highlighted on sub-pages (create/edit)
+                        if (currentUrl.includes(href)) {
+                            // Specific check for dashboard to avoid matching other routes if they share a common prefix
+                            if (href === '/admin/dashboard' && !currentUrl.endsWith('/admin/dashboard')) {
+                                return; 
+                            }
+                            $(this).addClass('active-sidebar');
+                        }
+                    }
+                });
+            });
