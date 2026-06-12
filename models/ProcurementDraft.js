@@ -3,7 +3,7 @@ const pool = db.promise();
 
 const ProcurementDraft = {
     // Daftar semua draf + nama kalab (kaprodi review & approval)
-    async findAllWithKalab(year = null, conn = pool) {
+    async findAllWithKalab(filters = {}, conn = pool) {
         let sql = `
             SELECT
                 procurement_drafts.*,
@@ -13,11 +13,40 @@ const ProcurementDraft = {
                 ON procurement_drafts.kalab_id = users.id
         `;
         const params = [];
-        if (year) {
-            sql += ' WHERE procurement_drafts.year = ?';
-            params.push(year);
+        const conditions = [];
+
+        if (filters.year) {
+            conditions.push('procurement_drafts.year = ?');
+            params.push(filters.year);
         }
-        sql += ' ORDER BY procurement_drafts.created_at DESC';
+        if (filters.status) {
+            conditions.push('procurement_drafts.status = ?');
+            params.push(filters.status);
+        }
+        if (filters.action === 'reviewable') {
+            conditions.push("procurement_drafts.status != 'Locked'");
+        } else if (filters.action === 'final') {
+            conditions.push("procurement_drafts.status = 'Locked'");
+        }
+
+        if (conditions.length > 0) {
+            sql += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        switch (filters.sort) {
+            case 'abjad':
+                sql += ' ORDER BY users.name ASC, procurement_drafts.created_at DESC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY procurement_drafts.created_at DESC';
+                break;
+            case 'no':
+                sql += ' ORDER BY procurement_drafts.id ASC';
+                break;
+            default:
+                sql += ' ORDER BY procurement_drafts.created_at DESC';
+                break;
+        }
 
         const [rows] = await conn.query(sql, params);
         return rows;
@@ -41,14 +70,6 @@ const ProcurementDraft = {
         return rows[0] || null;
     },
 
-    async setReviewed(id, conn = pool) {
-        const [result] = await conn.query(
-            "UPDATE procurement_drafts SET status = 'Reviewed' WHERE id = ?",
-            [id]
-        );
-        return result;
-    },
-
     async setLocked(id, conn = pool) {
         const [result] = await conn.query(
             "UPDATE procurement_drafts SET status = 'Locked' WHERE id = ?",
@@ -58,14 +79,33 @@ const ProcurementDraft = {
     },
 
     // Daftar draf milik seorang kalab
-    async findByKalab(kalabId, year = null, conn = pool) {
+    async findByKalab(kalabId, filters = {}, conn = pool) {
         let sql = 'SELECT * FROM procurement_drafts WHERE kalab_id = ?';
         const params = [kalabId];
-        if (year) {
+
+        if (filters.year) {
             sql += ' AND year = ?';
-            params.push(year);
+            params.push(filters.year);
         }
-        sql += ' ORDER BY created_at DESC';
+        if (filters.status) {
+            sql += ' AND status = ?';
+            params.push(filters.status);
+        }
+
+        switch (filters.sort) {
+            case 'abjad':
+                sql += ' ORDER BY status ASC, created_at DESC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY created_at DESC';
+                break;
+            case 'no':
+                sql += ' ORDER BY id ASC';
+                break;
+            default:
+                sql += ' ORDER BY created_at DESC';
+                break;
+        }
 
         const [rows] = await conn.query(sql, params);
         return rows;

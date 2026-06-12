@@ -12,8 +12,18 @@ exports.dashboard = (req, res) => {
 
 // READ
 exports.listUsers = async (req, res) => {
-    const users = await User.findAll();
-    res.render('users/index', { user: req.session.user, users });
+    const sort = req.query.sort || null;
+    const role = req.query.role || null;
+    const status = req.query.status || null;
+
+    const users = await User.findAll({ sort, role, status });
+    res.render('users/index', {
+        user: req.session.user,
+        users,
+        selectedSort: sort,
+        selectedRole: role,
+        selectedStatus: status
+    });
 };
 
 // Form Tambah Pengguna
@@ -101,8 +111,9 @@ exports.deleteUser = async (req, res) => {
 // ===== CRUD RUANGAN =====
 
 exports.listRooms = async (req, res) => {
-    const rooms = await Room.findAll();
-    res.render('rooms/index', { user: req.session.user, rooms });
+    const sort = req.query.sort || null;
+    const rooms = await Room.findAll(sort);
+    res.render('rooms/index', { user: req.session.user, rooms, selectedSort: sort });
 };
 
 exports.showCreateRoom = (req, res) => {

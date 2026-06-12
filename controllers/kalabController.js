@@ -40,14 +40,17 @@ function buildItemValues(body, draftId) {
 
 // READ: Daftar inventaris (read-only)
 exports.listAssets = async (req, res) => {
-    const assets = await Asset.findActiveWithRoomOrdered();
-    res.render('maintenance/assets', { user: req.session.user, assets });
+    const sort = req.query.sort || null;
+    const condition = req.query.condition || null;
+    const assets = await Asset.findActiveWithRoomOrdered({ sort, condition });
+    res.render('maintenance/assets', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition });
 };
 
 // READ: Daftar BHP (read-only)
 exports.listConsumables = async (req, res) => {
-    const consumables = await Consumable.findAll();
-    res.render('consumables/index', { user: req.session.user, consumables });
+    const sort = req.query.sort || null;
+    const consumables = await Consumable.findAll(sort);
+    res.render('consumables/index', { user: req.session.user, consumables, selectedSort: sort });
 };
 
 // Menampilkan daftar draft pengadaan
@@ -55,15 +58,19 @@ exports.listDrafts = async (req, res) => {
     try {
         const kalabId = req.session.user.id;
         const selectedYear = req.query.year || null;
+        const selectedStatus = req.query.status || null;
+        const selectedSort = req.query.sort || null;
 
-        const drafts = await ProcurementDraft.findByKalab(kalabId, selectedYear);
+        const drafts = await ProcurementDraft.findByKalab(kalabId, { year: selectedYear, status: selectedStatus, sort: selectedSort });
         const years = await ProcurementDraft.findDistinctYears();
 
         res.render('procurement_drafts/index', {
             user: req.session.user,
             drafts,
             years,
-            selectedYear
+            selectedYear,
+            selectedStatus,
+            selectedSort
         });
     } catch (err) {
         res.status(500).send(err);

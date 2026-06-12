@@ -2,23 +2,76 @@ const db = require('../config/database');
 const pool = db.promise();
 
 const Asset = {
-    async findAllWithRoom(conn = pool) {
-        const [rows] = await conn.query(`
+    async findAllWithRoom(filters = {}, conn = pool) {
+        let sql = `
             SELECT a.*, r.room_name
             FROM assets a
             LEFT JOIN rooms r ON a.room_id = r.id
-        `);
+        `;
+        const params = [];
+        const conditions = [];
+
+        if (filters.condition) {
+            conditions.push('a.condition_status = ?');
+            params.push(filters.condition);
+        }
+        if (filters.active === 'active') {
+            conditions.push('a.is_active = TRUE');
+        } else if (filters.active === 'inactive') {
+            conditions.push('a.is_active = FALSE');
+        }
+
+        if (conditions.length > 0) {
+            sql += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        switch (filters.sort) {
+            case 'abjad':
+                sql += ' ORDER BY a.item_name ASC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY a.created_at DESC';
+                break;
+            case 'no':
+            default:
+                sql += ' ORDER BY a.id ASC';
+                break;
+        }
+
+        const [rows] = await conn.query(sql, params);
         return rows;
     },
 
-    async findActiveWithRoomOrdered(conn = pool) {
-        const [rows] = await conn.query(`
+    async findActiveWithRoomOrdered(filters = {}, conn = pool) {
+        let sql = `
             SELECT a.*, r.room_name
             FROM assets a
             LEFT JOIN rooms r ON a.room_id = r.id
             WHERE a.is_active = TRUE
-            ORDER BY r.room_name ASC, a.item_name ASC
-        `);
+        `;
+        const params = [];
+
+        if (filters.condition) {
+            sql += ' AND a.condition_status = ?';
+            params.push(filters.condition);
+        }
+
+        switch (filters.sort) {
+            case 'abjad':
+                sql += ' ORDER BY a.item_name ASC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY a.created_at DESC';
+                break;
+            case 'no':
+                sql += ' ORDER BY a.id ASC';
+                break;
+            default:
+                sql += ' ORDER BY r.room_name ASC, a.item_name ASC';
+                break;
+        }
+
+        const [rows] = await conn.query(sql, params);
         return rows;
     },
 

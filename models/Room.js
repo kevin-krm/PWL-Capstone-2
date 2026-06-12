@@ -2,8 +2,24 @@ const db = require('../config/database');
 const pool = db.promise();
 
 const Room = {
-    async findAll(conn = pool) {
-        const [rows] = await conn.query('SELECT * FROM rooms');
+    async findAll(sort = null, conn = pool) {
+        let sql = 'SELECT * FROM rooms';
+
+        switch (sort) {
+            case 'abjad':
+                sql += ' ORDER BY room_name ASC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY created_at DESC';
+                break;
+            case 'no':
+                sql += ' ORDER BY id ASC';
+                break;
+            default:
+                break;
+        }
+
+        const [rows] = await conn.query(sql);
         return rows;
     },
 

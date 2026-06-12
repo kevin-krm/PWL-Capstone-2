@@ -54,8 +54,8 @@ const ProcurementItem = {
     },
 
     // Item yang sudah disetujui & draf terkunci, beserta jumlah yang sudah diterima (halaman penerimaan)
-    async findReceivableItems(conn = pool) {
-        const [rows] = await conn.query(`
+    async findReceivableItems(filters = {}, conn = pool) {
+        let sql = `
             SELECT
                 pi.id AS item_id,
                 pi.item_name,
@@ -70,9 +70,59 @@ const ProcurementItem = {
             JOIN procurement_drafts pd ON pi.draft_id = pd.id
             LEFT JOIN item_receipts ir ON pi.id = ir.procurement_item_id
             WHERE pi.status = 'Disetujui' AND pd.status = 'Locked'
-            GROUP BY pi.id, pd.year
-            ORDER BY pd.year DESC, pi.item_name ASC
-        `);
+        `;
+        const params = [];
+
+        if (filters.type) {
+            sql += ' AND pi.item_type = ?';
+            params.push(filters.type);
+        }
+
+        sql += ' GROUP BY pi.id, pd.year';
+
+        // Filter by reception status using HAVING clause
+        if (filters.status === 'belum') {
+            sql += ' HAVING quantity_received = 0';
+        } else if (filters.status === 'sebagian') {
+            sql += ' HAVING quantity_received > 0 AND quantity_received < pi.quantity';
+        } else if (filters.status === 'selesai') {
+            sql += ' HAVING quantity_received >= pi.quantity';
+        }
+
+        switch (filters.sort) {
+            case 'abjad':
+                sql += ' ORDER BY pi.item_name ASC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY pi.id DESC';
+                break;
+            case 'no':
+                sql += ' ORDER BY pi.id ASC';
+                break;
+            case 'target_asc':
+                sql += ' ORDER BY target_quantity ASC';
+                break;
+            case 'target_desc':
+                sql += ' ORDER BY target_quantity DESC';
+                break;
+            case 'diterima_asc':
+                sql += ' ORDER BY quantity_received ASC';
+                break;
+            case 'diterima_desc':
+                sql += ' ORDER BY quantity_received DESC';
+                break;
+            case 'terima_asc':
+                sql += ' ORDER BY (pi.quantity - quantity_received) ASC';
+                break;
+            case 'terima_desc':
+                sql += ' ORDER BY (pi.quantity - quantity_received) DESC';
+                break;
+            default:
+                sql += ' ORDER BY pd.year DESC, pi.item_name ASC';
+                break;
+        }
+
+        const [rows] = await conn.query(sql, params);
         return rows;
     },
 

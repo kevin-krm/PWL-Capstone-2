@@ -2,8 +2,23 @@ const db = require('../config/database');
 const pool = db.promise();
 
 const Consumable = {
-    async findAll(conn = pool) {
-        const [rows] = await conn.query('SELECT * FROM consumables');
+    async findAll(sort = null, conn = pool) {
+        let sql = 'SELECT * FROM consumables';
+
+        switch (sort) {
+            case 'abjad':
+                sql += ' ORDER BY item_name ASC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY created_at DESC';
+                break;
+            case 'no':
+            default:
+                sql += ' ORDER BY id ASC';
+                break;
+        }
+
+        const [rows] = await conn.query(sql);
         return rows;
     },
 

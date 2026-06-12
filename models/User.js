@@ -12,8 +12,39 @@ const User = {
         return rows[0] || null;
     },
 
-    async findAll(conn = pool) {
-        const [rows] = await conn.query('SELECT * FROM users');
+    async findAll(filters = {}, conn = pool) {
+        let sql = 'SELECT * FROM users';
+        const params = [];
+        const conditions = [];
+
+        if (filters.role) {
+            conditions.push('role = ?');
+            params.push(filters.role);
+        }
+        if (filters.status === 'active') {
+            conditions.push('is_active = TRUE');
+        } else if (filters.status === 'inactive') {
+            conditions.push('is_active = FALSE');
+        }
+
+        if (conditions.length > 0) {
+            sql += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        switch (filters.sort) {
+            case 'abjad':
+                sql += ' ORDER BY name ASC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY created_at DESC';
+                break;
+            case 'no':
+            default:
+                sql += ' ORDER BY id ASC';
+                break;
+        }
+
+        const [rows] = await conn.query(sql, params);
         return rows;
     },
 

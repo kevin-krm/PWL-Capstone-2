@@ -7,8 +7,9 @@ const MaintenanceLog = require('../models/MaintenanceLog');
 
 // READ: Menampilkan daftar BHP
 exports.listConsumables = async (req, res) => {
-    const consumables = await Consumable.findAll();
-    res.render('consumables/index', { user: req.session.user, consumables });
+    const sort = req.query.sort || null;
+    const consumables = await Consumable.findAll(sort);
+    res.render('consumables/index', { user: req.session.user, consumables, selectedSort: sort });
 };
 
 // CREATE FORM: Halaman tambah BHP
@@ -50,8 +51,10 @@ exports.deleteConsumable = async (req, res) => {
 
 // READ: Menampilkan daftar aset staf lab
 exports.listAssets = async (req, res) => {
-    const assets = await Asset.findActiveWithRoomOrdered();
-    res.render('maintenance/assets', { user: req.session.user, assets });
+    const sort = req.query.sort || null;
+    const condition = req.query.condition || null;
+    const assets = await Asset.findActiveWithRoomOrdered({ sort, condition });
+    res.render('maintenance/assets', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition });
 };
 
 // MAINTENANCE & UPDATE KONDISI BARANG
@@ -162,7 +165,8 @@ exports.createMaintenance = async (req, res) => {
 // READ: Menampilkan semua log maintenance
 exports.listLogs = async (req, res) => {
     try {
-        const logs = await MaintenanceLog.findAllDetailed();
+        const sort = req.query.sort || null;
+        const logs = await MaintenanceLog.findAllDetailed(sort);
         const usages = await MaintenanceLog.findAllBhpUsage();
 
         // Group BHP usages by maintenance_log_id
@@ -177,7 +181,8 @@ exports.listLogs = async (req, res) => {
         res.render('maintenance/logs', {
             user: req.session.user,
             logs,
-            usagesByLog
+            usagesByLog,
+            selectedSort: sort
         });
     } catch (err) {
         console.error(err);
@@ -188,10 +193,12 @@ exports.listLogs = async (req, res) => {
 // READ: Log riwayat pemakaian BHP (ke ruangan mana BHP dipakai)
 exports.listBhpUsageLog = async (req, res) => {
     try {
-        const usages = await MaintenanceLog.findAllBhpUsageWithRoom();
+        const sort = req.query.sort || null;
+        const usages = await MaintenanceLog.findAllBhpUsageWithRoom(sort);
         res.render('consumables/usage-log', {
             user: req.session.user,
-            usages
+            usages,
+            selectedSort: sort
         });
     } catch (err) {
         console.error(err);

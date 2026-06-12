@@ -11,8 +11,8 @@ const MaintenanceLog = {
     },
 
     // Semua log maintenance (dengan info aset, ruangan, staf)
-    async findAllDetailed(conn = pool) {
-        const [rows] = await conn.query(`
+    async findAllDetailed(sort = null, conn = pool) {
+        let sql = `
             SELECT
                 ml.id,
                 ml.maintenance_date,
@@ -27,8 +27,24 @@ const MaintenanceLog = {
             JOIN assets a ON ml.asset_id = a.id
             LEFT JOIN rooms r ON a.room_id = r.id
             JOIN users u ON ml.staf_lab_id = u.id
-            ORDER BY ml.maintenance_date DESC, ml.created_at DESC
-        `);
+        `;
+
+        switch (sort) {
+            case 'abjad':
+                sql += ' ORDER BY a.item_name ASC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY ml.maintenance_date DESC, ml.created_at DESC';
+                break;
+            case 'no':
+                sql += ' ORDER BY ml.id ASC';
+                break;
+            default:
+                sql += ' ORDER BY ml.maintenance_date DESC, ml.created_at DESC';
+                break;
+        }
+
+        const [rows] = await conn.query(sql);
         return rows;
     },
 
@@ -90,8 +106,8 @@ const MaintenanceLog = {
     },
 
     // Riwayat pemakaian BHP lengkap dengan info ruangan & aset (halaman log pemakaian BHP)
-    async findAllBhpUsageWithRoom(conn = pool) {
-        const [rows] = await conn.query(`
+    async findAllBhpUsageWithRoom(sort = null, conn = pool) {
+        let sql = `
             SELECT
                 mbu.quantity_used,
                 c.item_name AS consumable_name,
@@ -107,8 +123,24 @@ const MaintenanceLog = {
             JOIN assets a ON ml.asset_id = a.id
             LEFT JOIN rooms r ON a.room_id = r.id
             JOIN users u ON ml.staf_lab_id = u.id
-            ORDER BY ml.maintenance_date DESC, ml.id DESC
-        `);
+        `;
+
+        switch (sort) {
+            case 'abjad':
+                sql += ' ORDER BY c.item_name ASC';
+                break;
+            case 'recent':
+                sql += ' ORDER BY ml.maintenance_date DESC, ml.id DESC';
+                break;
+            case 'no':
+                sql += ' ORDER BY mbu.id ASC';
+                break;
+            default:
+                sql += ' ORDER BY ml.maintenance_date DESC, ml.id DESC';
+                break;
+        }
+
+        const [rows] = await conn.query(sql);
         return rows;
     }
 };

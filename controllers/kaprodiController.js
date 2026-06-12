@@ -6,8 +6,10 @@ const Consumable = require('../models/Consumable');
 // READ: Daftar inventaris (read-only)
 exports.listAssets = async (req, res) => {
     try {
-        const assets = await Asset.findActiveWithRoomOrdered();
-        res.render('maintenance/assets', { user: req.session.user, assets });
+        const sort = req.query.sort || null;
+        const condition = req.query.condition || null;
+        const assets = await Asset.findActiveWithRoomOrdered({ sort, condition });
+        res.render('maintenance/assets', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition });
     } catch (err) {
         res.send(err);
     }
@@ -16,8 +18,9 @@ exports.listAssets = async (req, res) => {
 // READ: Daftar BHP (read-only)
 exports.listConsumables = async (req, res) => {
     try {
-        const consumables = await Consumable.findAll();
-        res.render('consumables/index', { user: req.session.user, consumables });
+        const sort = req.query.sort || null;
+        const consumables = await Consumable.findAll(sort);
+        res.render('consumables/index', { user: req.session.user, consumables, selectedSort: sort });
     } catch (err) {
         res.send(err);
     }
@@ -27,15 +30,21 @@ exports.listConsumables = async (req, res) => {
 exports.listReview = async (req, res) => {
     try {
         const selectedYear = req.query.year || null;
+        const selectedStatus = req.query.status || null;
+        const selectedAction = req.query.action || null;
+        const selectedSort = req.query.sort || null;
 
-        const drafts = await ProcurementDraft.findAllWithKalab(selectedYear);
+        const drafts = await ProcurementDraft.findAllWithKalab({ year: selectedYear, status: selectedStatus, action: selectedAction, sort: selectedSort });
         const years = await ProcurementDraft.findDistinctYears();
 
         res.render('procurement_review/index', {
             user: req.session.user,
             drafts,
             years,
-            selectedYear
+            selectedYear,
+            selectedStatus,
+            selectedAction,
+            selectedSort
         });
     } catch (err) {
         res.send(err);

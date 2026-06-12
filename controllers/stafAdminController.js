@@ -8,16 +8,20 @@ const ItemReceipt = require('../models/ItemReceipt');
 
 // READ: Daftar BHP/Consumables (read-only untuk StafAdmin)
 exports.listConsumables = async (req, res) => {
-    const consumables = await Consumable.findAll();
-    res.render('consumables/index', { user: req.session.user, consumables });
+    const sort = req.query.sort || null;
+    const consumables = await Consumable.findAll(sort);
+    res.render('consumables/index', { user: req.session.user, consumables, selectedSort: sort });
 };
 
 // CRUD INVENTARIS (ASSETS)
 
 // READ: Menampilkan daftar aset
 exports.listAssets = async (req, res) => {
-    const assets = await Asset.findAllWithRoom();
-    res.render('assets/index', { user: req.session.user, assets });
+    const sort = req.query.sort || null;
+    const condition = req.query.condition || null;
+    const active = req.query.active || null;
+    const assets = await Asset.findAllWithRoom({ sort, condition, active });
+    res.render('assets/index', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition, selectedActive: active });
 };
 
 // EDIT FORM: Halaman edit aset
@@ -59,7 +63,11 @@ exports.deleteAsset = async (req, res) => {
 // READ: Daftar barang pengadaan disetujui & draf Locked
 exports.listPenerimaan = async (req, res) => {
     try {
-        const items = await ProcurementItem.findReceivableItems();
+        const sort = req.query.sort || null;
+        const type = req.query.type || null;
+        const status = req.query.status || null;
+
+        const items = await ProcurementItem.findReceivableItems({ sort, type, status });
         const receipts = await ItemReceipt.findAllWithReceiver();
 
         // Group receipts by procurement_item_id
@@ -74,7 +82,10 @@ exports.listPenerimaan = async (req, res) => {
         res.render('penerimaan/index', {
             user: req.session.user,
             items,
-            receiptsByItem
+            receiptsByItem,
+            selectedSort: sort,
+            selectedType: type,
+            selectedStatus: status
         });
     } catch (err) {
         console.error(err);
