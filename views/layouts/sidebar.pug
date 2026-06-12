@@ -1,12 +1,18 @@
 // Main Sidebar Container
 aside.main-sidebar.sidebar-dark-primary.elevation-4
-    a.brand-link(href="/admin/dashboard")
+    - var dashboardUrl = '/admin/dashboard'
+    - if (user.role === 'Staf Administrasi') dashboardUrl = '/stafadmin/assets'
+    - if (user.role === 'Staf Laboratorium') dashboardUrl = '/staflab/consumables'
+    - if (user.role === 'Ketua Program Studi') dashboardUrl = '/kaprodi/procurement-review'
+    - if (user.role === 'Kepala Laboratorium') dashboardUrl = '/kalab/procurement-drafts'
+
+    a.brand-link(href=dashboardUrl)
         span.brand-text.font-weight-light Lab Inventory GWT 8
 
     .sidebar
         .user-panel.mt-3.pb-3.mb-3.d-flex
             .info
-                a.d-block(href="#") #{user.name} - #{user.role}
+                span.d-block(style="color: #d0d4db;") #{user.name} - #{user.role}
 
         nav.mt-2
             ul.nav.nav-pills.nav-sidebar.flex-column(data-widget="treeview" role="menu" data-accordion="false")
