@@ -2,9 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { checkAuth } = require('../middlewares/authMiddleware');
 const kalabController = require('../controllers/kalabController');
+const dashboardController = require('../controllers/dashboardController');
 
 // Akses hanya untuk Kepala Laboratorium
 router.use(checkAuth('Kepala Laboratorium'));
+
+// Dashboard Executive (grafik & statistik)
+router.get('/dashboard', dashboardController.showDashboard);
 
 // Inventaris & BHP (read-only)
 router.get('/assets', kalabController.listAssets);

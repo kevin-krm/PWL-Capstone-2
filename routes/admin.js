@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { checkAuth } = require('../middlewares/authMiddleware');
 const adminController = require('../controllers/adminController');
+const dashboardController = require('../controllers/dashboardController');
 
 // Hanya 'Administrator' yang bisa akses
 router.use(checkAuth('Administrator'));
 
-// Dashboard
-router.get('/dashboard', adminController.dashboard);
+// Dashboard Executive (grafik & statistik)
+router.get('/dashboard', dashboardController.showDashboard);
 
 // CRUD Pengguna
 router.get('/users', adminController.listUsers);

@@ -1,0 +1,150 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 Dashboard & Statistik
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item.active
+
+    .content
+        .container-fluid
+            //- INFO BOXES
+            .row
+                .col-lg-3.col-6
+                    .small-box.bg-info
+                        .inner
+                            h3= summary.totalAssets
+                            p Total Aset
+                        .icon
+                            i.fas.fa-desktop
+                .col-lg-3.col-6
+                    .small-box.bg-danger
+                        .inner
+                            h3= summary.brokenAssets
+                            p Aset Rusak
+                        .icon
+                            i.fas.fa-tools
+                .col-lg-3.col-6
+                    .small-box.bg-warning
+                        .inner
+                            h3= summary.bhpTypes
+                            p Jenis BHP
+                        .icon
+                            i.fas.fa-box
+                .col-lg-3.col-6
+                    .small-box.bg-success
+                        .inner
+                            h3= summary.bhpStock
+                            p Total Stok BHP
+                        .icon
+                            i.fas.fa-boxes
+
+            //- CHART ROW 1: PIE + BAR
+            .row
+                .col-md-5
+                    .card.card-outline.card-primary
+                        .card-header
+                            h3.card-title
+                                i.fas.fa-chart-pie.mr-1
+                                | Persentase Kondisi Aset
+                        .card-body
+                            if condition && condition.length
+                                .chart(style="position:relative;height:280px")
+                                    canvas#assetConditionChart
+                            else
+                                p.text-muted.text-center.my-5 Belum ada data aset.
+                .col-md-7
+                    .card.card-outline.card-success
+                        .card-header
+                            h3.card-title
+                                i.fas.fa-chart-bar.mr-1
+                                | Dana Pengadaan Disetujui per Tahun
+                        .card-body
+                            if spending && spending.length
+                                .chart(style="position:relative;height:280px")
+                                    canvas#spendingChart
+                            else
+                                p.text-muted.text-center.my-5 Belum ada pengadaan disetujui.
+
+            //- CHART ROW 2: LINE
+            .row
+                .col-12
+                    .card.card-outline.card-info
+                        .card-header
+                            h3.card-title
+                                i.fas.fa-chart-line.mr-1
+                                | Total Pemakaian BHP per Bulan
+                        .card-body
+                            if bhpUsage && bhpUsage.length
+                                .chart(style="position:relative;height:300px")
+                                    canvas#bhpUsageChart
+                            else
+                                p.text-muted.text-center.my-5 Belum ada pemakaian BHP.
+
+block scripts
+    script(src="/adminlte/plugins/chart.js/Chart.min.js")
+    script.
+        const D = !{JSON.stringify({ condition: condition, spending: spending, bhpUsage: bhpUsage })};
+
+        function rupiah(v) { return 'Rp ' + Number(v).toLocaleString('id-ID'); }
+
+        // ---- PIE: Kondisi Aset ----
+        (function() {
+            const el = document.getElementById('assetConditionChart');
+            if (!el || !D.condition.length) return;
+            const colorMap = { 'Baik': '#28a745', 'Rusak': '#dc3545', 'Maintenance': '#ffc107', 'Dihapus': '#6c757d' };
+            const labels = D.condition.map(function(r) { return r.condition_status; });
+            const data = D.condition.map(function(r) { return r.total; });
+            const colors = labels.map(function(l) { return colorMap[l] || '#17a2b8'; });
+            new Chart(el, {
+                type: 'pie',
+                data: { labels: labels, datasets: [{ data: data, backgroundColor: colors }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        })();
+
+        // ---- BAR: Dana Pengadaan Disetujui per Tahun ----
+        (function() {
+            const el = document.getElementById('spendingChart');
+            if (!el || !D.spending.length) return;
+            new Chart(el, {
+                type: 'bar',
+                data: {
+                    labels: D.spending.map(function(r) { return r.year; }),
+                    datasets: [{ label: 'Dana Disetujui', data: D.spending.map(function(r) { return r.total; }), backgroundColor: '#28a745' }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    legend: { display: false },
+                    scales: { yAxes: [{ ticks: { beginAtZero: true, callback: function(v) { return rupiah(v); } } }] },
+                    tooltips: { callbacks: { label: function(item) { return rupiah(item.yLabel); } } }
+                }
+            });
+        })();
+
+        // ---- LINE: Pemakaian BHP per Bulan ----
+        (function() {
+            const el = document.getElementById('bhpUsageChart');
+            if (!el || !D.bhpUsage.length) return;
+            new Chart(el, {
+                type: 'line',
+                data: {
+                    labels: D.bhpUsage.map(function(r) { return r.ym; }),
+                    datasets: [{
+                        label: 'Total BHP Terpakai',
+                        data: D.bhpUsage.map(function(r) { return r.total; }),
+                        borderColor: '#17a2b8', backgroundColor: 'rgba(23,162,184,0.2)',
+                        fill: true, lineTension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    legend: { display: false },
+                    scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] }
+                }
+            });
+        })();

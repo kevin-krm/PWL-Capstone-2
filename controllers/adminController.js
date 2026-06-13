@@ -3,11 +3,6 @@ const User = require('../models/User');
 const Room = require('../models/Room');
 const Asset = require('../models/Asset');
 
-// 1. Rute Dashboard
-exports.dashboard = (req, res) => {
-    res.render('starter', { user: req.session.user });
-};
-
 // CRUD PENGGUNA
 
 // READ

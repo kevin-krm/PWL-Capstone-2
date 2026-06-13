@@ -2,7 +2,7 @@
 
 ## Capstone Lab Inventory System
 
-Sistem inventaris laboratorium berbasis web yang dibangun menggunakan kombinasi Node.js (Full stack, Pug) + MySQL.
+Sistem inventaris laboratorium berbasis web yang dibangun menggunakan kombinasi `Node.js (Full stack, Pug) + MySQL.`
 
 ## Tujuan Proyek
 
@@ -99,3 +99,5 @@ npx nodemon app.js
 ```
 
 Aplikasi dapat diakses melalui browser di `http://localhost:3000`.
+
+> Note: Untuk development server ini, semua role memiliki password default: `hashpassword123`. Dan semua password telah di hash menggunakan bcryptjs

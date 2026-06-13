@@ -2,9 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { checkAuth } = require('../middlewares/authMiddleware');
 const kaprodiController = require('../controllers/kaprodiController');
+const dashboardController = require('../controllers/dashboardController');
 
 // Pengecekan Role
 router.use(checkAuth('Ketua Program Studi'));
+
+// Dashboard Executive (grafik & statistik)
+router.get('/dashboard', dashboardController.showDashboard);
 
 // Inventaris & BHP (read-only)
 router.get('/assets', kaprodiController.listAssets);

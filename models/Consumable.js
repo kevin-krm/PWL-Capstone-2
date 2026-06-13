@@ -70,7 +70,12 @@ const Consumable = {
     },
 
     async reduceStock(id, quantity, conn = pool) {
-        const [result] = await conn.query('UPDATE consumables SET stock = stock - ? WHERE id = ?', [quantity, id]);
+        // Guarded: hanya kurangi bila stok mencukupi, supaya stok tak pernah minus (safety net)
+        const [result] = await conn.query(
+            'UPDATE consumables SET stock = stock - ? WHERE id = ? AND stock >= ?',
+            [quantity, id, quantity]
+        );
+        if (result.affectedRows === 0) throw new Error('INSUFFICIENT_STOCK');
         return result;
     }
 };

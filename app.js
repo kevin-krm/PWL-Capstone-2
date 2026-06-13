@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const bodyParser = require('body-parser');
+const { autoGenerateMissingQRCodes } = require('./utils/qrHelper');
 
 const app = express();
 
@@ -17,6 +18,10 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }));
+
+// Notifikasi sidebar (titik biru) -> res.locals.notif, dibaca sidebar.pug
+const { loadNotifications } = require('./middlewares/notificationMiddleware');
+app.use(loadNotifications);
 
 // Import Routes
 const authRoutes = require('./routes/auth');
@@ -40,7 +45,8 @@ app.get('/', (req, res) => {
 });
 
 // Jalankan Server
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+    autoGenerateMissingQRCodes();
     console.log(`Server berjalan di http://localhost:${PORT}`);
 });

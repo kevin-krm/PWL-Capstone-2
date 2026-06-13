@@ -1,10 +1,10 @@
 // Main Sidebar Container
 aside.main-sidebar.sidebar-dark-primary.elevation-4
     - var dashboardUrl = '/admin/dashboard'
+    - if (user.role === 'Kepala Laboratorium') dashboardUrl = '/kalab/procurement-drafts'
+    - if (user.role === 'Ketua Program Studi') dashboardUrl = '/kaprodi/procurement-review'
     - if (user.role === 'Staf Administrasi') dashboardUrl = '/stafadmin/assets'
     - if (user.role === 'Staf Laboratorium') dashboardUrl = '/staflab/consumables'
-    - if (user.role === 'Ketua Program Studi') dashboardUrl = '/kaprodi/procurement-review'
-    - if (user.role === 'Kepala Laboratorium') dashboardUrl = '/kalab/procurement-drafts'
 
     a.brand-link(href=dashboardUrl)
         span.brand-text.font-weight-light Lab Inventory GWT 8
@@ -42,11 +42,16 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                             i.nav-icon.fas.fa-boxes
                             p
                                 | Penerimaan & Labeling
-                                i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
+                                if notif && notif.penerimaan
+                                    i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
                     li.nav-item
                         a.nav-link(href="/stafadmin/consumables")
                             i.nav-icon.fas.fa-box
                             p Data BHP
+                    li.nav-item
+                        a.nav-link(href="/stafadmin/dashboard")
+                            i.nav-icon.fas.fa-chart-pie
+                            p Dashboard & Statistik
 
                 // 3. MENU STAF LABORATORIUM
                 if user.role === 'Staf Laboratorium'
@@ -61,13 +66,18 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                     li.nav-item
                         a.nav-link(href="/staflab/assets")
                             i.nav-icon.fas.fa-desktop
-                            p Data Inventaris
+                            p
+                                | Data Inventaris
+                                if notif && notif.maintenance
+                                    i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
                     li.nav-item
                         a.nav-link(href="/staflab/maintenance-logs")
                             i.nav-icon.fas.fa-tools
-                            p
-                                | Log Maintenance
-                                i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
+                            p Log Maintenance
+                    li.nav-item
+                        a.nav-link(href="/staflab/dashboard")
+                            i.nav-icon.fas.fa-chart-pie
+                            p Dashboard & Statistik
 
                 // 4. MENU KAPRODI
                 if user.role === 'Ketua Program Studi'
@@ -76,7 +86,8 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                             i.nav-icon.fas.fa-clipboard-list
                             p
                                 | Draft Pengadaan
-                                i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
+                                if notif && notif.procurementReview
+                                    i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
                     li.nav-item
                         a.nav-link(href='/kaprodi/assets')
                             i.nav-icon.fas.fa-desktop
@@ -85,15 +96,17 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                         a.nav-link(href='/kaprodi/consumables')
                             i.nav-icon.fas.fa-box
                             p Data BHP
+                    li.nav-item
+                        a.nav-link(href='/kaprodi/dashboard')
+                            i.nav-icon.fas.fa-chart-pie
+                            p Dashboard & Statistik
 
                 // 5. MENU KALAB
                 if user.role === 'Kepala Laboratorium'
                     li.nav-item
                         a.nav-link(href='/kalab/procurement-drafts')
                             i.nav-icon.fas.fa-file-invoice
-                            p
-                                | Draft Pengadaan
-                                i.fas.fa-circle.text-primary.right(style="font-size: 6px; margin-top: 8px;" title="Ada tugas belum selesai")
+                            p Draft Pengadaan
                     li.nav-item
                         a.nav-link(href='/kalab/assets')
                             i.nav-icon.fas.fa-desktop
@@ -102,8 +115,7 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                         a.nav-link(href='/kalab/consumables')
                             i.nav-icon.fas.fa-box
                             p Data BHP
-
-                li.nav-item
-                    a.nav-link(href="/logout" class="text-danger")
-                        i.nav-icon.fas.fa-sign-out-alt
-                        p Logout
+                    li.nav-item
+                        a.nav-link(href='/kalab/dashboard')
+                            i.nav-icon.fas.fa-chart-pie
+                            p Dashboard & Statistik

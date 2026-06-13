@@ -1,6 +1,12 @@
 extends ../layouts/master
 
 block content
+    - var prevCondition = (oldInput && oldInput.condition_status) ? oldInput.condition_status : asset.condition_status
+    - var prevDate = (oldInput && oldInput.maintenance_date) ? oldInput.maintenance_date : ''
+    - var prevDesc = (oldInput && oldInput.description) ? oldInput.description : ''
+    - var bhpRows = (oldInput && oldInput.bhpRows && oldInput.bhpRows.length) ? oldInput.bhpRows : [null]
+    if errorMsg
+        script window.addEventListener('DOMContentLoaded', function(){ alert(!{JSON.stringify(errorMsg)}); });
     .content-header
         .container-fluid
             .row.mb-2
@@ -55,6 +61,12 @@ block content
                                 | Catat Maintenance
                         form(action=`/staflab/assets/maintenance/${asset.id}` method="POST")
                             .card-body
+                                if errorMsg
+                                    .alert.alert-danger.alert-dismissible
+                                        button.close(type="button" data-dismiss="alert" aria-label="Close")
+                                            span(aria-hidden="true") &times;
+                                        i.fas.fa-exclamation-triangle.mr-1
+                                        = errorMsg
                                 .row
                                     .col-md-6
                                         .form-group
@@ -62,21 +74,21 @@ block content
                                                 i.fas.fa-heartbeat.mr-1
                                                 | Kondisi Setelah Maintenance
                                             select#condition_status.form-control(name="condition_status" required)
-                                                option(value="Baik" selected=(asset.condition_status=='Baik')) Baik
-                                                option(value="Rusak" selected=(asset.condition_status=='Rusak')) Rusak
-                                                option(value="Maintenance" selected=(asset.condition_status=='Maintenance')) Maintenance
-                                                option(value="Dihapus" selected=(asset.condition_status=='Dihapus')) Dihapus
+                                                option(value="Baik" selected=(prevCondition=='Baik')) Baik
+                                                option(value="Rusak" selected=(prevCondition=='Rusak')) Rusak
+                                                option(value="Maintenance" selected=(prevCondition=='Maintenance')) Maintenance
+                                                option(value="Dihapus" selected=(prevCondition=='Dihapus')) Dihapus
                                     .col-md-6
                                         .form-group
                                             label(for="maintenance_date")
                                                 i.fas.fa-calendar-alt.mr-1
                                                 | Tanggal Maintenance
-                                            input#maintenance_date.form-control(type="date" name="maintenance_date" required)
+                                            input#maintenance_date.form-control(type="date" name="maintenance_date" required value=prevDate)
                                 .form-group
                                     label(for="description")
                                         i.fas.fa-pencil-alt.mr-1
                                         | Deskripsi / Catatan Perbaikan
-                                    textarea#description.form-control(name="description" rows="3" placeholder="Misal: Penggantian SSD karena bad sector")
+                                    textarea#description.form-control(name="description" rows="3" placeholder="Misal: Penggantian SSD karena bad sector")= prevDesc
 
                                 //- Bagian BHP yang digunakan
                                 hr
@@ -91,18 +103,19 @@ block content
                                         | Tidak ada BHP yang tersedia di gudang saat ini.
                                 else
                                     #bhp-container
-                                        .bhp-row.row.mb-2(data-row="0")
-                                            .col-md-6
-                                                select.form-control(name="bhp_id[]")
-                                                    option(value="") -- Pilih BHP --
-                                                    each c in consumables
-                                                        option(value=c.id)= `${c.item_name} (Stok: ${c.stock} ${c.unit})`
-                                            .col-md-3
-                                                input.form-control(type="number" name="bhp_qty[]" min="1" placeholder="Jumlah")
-                                            .col-md-3
-                                                button.btn.btn-danger.btn-remove-bhp(type="button")
-                                                    i.fas.fa-trash
-                                                    |  Hapus
+                                        each row, idx in bhpRows
+                                            .bhp-row.row.mb-2(data-row=idx)
+                                                .col-md-6
+                                                    select.form-control(name="bhp_id[]")
+                                                        option(value="") -- Pilih BHP --
+                                                        each c in consumables
+                                                            option(value=c.id selected=(row && String(row.consumable_id) === String(c.id)))= `${c.item_name} (Stok: ${c.stock} ${c.unit})`
+                                                .col-md-3
+                                                    input.form-control(type="number" name="bhp_qty[]" min="1" placeholder="Jumlah" value=(row ? row.quantity_used : ''))
+                                                .col-md-3
+                                                    button.btn.btn-danger.btn-remove-bhp(type="button")
+                                                        i.fas.fa-trash
+                                                        |  Hapus
 
                                     .mt-2
                                         button#btn-add-bhp.btn.btn-sm.btn-outline-primary(type="button")

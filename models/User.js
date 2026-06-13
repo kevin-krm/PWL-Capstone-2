@@ -82,6 +82,14 @@ const User = {
         return result;
     },
 
+    async updatePassword(id, hashedPassword, conn = pool) {
+        const [result] = await conn.query(
+            'UPDATE users SET password=? WHERE id=?',
+            [hashedPassword, id]
+        );
+        return result;
+    },
+
     async remove(id, conn = pool) {
         const [result] = await conn.query('DELETE FROM users WHERE id=?', [id]);
         return result;

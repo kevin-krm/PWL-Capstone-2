@@ -19,14 +19,9 @@ const checkAuth = (role) => {
             }
         }
 
-        // 3. Jika role TIDAK sesuai, tampilkan pesan error tanpa me-logout user
+        // 3. Jika role TIDAK sesuai, arahkan ke halaman 403 (tanpa me-logout user)
         if (!hasAccess) {
-            return res.send(`
-                <script>
-                    alert('Akses Ditolak: Anda tidak memiliki hak akses untuk membuka halaman ini!');
-                    window.history.back();
-                </script>
-            `);
+            return res.redirect('/403');
         }
 
         // 4. Jika lolos semua pengecekan, lanjutkan ke rute berikutnya

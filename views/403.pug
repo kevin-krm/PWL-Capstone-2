@@ -1,0 +1,25 @@
+extends layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 403 - Akses Ditolak
+
+    .content
+        .container-fluid
+            .error-page
+                h2.headline.text-danger 403
+                .error-content
+                    h3
+                        i.fas.fa-exclamation-triangle.text-danger.mr-2
+                        | Oops! Anda tidak memiliki akses ke halaman ini.
+                    p
+                        | Halaman tersebut khusus untuk role tertentu, sedangkan Anda masuk sebagai
+                        strong.text-primary  #{user.role}
+                        | .
+                    p
+                        a.btn.btn-primary(href=homeUrl)
+                            i.fas.fa-home.mr-1
+                            | Kembali ke Halaman Utama

@@ -2,9 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { checkAuth } = require('../middlewares/authMiddleware');
 const stafLabController = require('../controllers/stafLabController');
+const dashboardController = require('../controllers/dashboardController');
 
 // Kunci akses HANYA untuk Staf Laboratorium
 router.use(checkAuth('Staf Laboratorium'));
+
+// Dashboard Executive (grafik & statistik)
+router.get('/dashboard', dashboardController.showDashboard);
 
 // CRUD BHP (Consumables)
 router.get('/consumables', stafLabController.listConsumables);

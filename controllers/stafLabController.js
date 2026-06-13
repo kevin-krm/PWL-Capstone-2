@@ -76,7 +76,9 @@ exports.showMaintenanceForm = async (req, res) => {
         res.render('maintenance/form', {
             user: req.session.user,
             asset,
-            consumables
+            consumables,
+            errorMsg: null,
+            oldInput: null
         });
     } catch (err) {
         console.error(err);
@@ -84,11 +86,23 @@ exports.showMaintenanceForm = async (req, res) => {
     }
 };
 
+// Helper: render ulang form maintenance dengan pesan error + input sebelumnya,
+// sehingga baris BHP yang sudah diisi user tetap dipertahankan (tidak hilang).
+async function renderMaintenanceFormError(res, user, assetId, errorMsg, oldInput) {
+    const asset = await Asset.findByIdWithRoom(assetId);
+    if (!asset) {
+        return res.send("<script>alert('Aset tidak ditemukan.'); window.location.href='/staflab/assets';</script>");
+    }
+    const consumables = await Consumable.findInStockOrdered();
+    return res.render('maintenance/form', { user, asset, consumables, errorMsg, oldInput });
+}
+
 // POST: Proses maintenance — update kondisi, catat log, kurangi stok BHP
 exports.createMaintenance = async (req, res) => {
     const conn = db.promise();
+    const assetId = req.params.id;
+    let oldInput = {};
     try {
-        const assetId = req.params.id;
         const stafLabId = req.session.user.id;
         const { condition_status, maintenance_date, description } = req.body;
 
@@ -99,19 +113,30 @@ exports.createMaintenance = async (req, res) => {
         if (!Array.isArray(bhpIds)) bhpIds = [bhpIds];
         if (!Array.isArray(bhpQtys)) bhpQtys = [bhpQtys];
 
-        // Filter BHP yang valid (id dan qty terisi)
-        const bhpUsages = [];
+        // Rekonstruksi baris BHP persis seperti yang diisi user (untuk re-render saat error)
+        const bhpRows = [];
+        for (let i = 0; i < bhpIds.length; i++) {
+            const id = (bhpIds[i] === undefined || bhpIds[i] === null) ? '' : String(bhpIds[i]);
+            const qty = (bhpQtys[i] === undefined || bhpQtys[i] === null) ? '' : String(bhpQtys[i]);
+            if (id !== '' || qty !== '') bhpRows.push({ consumable_id: id, quantity_used: qty });
+        }
+        oldInput = { condition_status, maintenance_date, description, bhpRows };
+
+        // Filter BHP yang valid + AGREGASI baris dengan consumable_id sama
+        // (mencegah stok minus bila BHP yang sama dipilih di beberapa baris)
+        const usageMap = new Map();
         for (let i = 0; i < bhpIds.length; i++) {
             const id = parseInt(bhpIds[i], 10);
             const qty = parseInt(bhpQtys[i], 10);
             if (id && qty && qty > 0) {
-                bhpUsages.push({ consumable_id: id, quantity_used: qty });
+                usageMap.set(id, (usageMap.get(id) || 0) + qty);
             }
         }
+        const bhpUsages = [...usageMap].map(([consumable_id, quantity_used]) => ({ consumable_id, quantity_used }));
 
         // Validasi input dasar
         if (!condition_status || !maintenance_date) {
-            return res.send("<script>alert('Kondisi dan tanggal maintenance wajib diisi.'); window.history.back();</script>");
+            return renderMaintenanceFormError(res, req.session.user, assetId, 'Kondisi dan tanggal maintenance wajib diisi.', oldInput);
         }
 
         await conn.beginTransaction();
@@ -121,11 +146,11 @@ exports.createMaintenance = async (req, res) => {
             const row = await Consumable.lockById(usage.consumable_id, conn);
             if (!row) {
                 await conn.rollback();
-                return res.send("<script>alert('BHP tidak ditemukan.'); window.history.back();</script>");
+                return renderMaintenanceFormError(res, req.session.user, assetId, 'BHP yang dipilih tidak ditemukan.', oldInput);
             }
             if (row.stock < usage.quantity_used) {
                 await conn.rollback();
-                return res.send(`<script>alert('Stok ${row.item_name} tidak mencukupi! Tersedia: ${row.stock}, diminta: ${usage.quantity_used}'); window.history.back();</script>`);
+                return renderMaintenanceFormError(res, req.session.user, assetId, `Stok ${row.item_name} tidak mencukupi! Tersedia: ${row.stock}, diminta: ${usage.quantity_used}.`, oldInput);
             }
         }
 
@@ -156,7 +181,11 @@ exports.createMaintenance = async (req, res) => {
     } catch (err) {
         await conn.rollback();
         console.error(err);
-        return res.send("<script>alert('Terjadi kesalahan sistem saat menyimpan maintenance.'); window.history.back();</script>");
+        try {
+            return await renderMaintenanceFormError(res, req.session.user, assetId, 'Terjadi kesalahan sistem saat menyimpan maintenance.', oldInput);
+        } catch (e2) {
+            return res.send("<script>alert('Terjadi kesalahan sistem.'); window.location.href='/staflab/assets';</script>");
+        }
     }
 };
 
