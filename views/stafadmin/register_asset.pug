@@ -88,13 +88,29 @@ block content
                                                         label(for="old_asset_new_label")
                                                             i.fas.fa-tag.mr-1
                                                             | Kode Label Baru untuk Aset Lama *
-                                                        input#old_asset_new_label.form-control(
-                                                            type="text"
-                                                            name="old_asset_new_label"
-                                                            required
-                                                            value=`${replacementAsset.label_code}-BEKAS`
-                                                            placeholder="Contoh: INV-ADV1-2024-001-BEKAS"
-                                                        )
+                                                        if storageRoom
+                                                            - const oldLabelParts = replacementAsset.label_code.split('-');
+                                                            - let defaultOldAssetLabel = `${replacementAsset.label_code}-BEKAS`;
+                                                            - if (oldLabelParts.length >= 4 && oldLabelParts[0] === 'INV') {
+                                                            -     const storageNameFormatted = storageRoom.room_name.trim().toUpperCase().replace(/\\s+/g, '-');
+                                                            -     oldLabelParts[1] = storageNameFormatted;
+                                                            -     defaultOldAssetLabel = oldLabelParts.join('-');
+                                                            - }
+                                                            input#old_asset_new_label.form-control(
+                                                                type="text"
+                                                                name="old_asset_new_label"
+                                                                required
+                                                                value=defaultOldAssetLabel
+                                                                placeholder="Contoh: INV-GUDANG-2024-001"
+                                                            )
+                                                        else
+                                                            input#old_asset_new_label.form-control(
+                                                                type="text"
+                                                                name="old_asset_new_label"
+                                                                required
+                                                                value=`${replacementAsset.label_code}-BEKAS`
+                                                                placeholder="Contoh: INV-ADV1-2024-001-BEKAS"
+                                                            )
                                                         small.text-muted Kode label harus unik dan belum digunakan aset lain.
 
                                     .card.card-outline.card-success.mb-3
@@ -173,7 +189,7 @@ block content
                                             else
                                                 button#btn-generate-label.btn.btn-info(type="button")
                                                     i.fas.fa-magic.mr-1
-                                                    | Auto-Generate (dari Ruangan ke-1)
+                                                    | Auto-Generate
                                     small.text-muted Masukkan prefix label, nomor urut akan di-generate otomatis oleh sistem per unit.
 
                                 .form-group
@@ -233,10 +249,21 @@ block content
                 let html = '<ul class="list-unstyled mb-0">';
                 for (let i = 0; i < quantity; i++) {
                     const num = String(startNum + i).padStart(3, '0');
-                    const roomBadge = roomNames[i]
-                        ? `<span class="badge badge-secondary ml-2">${roomNames[i]}</span>`
+                    const roomName = roomNames[i] || '';
+                    
+                    // Adapt prefix to match the assigned room (mirroring backend logic)
+                    let currentPrefix = prefix;
+                    const parts = currentPrefix.split('-');
+                    if (parts.length >= 3 && parts[0].toUpperCase() === 'INV' && roomName && roomName !== '(belum dipilih)') {
+                        const year = parts[parts.length - 1];
+                        const formattedRoom = roomName.trim().toUpperCase().replace(/\s+/g, '-');
+                        currentPrefix = `INV-${formattedRoom}-${year}`;
+                    }
+                    
+                    const roomBadge = roomName && roomName !== '(belum dipilih)'
+                        ? `<span class="badge badge-secondary ml-2">${roomName}</span>`
                         : `<span class="badge badge-danger ml-2">Ruangan belum dipilih</span>`;
-                    html += `<li><i class="fas fa-tag text-success mr-1"></i> <code>${prefix}-${num}</code> ${roomBadge}</li>`;
+                    html += `<li><i class="fas fa-tag text-success mr-1"></i> <code>${currentPrefix}-${num}</code> ${roomBadge}</li>`;
                 }
                 html += '</ul>';
                 previewDiv.innerHTML = html;

@@ -307,9 +307,21 @@ exports.registerAsset = async (req, res) => {
             // Insert new assets all in the old asset's original room
             let nextId = (await Asset.getMaxId(conn)) + 1;
 
+            const oldAssetRoom = await Room.findById(newAssetRoomId, conn);
+            const roomName = oldAssetRoom ? oldAssetRoom.room_name : 'UNKNOWN';
+
             for (let i = 0; i < quantityReceived; i++) {
                 const paddedNum = String(nextId + i).padStart(3, '0');
-                const labelCode = `${label_prefix}-${paddedNum}`;
+                
+                let currentPrefix = label_prefix;
+                const parts = currentPrefix.split('-');
+                if (parts.length >= 3 && parts[0].toUpperCase() === 'INV') {
+                    const year = parts[parts.length - 1];
+                    const formattedRoom = roomName.trim().toUpperCase().replace(/\s+/g, '-');
+                    currentPrefix = `INV-${formattedRoom}-${year}`;
+                }
+
+                const labelCode = `${currentPrefix}-${paddedNum}`;
                 const qrCodeUrl = await QRCode.toDataURL(labelCode);
                 await Asset.insertNew({
                     room_id: newAssetRoomId,
@@ -323,11 +335,25 @@ exports.registerAsset = async (req, res) => {
             // --- Handle Regular Registration with Per-Unit Room Assignment ---
             let nextId = (await Asset.getMaxId(conn)) + 1;
 
+            const rooms = await Room.findAll(null, conn);
+            const roomMap = {};
+            rooms.forEach(r => { roomMap[r.id] = r.room_name; });
+
             for (let i = 0; i < quantityReceived; i++) {
                 // If fewer room selectors were added than units, use the last specified room for the remainder
                 const assignedRoomId = roomIds[i] || roomIds[roomIds.length - 1];
                 const paddedNum = String(nextId + i).padStart(3, '0');
-                const labelCode = `${label_prefix}-${paddedNum}`;
+                
+                const roomName = roomMap[assignedRoomId] || 'UNKNOWN';
+                let currentPrefix = label_prefix;
+                const parts = currentPrefix.split('-');
+                if (parts.length >= 3 && parts[0].toUpperCase() === 'INV') {
+                    const year = parts[parts.length - 1];
+                    const formattedRoom = roomName.trim().toUpperCase().replace(/\s+/g, '-');
+                    currentPrefix = `INV-${formattedRoom}-${year}`;
+                }
+
+                const labelCode = `${currentPrefix}-${paddedNum}`;
                 const qrCodeUrl = await QRCode.toDataURL(labelCode);
                 await Asset.insertNew({
                     room_id: assignedRoomId,
