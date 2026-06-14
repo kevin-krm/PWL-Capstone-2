@@ -158,7 +158,6 @@ block content
 
                                 hr
 
-<<<<<<< Updated upstream
                                 //- ==========================================
                                 //- LABEL PREFIX (ALWAYS SHOWN)
                                 //- ==========================================
@@ -176,30 +175,8 @@ block content
                                                     i.fas.fa-magic.mr-1
                                                     | Auto-Generate (dari Ruangan ke-1)
                                     small.text-muted Masukkan prefix label, nomor urut akan di-generate otomatis oleh sistem per unit.
-=======
-                                input(type="hidden" name="manual_mode" id="manual_mode" value="false")
->>>>>>> Stashed changes
 
                                 .form-group
-                                    button#btn-toggle-manual-mode.btn.btn-sm.btn-outline-primary.mb-3(type="button")
-                                        i.fas.fa-cog.mr-1
-                                        | Modifikasi Alokasi Ruangan Manual
-
-                                #prefix-form-group.form-group(style="display: none;")
-                                    label(for="label_prefix") Prefix Kode Label
-                                    .input-group
-                                        input#label_prefix.form-control(type="text" name="label_prefix" placeholder="Masukkan prefix label (misal: INV-LAB-2026)")
-                                        .input-group-append
-                                            button#btn-generate-label.btn.btn-info(type="button")
-                                                i.fas.fa-magic.mr-1
-                                                | Auto-Generate
-                                    small.text-muted Masukkan prefix label atau klik Auto-Generate untuk membantu pengisian.
-
-                                #manual-labels-container.form-group(style="display: none;")
-                                    label Input Kode Label Manual per Unit
-                                    #manual-labels-list.border.rounded.p-3.bg-light
-
-                                #preview-form-group.form-group
                                     label Preview Kode Label yang Akan Di-generate
                                     #label-preview.border.rounded.p-3.bg-light
                                         span.text-muted Isi prefix dan klik "Auto-Generate" atau ketik manual untuk melihat preview.
@@ -215,11 +192,9 @@ block content
             const btnGenerate    = document.getElementById('btn-generate-label');
             const prefixInput    = document.getElementById('label_prefix');
             const previewDiv     = document.getElementById('label-preview');
-            const btnToggle      = document.getElementById('btn-toggle-manual-mode');
             const quantity       = #{receipt.quantity_received};
             const startNum       = parseInt("#{paddedIncrement}", 10);
             const isReplacement  = !{replacementAsset ? 'true' : 'false'};
-            let manualMode       = false;
 
             // -------------------------------------------------------
             // HELPER: get room names for each unit slot
@@ -246,66 +221,12 @@ block content
             }
 
             // -------------------------------------------------------
-            // MANUAL LABELS RENDERER
-            // -------------------------------------------------------
-            function updateManualLabelsList() {
-                const container = document.getElementById('manual-labels-list');
-                if (!container) return;
-                const roomNames = getRoomAssignments();
-                let html = '';
-                for (let i = 0; i < quantity; i++) {
-                    const roomName = roomNames[i] || '(belum dipilih)';
-                    
-                    let currentPrefix = prefixInput.value.trim();
-                    const num = String(startNum + i).padStart(3, '0');
-                    
-                    const parts = currentPrefix.split('-');
-                    if (parts.length >= 3 && parts[0].toUpperCase() === 'INV' && roomName && roomName !== '(belum dipilih)') {
-                        const year = parts[parts.length - 1];
-                        const formattedRoom = roomName.trim().toUpperCase().replace(/\s+/g, '-');
-                        currentPrefix = `INV-${formattedRoom}-${year}`;
-                    }
-                    
-                    const labelVal = currentPrefix ? `${currentPrefix}-${num}` : '';
-                    
-                    html += `
-                        <div class="form-group mb-2">
-                            <label class="small text-muted mb-1 d-block">Unit ${i + 1} - Ruangan: <strong>${roomName}</strong></label>
-                            <input type="text" name="custom_labels[]" class="form-control form-control-sm" required placeholder="Contoh: INV-LAB-2026-${num}" value="${labelVal}">
-                        </div>
-                    `;
-                }
-                container.innerHTML = html;
-            }
-
-            // -------------------------------------------------------
-            // PREVIEW UPDATER & AUTO-GENERATOR
+            // PREVIEW UPDATER
             // -------------------------------------------------------
             function updatePreview() {
-                if (!manualMode) {
-                    let roomNameFormatted = '';
-                    if (isReplacement) {
-                        roomNameFormatted = "#{replacementAsset ? replacementAsset.room_name : 'UNKNOWN'}"
-                            .trim().toUpperCase().replace(/\s+/g, '-');
-                    } else {
-                        const firstSelect = document.querySelector('#room-allocation-list select');
-                        if (firstSelect && firstSelect.value) {
-                            const selectedOption = firstSelect.options[firstSelect.selectedIndex];
-                            roomNameFormatted = selectedOption.getAttribute('data-name') || selectedOption.text;
-                            roomNameFormatted = roomNameFormatted.trim().toUpperCase().replace(/\s+/g, '-');
-                        }
-                    }
-                    if (roomNameFormatted) {
-                        const year = "#{receipt.year}";
-                        prefixInput.value = `INV-${roomNameFormatted}-${year}`;
-                    } else {
-                        prefixInput.value = '';
-                    }
-                }
-
                 const prefix = prefixInput.value.trim();
                 if (!prefix) {
-                    previewDiv.innerHTML = '<span class="text-muted">Silakan pilih lokasi ruangan terlebih dahulu!</span>';
+                    previewDiv.innerHTML = '<span class="text-muted">Isi prefix untuk melihat preview.</span>';
                     return;
                 }
                 const roomNames = getRoomAssignments();
@@ -319,18 +240,14 @@ block content
                 }
                 html += '</ul>';
                 previewDiv.innerHTML = html;
-
-                if (manualMode) {
-                    updateManualLabelsList();
-                }
             }
 
             prefixInput.addEventListener('input', updatePreview);
 
             // -------------------------------------------------------
-            // MANUAL TOGGLE & AUTO-GENERATE
+            // AUTO-GENERATE BUTTON
             // -------------------------------------------------------
-            function runAutoGenerate() {
+            btnGenerate.addEventListener('click', function() {
                 let roomNameFormatted;
 
                 if (isReplacement) {
@@ -339,7 +256,7 @@ block content
                 } else {
                     const firstSelect = document.querySelector('#room-allocation-list select');
                     if (!firstSelect || !firstSelect.value) {
-                        alert('Silakan pilih lokasi ruangan terlebih dahulu!');
+                        alert('Silakan pilih lokasi ruangan pada baris pertama terlebih dahulu!');
                         return;
                     }
                     const selectedOption = firstSelect.options[firstSelect.selectedIndex];
@@ -351,44 +268,7 @@ block content
                 const generatedPrefix = `INV-${roomNameFormatted}-${year}`;
                 prefixInput.value = generatedPrefix;
                 updatePreview();
-            }
-
-            function applyManualMode() {
-                const manualModeInput = document.getElementById('manual_mode');
-                const prefixFormGroup = document.getElementById('prefix-form-group');
-                const previewFormGroup = document.getElementById('preview-form-group');
-                const manualLabelsContainer = document.getElementById('manual-labels-container');
-
-                if (manualMode) {
-                    manualModeInput.value = 'true';
-                    prefixFormGroup.style.display = '';
-                    manualLabelsContainer.style.display = '';
-                    previewFormGroup.style.display = 'none';
-
-                    btnToggle.classList.remove('btn-outline-primary');
-                    btnToggle.classList.add('btn-primary', 'active');
-                    updateManualLabelsList();
-                } else {
-                    manualModeInput.value = 'false';
-                    prefixFormGroup.style.display = 'none';
-                    manualLabelsContainer.style.display = 'none';
-                    previewFormGroup.style.display = '';
-
-                    btnToggle.classList.remove('btn-primary', 'active');
-                    btnToggle.classList.add('btn-outline-primary');
-                    updatePreview();
-                }
-            }
-
-            btnToggle.addEventListener('click', function() {
-                manualMode = !manualMode;
-                applyManualMode();
             });
-
-            btnGenerate.addEventListener('click', runAutoGenerate);
-
-            // Initialize mode
-            applyManualMode();
 
             // -------------------------------------------------------
             // DYNAMIC ROOM ROWS (Regular mode only)

@@ -66,7 +66,6 @@ exports.listPenerimaan = async (req, res) => {
         const sort = req.query.sort || null;
         const type = req.query.type || null;
         const status = req.query.status || null;
-        const registration = req.query.registration || null;
 
         const items = await ProcurementItem.findReceivableItems({ sort, type, status });
         const receipts = await ItemReceipt.findAllWithReceiver();
@@ -80,24 +79,13 @@ exports.listPenerimaan = async (req, res) => {
             receiptsByItem[r.procurement_item_id].push(r);
         });
 
-        // Filter items based on registration query
-        let filteredItems = items;
-        if (registration === 'pending') {
-            filteredItems = items.filter(item => {
-                const hasReceipts = receiptsByItem[item.item_id] && receiptsByItem[item.item_id].length > 0;
-                const hasUnregistered = item.item_type === 'Inventaris' && hasReceipts && receiptsByItem[item.item_id].some(r => !r.is_registered);
-                return hasUnregistered;
-            });
-        }
-
         res.render('penerimaan/index', {
             user: req.session.user,
-            items: filteredItems,
+            items,
             receiptsByItem,
             selectedSort: sort,
             selectedType: type,
-            selectedStatus: status,
-            selectedRegistration: registration
+            selectedStatus: status
         });
     } catch (err) {
         console.error(err);
@@ -246,18 +234,16 @@ exports.registerAsset = async (req, res) => {
     const conn = db.promise();
     try {
         const receiptId = req.params.id;
-        const { label_prefix, old_asset_new_label, manual_mode } = req.body;
-        const isManual = manual_mode === 'true';
-
-        let customLabels = req.body.custom_labels || [];
-        if (!Array.isArray(customLabels)) customLabels = [customLabels];
+        // old_asset_new_room_id is no longer trusted from the form: the old asset is
+        // always relocated to the storage room (gudang) derived server-side.
+        const { label_prefix, old_asset_new_label } = req.body;
 
         // room_id can be a single value or an array (per-unit allocation)
         let roomIds = req.body.room_id;
         if (!roomIds) roomIds = [];
         if (!Array.isArray(roomIds)) roomIds = [roomIds];
 
-        if (!isManual && (!label_prefix || label_prefix.trim() === '')) {
+        if (!label_prefix || label_prefix.trim() === '') {
             return res.send("<script>alert('Gagal: Prefix Label harus diisi.'); window.history.back();</script>");
         }
 
@@ -322,26 +308,8 @@ exports.registerAsset = async (req, res) => {
             let nextId = (await Asset.getMaxId(conn)) + 1;
 
             for (let i = 0; i < quantityReceived; i++) {
-<<<<<<< Updated upstream
                 const paddedNum = String(nextId + i).padStart(3, '0');
                 const labelCode = `${label_prefix}-${paddedNum}`;
-=======
-                let labelCode;
-                if (isManual && customLabels[i] && customLabels[i].trim() !== '') {
-                    labelCode = customLabels[i].trim();
-                } else {
-                    const paddedNum = String(nextId + i).padStart(3, '0');
-                    let currentPrefix = label_prefix || '';
-                    const parts = currentPrefix.split('-');
-                    if (parts.length >= 3 && parts[0].toUpperCase() === 'INV') {
-                        const year = parts[parts.length - 1];
-                        const formattedRoom = roomName.trim().toUpperCase().replace(/\s+/g, '-');
-                        currentPrefix = `INV-${formattedRoom}-${year}`;
-                    }
-                    labelCode = `${currentPrefix}-${paddedNum}`;
-                }
-
->>>>>>> Stashed changes
                 const qrCodeUrl = await QRCode.toDataURL(labelCode);
                 await Asset.insertNew({
                     room_id: newAssetRoomId,
@@ -356,29 +324,10 @@ exports.registerAsset = async (req, res) => {
             let nextId = (await Asset.getMaxId(conn)) + 1;
 
             for (let i = 0; i < quantityReceived; i++) {
+                // If fewer room selectors were added than units, use the last specified room for the remainder
                 const assignedRoomId = roomIds[i] || roomIds[roomIds.length - 1];
-<<<<<<< Updated upstream
                 const paddedNum = String(nextId + i).padStart(3, '0');
                 const labelCode = `${label_prefix}-${paddedNum}`;
-=======
-                let labelCode;
-
-                if (isManual && customLabels[i] && customLabels[i].trim() !== '') {
-                    labelCode = customLabels[i].trim();
-                } else {
-                    const paddedNum = String(nextId + i).padStart(3, '0');
-                    const roomName = roomMap[assignedRoomId] || 'UNKNOWN';
-                    let currentPrefix = label_prefix || '';
-                    const parts = currentPrefix.split('-');
-                    if (parts.length >= 3 && parts[0].toUpperCase() === 'INV') {
-                        const year = parts[parts.length - 1];
-                        const formattedRoom = roomName.trim().toUpperCase().replace(/\s+/g, '-');
-                        currentPrefix = `INV-${formattedRoom}-${year}`;
-                    }
-                    labelCode = `${currentPrefix}-${paddedNum}`;
-                }
-
->>>>>>> Stashed changes
                 const qrCodeUrl = await QRCode.toDataURL(labelCode);
                 await Asset.insertNew({
                     room_id: assignedRoomId,

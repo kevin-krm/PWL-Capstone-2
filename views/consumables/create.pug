@@ -1,0 +1,28 @@
+extends ../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1 Tambah BHP Baru
+
+    .content
+        .container-fluid
+            .card.card-primary
+                .card-header
+                    h3.card-title Form BHP Baru
+                form(action="/staflab/consumables/add" method="POST")
+                    .card-body
+                        .form-group
+                            label Nama Barang
+                            input.form-control(type="text" name="item_name" placeholder="Misal: Tinta Printer Epson" required)
+                        .form-group
+                            label Stok Awal
+                            input.form-control(type="number" name="stock" placeholder="0" required)
+                        .form-group
+                            label Satuan
+                            input.form-control(type="text" name="unit" placeholder="Misal: Botol" required)
+                    .card-footer
+                        a.btn.btn-default(href="/staflab/consumables") Batal
+                        button.btn.btn-primary.float-right(type="submit") Simpan BHP

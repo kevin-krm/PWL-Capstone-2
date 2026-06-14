@@ -12,7 +12,10 @@ exports.listConsumables = async (req, res) => {
     res.render('consumables/index', { user: req.session.user, consumables, selectedSort: sort });
 };
 
-
+// CREATE FORM: Halaman tambah BHP
+exports.showCreateConsumable = (req, res) => {
+    res.render('consumables/create', { user: req.session.user });
+};
 
 // EDIT FORM: Halaman edit BHP
 exports.showEditConsumable = async (req, res) => {
@@ -24,7 +27,12 @@ exports.showEditConsumable = async (req, res) => {
     }
 };
 
-
+// POST CREATE
+exports.createConsumable = async (req, res) => {
+    const { item_name, stock, unit } = req.body;
+    await Consumable.create({ item_name, stock, unit });
+    res.redirect('/staflab/consumables');
+};
 
 // POST EDIT
 exports.updateConsumable = async (req, res) => {
