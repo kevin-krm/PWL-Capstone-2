@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Room = require('../models/Room');
 const Asset = require('../models/Asset');
+const ActivityLog = require('../models/ActivityLog');
 
 // CRUD PENGGUNA
 
@@ -149,4 +150,16 @@ exports.deleteRoom = async (req, res) => {
     }
     await Room.remove(roomId);
     res.redirect('/admin/rooms');
+};
+
+// ===== RIWAYAT AUDIT PENUH =====
+
+exports.listLogs = async (req, res) => {
+    try {
+        const logs = await ActivityLog.findAll();
+        res.render('admin/activity_logs/index', { user: req.session.user, logs });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Terjadi kesalahan pada server saat mengambil log.');
+    }
 };

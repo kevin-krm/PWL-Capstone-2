@@ -2,6 +2,7 @@ const ProcurementDraft = require('../models/ProcurementDraft');
 const ProcurementItem = require('../models/ProcurementItem');
 const Asset = require('../models/Asset');
 const Consumable = require('../models/Consumable');
+const ActivityLog = require('../models/ActivityLog');
 
 // READ: Daftar inventaris (read-only)
 exports.listAssets = async (req, res) => {
@@ -109,6 +110,14 @@ exports.finalizeReview = async (req, res) => {
 
         // lock draft (change status to 'Locked')
         await ProcurementDraft.setLocked(draftId);
+        
+        // Log Activity
+        ActivityLog.logAction(
+            req.session.user.id, 
+            'Lock Draft Pengadaan', 
+            `Melakukan finalisasi (Lock) pada draft pengadaan ID #${draftId}`
+        );
+
         res.redirect('/kaprodi/procurement-review');
 
     } catch (err) {

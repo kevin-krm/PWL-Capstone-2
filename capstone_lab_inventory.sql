@@ -106,6 +106,16 @@ CREATE TABLE maintenance_bhp_usage (
     FOREIGN KEY (consumable_id) REFERENCES consumables(id) ON DELETE CASCADE
 );
 
+-- 10. Tabel Activity Logs (Riwayat Audit Penuh)
+CREATE TABLE activity_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    action VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- ==========================================
 -- INSERT DUMMY DATA
 -- ==========================================

@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const ActivityLog = require('../models/ActivityLog');
 
 // Halaman utama (landing) per role — dipakai redirect login, 403, & change-password
 const ROLE_HOME = {
@@ -41,6 +42,8 @@ exports.login = async (req, res) => {
             // Jika akun aktif dan sandi cocok, buat sesi dan redirect
             req.session.user = user;
             const userRole = user.role;
+
+            ActivityLog.logAction(user.id, 'Login', 'User berhasil login ke sistem');
 
             if (userRole === 'Administrator') res.redirect('/admin/dashboard');
             else if (userRole === 'Staf Administrasi') res.redirect('/stafadmin/assets');

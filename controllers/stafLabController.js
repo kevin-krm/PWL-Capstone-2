@@ -2,6 +2,7 @@ const db = require('../config/database');
 const Consumable = require('../models/Consumable');
 const Asset = require('../models/Asset');
 const MaintenanceLog = require('../models/MaintenanceLog');
+const ActivityLog = require('../models/ActivityLog');
 
 // CRUD BHP (CONSUMABLES)
 
@@ -167,6 +168,7 @@ exports.createMaintenance = async (req, res) => {
         await Asset.updateCondition(assetId, condition_status, conn);
 
         // 4. Insert BHP usage & kurangi stok
+        let totalBhpUsed = 0;
         for (const usage of bhpUsages) {
             await MaintenanceLog.addBhpUsage({
                 maintenance_log_id: maintenanceLogId,
@@ -174,6 +176,16 @@ exports.createMaintenance = async (req, res) => {
                 quantity_used: usage.quantity_used
             }, conn);
             await Consumable.reduceStock(usage.consumable_id, usage.quantity_used, conn);
+            totalBhpUsed += usage.quantity_used;
+        }
+
+        // Log Activity jika ada BHP yang digunakan (Mengurangi BHP)
+        if (totalBhpUsed > 0) {
+            ActivityLog.logAction(
+                stafLabId, 
+                'Penggunaan BHP', 
+                `Mengurangi stok BHP sebanyak total ${totalBhpUsed} unit untuk keperluan maintenance aset ID #${assetId}.`
+            );
         }
 
         await conn.commit();

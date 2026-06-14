@@ -5,6 +5,7 @@ const Room = require('../models/Room');
 const Consumable = require('../models/Consumable');
 const ProcurementItem = require('../models/ProcurementItem');
 const ItemReceipt = require('../models/ItemReceipt');
+const ActivityLog = require('../models/ActivityLog');
 
 // READ: Daftar BHP/Consumables (read-only untuk StafAdmin)
 exports.listConsumables = async (req, res) => {
@@ -366,6 +367,13 @@ exports.registerAsset = async (req, res) => {
 
         // Mark receipt as registered
         await ItemReceipt.markRegistered(receiptId, conn);
+
+        // Log Activity
+        ActivityLog.logAction(
+            req.session.user.id, 
+            'Register Aset', 
+            `Mendaftarkan ${quantityReceived} unit aset baru (${receipt.item_name}) ke inventaris.`
+        );
 
         await conn.commit();
         return res.send(`<script>alert('Berhasil mendaftarkan ${quantityReceived} unit aset baru!'); window.location.href='/stafadmin/penerimaan';</script>`);
