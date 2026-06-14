@@ -128,12 +128,13 @@ block content
                                         tr
                                             td(colspan="10" style="padding: 0; border-top: none;")
                                                 - const collapseId = 'collapse-receipt-' + item.item_id
+                                                - const hasUnregistered = item.item_type === 'Inventaris' && hasReceipts && receiptsByItem[item.item_id].some(r => !r.is_registered)
                                                 .d-flex.justify-content-center.py-1(style="background-color: #f1f3f5; border-bottom: 1px solid #dee2e6;")
                                                     button.btn.btn-sm.btn-link.btn-toggle-receipt.text-secondary(type="button" data-toggle="collapse" data-target=`#${collapseId}` aria-expanded="false")
                                                         i.fas.fa-chevron-down.mr-1
                                                         | Riwayat Penerimaan & Registrasi
                                                         if hasReceipts
-                                                            span.badge.badge-secondary.ml-1= receiptsByItem[item.item_id].length
+                                                            span(class=`badge ml-1 ${hasUnregistered ? 'badge-primary' : 'badge-secondary'}`)= receiptsByItem[item.item_id].length
 
                                                 .collapse.receipt-collapse(id=collapseId)
                                                     .px-4.py-3(style="background-color: #efe9e9ff;")

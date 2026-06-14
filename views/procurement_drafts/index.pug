@@ -69,20 +69,21 @@ block content
                                         td= new Date(draft.created_at).toLocaleDateString('id-ID')
 
                                         td
-                                            a.btn.btn-info.btn-sm.mr-1(href=`/kalab/procurement-drafts/${draft.id}`)
-                                                i.fas.fa-eye
-                                                |  Detail
+                                            .d-flex.flex-wrap.justify-content-center
+                                                a.btn.btn-info.btn-sm.m-1(href=`/kalab/procurement-drafts/${draft.id}`)
+                                                    i.fas.fa-eye
+                                                    |  Detail
 
-                                            if draft.status !== 'Locked'
-                                                a.btn.btn-warning.btn-sm.mr-1(href=`/kalab/procurement-drafts/edit/${draft.id}`)
-                                                    i.fas.fa-edit
-                                                    |  Edit
+                                                if draft.status !== 'Locked'
+                                                    a.btn.btn-warning.btn-sm.m-1(href=`/kalab/procurement-drafts/edit/${draft.id}`)
+                                                        i.fas.fa-edit
+                                                        |  Edit
 
-                                                form(action=`/kalab/procurement-drafts/delete/${draft.id}` method="POST" style="display:inline;")
-                                                    button.btn.btn-danger.btn-sm(type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus draft pengadaan ini? Semua barang di dalamnya juga akan terhapus.');")
-                                                        i.fas.fa-trash
-                                                        |  Hapus
-                                            else
-                                                button.btn.btn-secondary.btn-sm.mr-1(disabled)
-                                                    i.fas.fa-lock
-                                                    |  Locked
+                                                    form.m-1(action=`/kalab/procurement-drafts/delete/${draft.id}` method="POST" style="display:inline;")
+                                                        button.btn.btn-danger.btn-sm(type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus draft pengadaan ini? Semua barang di dalamnya juga akan terhapus.');")
+                                                            i.fas.fa-trash
+                                                            |  Hapus
+                                                else
+                                                    button.btn.btn-secondary.btn-sm.m-1(disabled)
+                                                        i.fas.fa-lock
+                                                        |  Locked

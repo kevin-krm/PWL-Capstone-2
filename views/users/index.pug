@@ -63,6 +63,7 @@ block content
                                         else
                                             span.badge.badge-danger Nonaktif
                                     td
-                                        a.btn.btn-sm.btn-warning(href=`/admin/users/edit/${u.id}`) Edit
-                                        form(action=`/admin/users/delete/${u.id}` method="POST" style="display:inline;")
-                                            button.btn.btn-sm.btn-danger.ml-1(type="submit" onclick="return confirm('Yakin ingin menghapus pengguna ini?');") Hapus
+                                        .d-flex.flex-wrap.justify-content-center
+                                            a.btn.btn-sm.btn-warning.m-1(href=`/admin/users/edit/${u.id}`) Edit
+                                            form.m-1(action=`/admin/users/delete/${u.id}` method="POST" style="display:inline;")
+                                                button.btn.btn-sm.btn-danger(type="submit" onclick="return confirm('Yakin ingin menghapus pengguna ini?');") Hapus

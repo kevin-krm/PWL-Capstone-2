@@ -1,5 +1,15 @@
 extends ../layouts/master
 
+block styles
+    link(rel="stylesheet" href="/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css")
+    link(rel="stylesheet" href="/adminlte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css")
+    link(rel="stylesheet" href="/adminlte/plugins/datatables-select/css/select.bootstrap4.min.css")
+    style.
+        .toggle-select-btn.active { background-color: #007bff !important; color: #fff !important; border-color: #007bff !important; }
+        #universal-select-wrapper { display: none; }
+        #universal-select-wrapper.visible { display: flex !important; align-items: center; }
+        #exportSelectedGroup { display: none; }
+
 block content
     .content-header
         .container-fluid
@@ -18,27 +28,15 @@ block content
                                 i.fas.fa-plus
                                 |  Tambah BHP
                 .card-body
-                    - var filterAction = '/staflab/consumables'
-                    if user.role === 'Kepala Laboratorium'
-                        - filterAction = '/kalab/consumables'
-                    else if user.role === 'Ketua Program Studi'
-                        - filterAction = '/kaprodi/consumables'
-                    else if user.role === 'Staf Administrasi'
-                        - filterAction = '/stafadmin/consumables'
-                    form.row.mb-3(method="GET" action=filterAction)
-                        .col-md-3
-                            select.form-control.form-control-sm(name="sort" onchange="this.form.submit()")
-                                option(value="" selected=(!selectedSort)) Urutkan
-                                option(value="abjad" selected=(selectedSort == 'abjad')) Abjad (A-Z)
-                                option(value="recent" selected=(selectedSort == 'recent')) Terbaru
-                        .col-md-3
-                            a.btn.btn-secondary.btn-sm.btn-block(href=filterAction)
-                                i.fas.fa-undo
-                                |  Reset Filter
-
-                    table.table.table-bordered
+                    .row.mb-2
+                        .col-12
+                            button#btn-reset-filter.btn.btn-secondary.btn-sm(type="button")
+                                i.fas.fa-undo.mr-1
+                                | Reset Filter
+                    table#consumablesTable.table.table-bordered.table-hover(style="width:100%")
                         thead.bg-primary
                             tr
+                                th
                                 th No.
                                 th Nama Barang
                                 th Stok Tersedia
@@ -47,43 +45,47 @@ block content
                         tbody
                             each c, index in consumables
                                 tr
+                                    td
                                     td= index + 1
                                     td= c.item_name
                                     td= c.stock
                                     td= c.unit
-                                    td
+                                    td.text-center
                                         if user.role === 'Staf Laboratorium'
-                                            button.btn.btn-sm.btn-warning(data-toggle="modal" data-target=`#modal-edit-${c.id}`) Edit
-                                            form(action=`/staflab/consumables/delete/${c.id}` method="POST" style="display:inline;")
-                                                button.btn.btn-sm.btn-danger.ml-1(type="submit" onclick="return confirm('Yakin ingin menghapus item BHP ini?');") Hapus
+                                            .d-flex.flex-wrap.justify-content-center
+                                                button.btn.btn-sm.btn-warning.m-1(data-toggle="modal" data-target=`#modal-edit-${c.id}`) Edit
+                                                form.m-1(action=`/staflab/consumables/delete/${c.id}` method="POST" style="display:inline;")
+                                                    button.btn.btn-sm.btn-danger(type="submit" onclick="return confirm('Yakin ingin menghapus item BHP ini?');") Hapus
                                         else
                                             span.text-muted -
 
-                                if user.role === 'Staf Laboratorium'
-                                    // MODAL EDIT BHP
-                                    .modal.fade(id=`modal-edit-${c.id}`)
-                                        .modal-dialog
-                                            .modal-content
-                                                .modal-header
-                                                    h4.modal-title Edit BHP
-                                                    button.close(type="button" data-dismiss="modal" aria-label="Close")
-                                                        span(aria-hidden="true") &times;
-                                                form(action=`/staflab/consumables/edit/${c.id}` method="POST")
-                                                    .modal-body
-                                                        .form-group
-                                                            label Nama Barang
-                                                            input.form-control(type="text" name="item_name" value=c.item_name required)
-                                                        .form-group
-                                                            label Stok Saat Ini
-                                                            input.form-control(type="number" name="stock" value=c.stock required)
-                                                        .form-group
-                                                            label Satuan (Pcs, Roll, Botol, dll)
-                                                            input.form-control(type="text" name="unit" value=c.unit required)
-                                                    .modal-footer.justify-content-between
-                                                        button.btn.btn-default(type="button" data-dismiss="modal") Batal
-                                                        button.btn.btn-primary(type="submit") Simpan Perubahan
-
+            //- ==========================================
+            //- MODAL (di luar tabel agar DataTables tidak rusak)
+            //- ==========================================
             if user.role === 'Staf Laboratorium'
+                each c in consumables
+                    .modal.fade(id=`modal-edit-${c.id}`)
+                        .modal-dialog
+                            .modal-content
+                                .modal-header
+                                    h4.modal-title Edit BHP
+                                    button.close(type="button" data-dismiss="modal" aria-label="Close")
+                                        span(aria-hidden="true") &times;
+                                form(action=`/staflab/consumables/edit/${c.id}` method="POST")
+                                    .modal-body
+                                        .form-group
+                                            label Nama Barang
+                                            input.form-control(type="text" name="item_name" value=c.item_name required)
+                                        .form-group
+                                            label Stok Saat Ini
+                                            input.form-control(type="number" name="stock" value=c.stock required)
+                                        .form-group
+                                            label Satuan (Pcs, Roll, Botol, dll)
+                                            input.form-control(type="text" name="unit" value=c.unit required)
+                                    .modal-footer.justify-content-between
+                                        button.btn.btn-default(type="button" data-dismiss="modal") Batal
+                                        button.btn.btn-primary(type="submit") Simpan Perubahan
+
                 // MODAL TAMBAH BHP
                 .modal.fade#modal-tambah
                     .modal-dialog
@@ -106,3 +108,146 @@ block content
                                 .modal-footer.justify-content-between
                                     button.btn.btn-default(type="button" data-dismiss="modal") Batal
                                     button.btn.btn-primary(type="submit") Simpan BHP
+
+block scripts
+    script(src="/adminlte/plugins/datatables/jquery.dataTables.min.js")
+    script(src="/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js")
+    script(src="/adminlte/plugins/datatables-buttons/js/dataTables.buttons.min.js")
+    script(src="/adminlte/plugins/datatables-buttons/js/buttons.bootstrap4.min.js")
+    script(src="/adminlte/plugins/jszip/jszip.min.js")
+    script(src="/adminlte/plugins/pdfmake/pdfmake.min.js")
+    script(src="/adminlte/plugins/pdfmake/vfs_fonts.js")
+    script(src="/adminlte/plugins/datatables-buttons/js/buttons.html5.min.js")
+    script(src="/adminlte/plugins/datatables-buttons/js/buttons.print.min.js")
+    script(src="/adminlte/plugins/datatables-select/js/dataTables.select.min.js")
+    script(src="/adminlte/plugins/datatables-select/js/select.bootstrap4.min.js")
+    script.
+        $(function () {
+            var lang = {
+                search: "Cari:", lengthMenu: "Tampilkan _MENU_ data", zeroRecords: "Tidak ditemukan data yang cocok",
+                info: "Menampilkan _START_–_END_ dari _TOTAL_ data", infoEmpty: "Tidak ada data",
+                infoFiltered: "(disaring dari _MAX_ total)",
+                paginate: { first: "Awal", last: "Akhir", next: "›", previous: "‹" }
+            };
+
+            // Columns to export (skip 0=checkbox, 5=Aksi)
+            var exportCols = [2, 3, 4];
+            var selectMode = false;
+
+            var table = $('#consumablesTable').DataTable({
+                dom: "<'row align-items-center mb-2'" +
+                     "<'col-auto'<'#toggle-select-container'>>" +
+                     "<'col-auto'<'#universal-select-wrapper'>>" +
+                     "<'col-auto'l>" +
+                     "<'col'>" +
+                     "<'col-auto'<'#export-selected-container'>>" +
+                     "<'col-auto'B>" +
+                     "<'col-auto'f>" +
+                     ">rt<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                buttons: [
+                    { extend: 'copy',  text: '<i class="fas fa-copy"></i> Copy',   className: 'btn btn-sm btn-secondary', exportOptions: { columns: exportCols } },
+                    { extend: 'excel', text: '<i class="fas fa-file-excel"></i> Excel', className: 'btn btn-sm btn-success', exportOptions: { columns: exportCols } },
+                    { extend: 'pdf',   text: '<i class="fas fa-file-pdf"></i> PDF', className: 'btn btn-sm btn-danger',  exportOptions: { columns: exportCols } },
+                    { extend: 'print', text: '<i class="fas fa-print"></i> Print', className: 'btn btn-sm btn-info',    exportOptions: { columns: exportCols } }
+                ],
+                select: { style: 'api', selector: 'td:first-child', info: false },
+                pageLength: 10, lengthMenu: [[5, 10, 25, -1], [5, 10, 25, 'Semua']], order: [[2,'asc']], language: lang,
+                columnDefs: [
+                    { targets: 0, orderable: false, searchable: false, className: 'select-checkbox', visible: false },
+                    { targets: [1, 5], orderable: false, searchable: false }
+                ],
+                initComplete: function () {
+                    // --- Toggle Select Button ---
+                    $('#toggle-select-container').html(
+                        '<button id="btnToggleSelect" class="btn btn-sm btn-outline-secondary toggle-select-btn" title="Toggle Select Mode">' +
+                        '<i class="fas fa-check-square mr-1"></i>Select</button>'
+                    );
+
+                    // --- Universal Select Checkbox ---
+                    $('#universal-select-wrapper').html(
+                        '<input type="checkbox" id="selectAllRows" class="mr-1" style="cursor:pointer;"> ' +
+                        '<label for="selectAllRows" class="mb-0 small text-muted" style="cursor:pointer;white-space:nowrap;">Pilih Semua</label>'
+                    );
+
+                    // --- Export Selected Dropdown ---
+                    $('#export-selected-container').html(
+                        '<div class="btn-group" id="exportSelectedGroup">' +
+                        '<button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+                        '<i class="fas fa-check-square mr-1"></i>Export Selected</button>' +
+                        '<div class="dropdown-menu dropdown-menu-right">' +
+                        '<a class="dropdown-item export-sel-action" data-type="copy" href="#">Copy</a>' +
+                        '<a class="dropdown-item export-sel-action" data-type="excel" href="#">Excel</a>' +
+                        '<a class="dropdown-item export-sel-action" data-type="pdf" href="#">PDF</a>' +
+                        '<a class="dropdown-item export-sel-action" data-type="print" href="#">Print</a>' +
+                        '</div></div>'
+                    );
+
+                    // --- Toggle ON/OFF ---
+                    $('#btnToggleSelect').on('click', function () {
+                        selectMode = !selectMode;
+                        $(this).toggleClass('active', selectMode);
+                        if (selectMode) {
+                            table.column(0).visible(true);
+                            table.select.style('multi');
+                            $('#universal-select-wrapper').addClass('visible');
+                            $('#exportSelectedGroup').show();
+                        } else {
+                            table.rows().deselect();
+                            table.select.style('api');
+                            table.column(0).visible(false);
+                            $('#universal-select-wrapper').removeClass('visible');
+                            $('#exportSelectedGroup').hide();
+                            var chk = document.getElementById('selectAllRows');
+                            if (chk) { chk.checked = false; chk.indeterminate = false; }
+                        }
+                    });
+
+                    // --- Pilih Semua ---
+                    $('#universal-select-wrapper').on('change', '#selectAllRows', function () {
+                        if (this.checked) {
+                            table.rows({ search: 'applied' }).select();
+                        } else {
+                            table.rows().deselect();
+                        }
+                    });
+
+                    // --- Export Selected Actions ---
+                    $('#export-selected-container').on('click', '.export-sel-action', function (e) {
+                        e.preventDefault();
+                        if (table.rows({ selected: true }).count() === 0) {
+                            alert('Tidak ada data yang dipilih untuk diekspor.');
+                            return;
+                        }
+                        var type = $(this).data('type');
+                        var tmpBtns = new $.fn.dataTable.Buttons(table, {
+                            buttons: [{ extend: type, exportOptions: { columns: exportCols, modifier: { selected: true } } }]
+                        });
+                        tmpBtns.dom.container.find('button').trigger('click');
+                        setTimeout(function () { tmpBtns.destroy(); }, 1000);
+                    });
+                }
+            });
+
+            // --- Universal checkbox state sync ---
+            table.on('select.dt deselect.dt', function () {
+                var chk = document.getElementById('selectAllRows');
+                if (!chk || !selectMode) return;
+                var total = table.rows({ search: 'applied' }).count();
+                var selected = table.rows({ selected: true }).count();
+                if (selected === 0) { chk.checked = false; chk.indeterminate = false; }
+                else if (selected >= total) { chk.checked = true; chk.indeterminate = false; }
+                else { chk.checked = false; chk.indeterminate = true; }
+            });
+
+            // --- Row numbering ---
+            table.on('draw.dt', function () {
+                table.column(1, { search: 'applied', order: 'applied' }).nodes().each(function (c, i) { c.innerHTML = i + 1; });
+            });
+
+            $('#btn-reset-filter').on('click', function () {
+                $('#consumablesTable_filter input').val('');
+                table.search('').columns().search('').order([[2,'asc']]).draw();
+            });
+
+            table.draw();
+        });

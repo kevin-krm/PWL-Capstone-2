@@ -10,7 +10,7 @@ async function autoGenerateMissingQRCodes() {
         );
 
         if (rows.length > 0) {
-            console.log(`[QR-Helper] Mendeteksi ${rows.length} aset tanpa QR Code. Memulai proses generate otomatis...`);
+            console.log("Terdapat aset yang memiliki label tetapi qr_code_url bernilai NULL atau string kosong");
             for (const row of rows) {
                 const qrCodeUrl = await QRCode.toDataURL(row.label_code);
                 await pool.query(
@@ -18,12 +18,8 @@ async function autoGenerateMissingQRCodes() {
                     [qrCodeUrl, row.id]
                 );
             }
-            console.log(`[QR-Helper] Berhasil menghasilkan QR Code untuk ${rows.length} aset.`);
-        } else {
-            console.log('[QR-Helper] Semua aset terdaftar sudah memiliki QR Code.');
         }
     } catch (err) {
-        console.error('[QR-Helper] Gagal melakukan auto-generate QR Code:', err.message);
     }
 }
 
