@@ -8,7 +8,6 @@ block styles
         .toggle-select-btn.active { background-color: #007bff !important; color: #fff !important; border-color: #007bff !important; }
         #universal-select-wrapper { display: none; }
         #universal-select-wrapper.visible { display: flex !important; align-items: center; }
-        #exportSelectedGroup { display: none; }
 
 block content
     .content-header
@@ -22,15 +21,16 @@ block content
             .card
                 .card-header
                     h3.card-title Daftar Stok BHP GWT 8
-                    if user.role === 'Staf Laboratorium'
-                        .card-tools
-                            button.btn.btn-primary.btn-sm(data-toggle="modal" data-target="#modal-tambah")
-                                i.fas.fa-plus
-                                |  Tambah BHP
                 .card-body
-                    .row.mb-2
-                        .col-12
-                            button#btn-reset-filter.btn.btn-secondary.btn-sm(type="button")
+                    .row.mb-3
+                        .col-md-3
+                            label.small.mb-1.text-muted Urutkan
+                            select#filter-sort.form-control.form-control-sm
+                                option(value="") Default
+                                option(value="abjad") Abjad (A-Z)
+                                option(value="recent") Terbaru
+                        .col-md-3.d-flex.align-items-end
+                            button#btn-reset-filter.btn.btn-secondary.btn-sm.btn-block(type="button")
                                 i.fas.fa-undo.mr-1
                                 | Reset Filter
                     table#consumablesTable.table.table-bordered.table-hover(style="width:100%")
@@ -41,6 +41,7 @@ block content
                                 th Nama Barang
                                 th Stok Tersedia
                                 th Satuan (Unit)
+                                th Tanggal Ditambahkan
                                 th Aksi
                         tbody
                             each c, index in consumables
@@ -50,6 +51,7 @@ block content
                                     td= c.item_name
                                     td= c.stock
                                     td= c.unit
+                                    td(data-order=(c.created_at ? new Date(c.created_at).getTime() : 0))= c.created_at ? new Date(c.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'
                                     td.text-center
                                         if user.role === 'Staf Laboratorium'
                                             .d-flex.flex-wrap.justify-content-center
@@ -86,28 +88,7 @@ block content
                                         button.btn.btn-default(type="button" data-dismiss="modal") Batal
                                         button.btn.btn-primary(type="submit") Simpan Perubahan
 
-                // MODAL TAMBAH BHP
-                .modal.fade#modal-tambah
-                    .modal-dialog
-                        .modal-content
-                            .modal-header
-                                h4.modal-title Tambah BHP Baru
-                                button.close(type="button" data-dismiss="modal" aria-label="Close")
-                                    span(aria-hidden="true") &times;
-                            form(action="/staflab/consumables/add" method="POST")
-                                .modal-body
-                                    .form-group
-                                        label Nama Barang
-                                        input.form-control(type="text" name="item_name" placeholder="Misal: Tinta Printer Epson" required)
-                                    .form-group
-                                        label Stok Awal
-                                        input.form-control(type="number" name="stock" placeholder="0" required)
-                                    .form-group
-                                        label Satuan
-                                        input.form-control(type="text" name="unit" placeholder="Misal: Botol" required)
-                                .modal-footer.justify-content-between
-                                    button.btn.btn-default(type="button" data-dismiss="modal") Batal
-                                    button.btn.btn-primary(type="submit") Simpan BHP
+
 
 block scripts
     script(src="/adminlte/plugins/datatables/jquery.dataTables.min.js")
@@ -130,31 +111,37 @@ block scripts
                 paginate: { first: "Awal", last: "Akhir", next: "›", previous: "‹" }
             };
 
-            // Columns to export (skip 0=checkbox, 5=Aksi)
-            var exportCols = [2, 3, 4];
+            // Columns to export (skip 0=checkbox, 6=Aksi)
+            var exportCols = [2, 3, 4, 5];
             var selectMode = false;
+            var exportRowsSetting = function (idx, data, node) {
+                var dt = $('#consumablesTable').DataTable();
+                if (selectMode && dt.rows({ selected: true }).count() > 0) {
+                    return dt.rows({ selected: true }).indexes().toArray().indexOf(idx) !== -1;
+                }
+                return true;
+            };
 
             var table = $('#consumablesTable').DataTable({
                 dom: "<'row align-items-center mb-2'" +
                      "<'col-auto'<'#toggle-select-container'>>" +
                      "<'col-auto'<'#universal-select-wrapper'>>" +
-                     "<'col-auto'l>" +
-                     "<'col'>" +
-                     "<'col-auto'<'#export-selected-container'>>" +
                      "<'col-auto'B>" +
+                     "<'col'>" +
+                     "<'col-auto'l>" +
                      "<'col-auto'f>" +
                      ">rt<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 buttons: [
-                    { extend: 'copy',  text: '<i class="fas fa-copy"></i> Copy',   className: 'btn btn-sm btn-secondary', exportOptions: { columns: exportCols } },
-                    { extend: 'excel', text: '<i class="fas fa-file-excel"></i> Excel', className: 'btn btn-sm btn-success', exportOptions: { columns: exportCols } },
-                    { extend: 'pdf',   text: '<i class="fas fa-file-pdf"></i> PDF', className: 'btn btn-sm btn-danger',  exportOptions: { columns: exportCols } },
-                    { extend: 'print', text: '<i class="fas fa-print"></i> Print', className: 'btn btn-sm btn-info',    exportOptions: { columns: exportCols } }
+                    { extend: 'copy',  text: '<i class="fas fa-copy"></i> Copy',   className: 'btn btn-sm btn-secondary', exportOptions: { columns: exportCols, rows: exportRowsSetting } },
+                    { extend: 'excel', text: '<i class="fas fa-file-excel"></i> Excel', className: 'btn btn-sm btn-success', exportOptions: { columns: exportCols, rows: exportRowsSetting } },
+                    { extend: 'pdf',   text: '<i class="fas fa-file-pdf"></i> PDF', className: 'btn btn-sm btn-danger',  exportOptions: { columns: exportCols, rows: exportRowsSetting } },
+                    { extend: 'print', text: '<i class="fas fa-print"></i> Print', className: 'btn btn-sm btn-info',    exportOptions: { columns: exportCols, rows: exportRowsSetting } }
                 ],
                 select: { style: 'api', selector: 'td:first-child', info: false },
                 pageLength: 10, lengthMenu: [[5, 10, 25, -1], [5, 10, 25, 'Semua']], order: [[2,'asc']], language: lang,
                 columnDefs: [
                     { targets: 0, orderable: false, searchable: false, className: 'select-checkbox', visible: false },
-                    { targets: [1, 5], orderable: false, searchable: false }
+                    { targets: [1, 6], orderable: false, searchable: false }
                 ],
                 initComplete: function () {
                     // --- Toggle Select Button ---
@@ -169,19 +156,6 @@ block scripts
                         '<label for="selectAllRows" class="mb-0 small text-muted" style="cursor:pointer;white-space:nowrap;">Pilih Semua</label>'
                     );
 
-                    // --- Export Selected Dropdown ---
-                    $('#export-selected-container').html(
-                        '<div class="btn-group" id="exportSelectedGroup">' +
-                        '<button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
-                        '<i class="fas fa-check-square mr-1"></i>Export Selected</button>' +
-                        '<div class="dropdown-menu dropdown-menu-right">' +
-                        '<a class="dropdown-item export-sel-action" data-type="copy" href="#">Copy</a>' +
-                        '<a class="dropdown-item export-sel-action" data-type="excel" href="#">Excel</a>' +
-                        '<a class="dropdown-item export-sel-action" data-type="pdf" href="#">PDF</a>' +
-                        '<a class="dropdown-item export-sel-action" data-type="print" href="#">Print</a>' +
-                        '</div></div>'
-                    );
-
                     // --- Toggle ON/OFF ---
                     $('#btnToggleSelect').on('click', function () {
                         selectMode = !selectMode;
@@ -190,13 +164,11 @@ block scripts
                             table.column(0).visible(true);
                             table.select.style('multi');
                             $('#universal-select-wrapper').addClass('visible');
-                            $('#exportSelectedGroup').show();
                         } else {
                             table.rows().deselect();
                             table.select.style('api');
                             table.column(0).visible(false);
                             $('#universal-select-wrapper').removeClass('visible');
-                            $('#exportSelectedGroup').hide();
                             var chk = document.getElementById('selectAllRows');
                             if (chk) { chk.checked = false; chk.indeterminate = false; }
                         }
@@ -209,21 +181,6 @@ block scripts
                         } else {
                             table.rows().deselect();
                         }
-                    });
-
-                    // --- Export Selected Actions ---
-                    $('#export-selected-container').on('click', '.export-sel-action', function (e) {
-                        e.preventDefault();
-                        if (table.rows({ selected: true }).count() === 0) {
-                            alert('Tidak ada data yang dipilih untuk diekspor.');
-                            return;
-                        }
-                        var type = $(this).data('type');
-                        var tmpBtns = new $.fn.dataTable.Buttons(table, {
-                            buttons: [{ extend: type, exportOptions: { columns: exportCols, modifier: { selected: true } } }]
-                        });
-                        tmpBtns.dom.container.find('button').trigger('click');
-                        setTimeout(function () { tmpBtns.destroy(); }, 1000);
                     });
                 }
             });
@@ -244,7 +201,20 @@ block scripts
                 table.column(1, { search: 'applied', order: 'applied' }).nodes().each(function (c, i) { c.innerHTML = i + 1; });
             });
 
+            // --- Sort handler ---
+            $('#filter-sort').on('change', function () {
+                var val = this.value;
+                if (val === 'recent') {
+                    table.order([5, 'desc']).draw();
+                } else if (val === 'abjad') {
+                    table.order([2, 'asc']).draw();
+                } else {
+                    table.order([2, 'asc']).draw();
+                }
+            });
+
             $('#btn-reset-filter').on('click', function () {
+                $('#filter-sort').val('');
                 $('#consumablesTable_filter input').val('');
                 table.search('').columns().search('').order([[2,'asc']]).draw();
             });

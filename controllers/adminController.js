@@ -149,4 +149,31 @@ exports.deleteRoom = async (req, res) => {
     }
     await Room.remove(roomId);
     res.redirect('/admin/rooms');
+<<<<<<< Updated upstream
+=======
+};
+
+// ===== RIWAYAT AUDIT PENUH =====
+
+exports.listLogs = async (req, res) => {
+    try {
+        const sort = req.query.sort || null;
+        const role = req.query.role || null;
+        const action = req.query.action || null;
+        const search = req.query.search || null;
+
+        const logs = await ActivityLog.findAll({ sort, role, action, search });
+        res.render('admin/activity_logs/index', { 
+            user: req.session.user, 
+            logs,
+            selectedSort: sort,
+            selectedRole: role,
+            selectedAction: action,
+            searchQuery: search
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Terjadi kesalahan pada server saat mengambil log.');
+    }
+>>>>>>> Stashed changes
 };
