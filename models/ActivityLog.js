@@ -17,6 +17,7 @@ class ActivityLog {
         });
     }
 
+<<<<<<< HEAD
     static findAll() {
         return new Promise((resolve, reject) => {
             const query = `
@@ -26,6 +27,42 @@ class ActivityLog {
                 ORDER BY al.created_at DESC
             `;
             db.query(query, (err, results) => {
+=======
+    static findAll(filters = {}) {
+        return new Promise((resolve, reject) => {
+            let query = `
+                SELECT al.*, u.name as user_name, u.role as user_role 
+                FROM activity_logs al
+                LEFT JOIN users u ON al.user_id = u.id
+                WHERE 1=1
+            `;
+            const params = [];
+
+            if (filters.role) {
+                query += ` AND u.role = ?`;
+                params.push(filters.role);
+            }
+
+            if (filters.action) {
+                query += ` AND al.action = ?`;
+                params.push(filters.action);
+            }
+
+            if (filters.search) {
+                query += ` AND (u.name LIKE ? OR al.description LIKE ? OR al.action LIKE ?)`;
+                const searchParam = `%${filters.search}%`;
+                params.push(searchParam, searchParam, searchParam);
+            }
+
+            if (filters.sort === 'asc') {
+                query += ` ORDER BY al.created_at ASC`;
+            } else {
+                // default is desc
+                query += ` ORDER BY al.created_at DESC`;
+            }
+
+            db.query(query, params, (err, results) => {
+>>>>>>> parent of 0e90963 (Revert "Debug filters, update labeling & update export")
                 if (err) return reject(err);
                 resolve(results);
             });

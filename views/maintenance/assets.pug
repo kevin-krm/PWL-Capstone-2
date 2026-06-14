@@ -8,7 +8,6 @@ block styles
         .toggle-select-btn.active { background-color: #007bff !important; color: #fff !important; border-color: #007bff !important; }
         #universal-select-wrapper { display: none; }
         #universal-select-wrapper.visible { display: flex !important; align-items: center; }
-        #exportSelectedGroup { display: none; }
 
 block content
     .content-header
@@ -123,22 +122,28 @@ block scripts
             // Columns to export (skip 0=checkbox, 6=Aksi)
             var exportCols = [2, 3, 4, 5];
             var selectMode = false;
+            var exportRowsSetting = function (idx, data, node) {
+                var dt = $('#assetsTable').DataTable();
+                if (selectMode && dt.rows({ selected: true }).count() > 0) {
+                    return dt.rows({ selected: true }).indexes().toArray().indexOf(idx) !== -1;
+                }
+                return true;
+            };
 
             var table = $('#assetsTable').DataTable({
                 dom: "<'row align-items-center mb-2'" +
                      "<'col-auto'<'#toggle-select-container'>>" +
                      "<'col-auto'<'#universal-select-wrapper'>>" +
-                     "<'col-auto'l>" +
-                     "<'col'>" +
-                     "<'col-auto'<'#export-selected-container'>>" +
                      "<'col-auto'B>" +
+                     "<'col'>" +
+                     "<'col-auto'l>" +
                      "<'col-auto'f>" +
                      ">rt<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 buttons: [
-                    { extend: 'copy',  text: '<i class="fas fa-copy"></i> Copy',   className: 'btn btn-sm btn-secondary', exportOptions: { columns: exportCols } },
-                    { extend: 'excel', text: '<i class="fas fa-file-excel"></i> Excel', className: 'btn btn-sm btn-success', exportOptions: { columns: exportCols } },
-                    { extend: 'pdf',   text: '<i class="fas fa-file-pdf"></i> PDF', className: 'btn btn-sm btn-danger',  exportOptions: { columns: exportCols } },
-                    { extend: 'print', text: '<i class="fas fa-print"></i> Print', className: 'btn btn-sm btn-info',    exportOptions: { columns: exportCols } }
+                    { extend: 'copy',  text: '<i class="fas fa-copy"></i> Copy',   className: 'btn btn-sm btn-secondary', exportOptions: { columns: exportCols, rows: exportRowsSetting } },
+                    { extend: 'excel', text: '<i class="fas fa-file-excel"></i> Excel', className: 'btn btn-sm btn-success', exportOptions: { columns: exportCols, rows: exportRowsSetting } },
+                    { extend: 'pdf',   text: '<i class="fas fa-file-pdf"></i> PDF', className: 'btn btn-sm btn-danger',  exportOptions: { columns: exportCols, rows: exportRowsSetting } },
+                    { extend: 'print', text: '<i class="fas fa-print"></i> Print', className: 'btn btn-sm btn-info',    exportOptions: { columns: exportCols, rows: exportRowsSetting } }
                 ],
                 select: { style: 'api', selector: 'td:first-child', info: false },
                 pageLength: 10, lengthMenu: [[5, 10, 25, -1], [5, 10, 25, 'Semua']], order: [[3,'asc']], language: lang,
@@ -159,19 +164,6 @@ block scripts
                         '<label for="selectAllRows" class="mb-0 small text-muted" style="cursor:pointer;white-space:nowrap;">Pilih Semua</label>'
                     );
 
-                    // --- Export Selected Dropdown ---
-                    $('#export-selected-container').html(
-                        '<div class="btn-group" id="exportSelectedGroup">' +
-                        '<button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
-                        '<i class="fas fa-check-square mr-1"></i>Export Selected</button>' +
-                        '<div class="dropdown-menu dropdown-menu-right">' +
-                        '<a class="dropdown-item export-sel-action" data-type="copy" href="#">Copy</a>' +
-                        '<a class="dropdown-item export-sel-action" data-type="excel" href="#">Excel</a>' +
-                        '<a class="dropdown-item export-sel-action" data-type="pdf" href="#">PDF</a>' +
-                        '<a class="dropdown-item export-sel-action" data-type="print" href="#">Print</a>' +
-                        '</div></div>'
-                    );
-
                     // --- Toggle ON/OFF ---
                     $('#btnToggleSelect').on('click', function () {
                         selectMode = !selectMode;
@@ -180,13 +172,11 @@ block scripts
                             table.column(0).visible(true);
                             table.select.style('multi');
                             $('#universal-select-wrapper').addClass('visible');
-                            $('#exportSelectedGroup').show();
                         } else {
                             table.rows().deselect();
                             table.select.style('api');
                             table.column(0).visible(false);
                             $('#universal-select-wrapper').removeClass('visible');
-                            $('#exportSelectedGroup').hide();
                             var chk = document.getElementById('selectAllRows');
                             if (chk) { chk.checked = false; chk.indeterminate = false; }
                         }
@@ -199,21 +189,6 @@ block scripts
                         } else {
                             table.rows().deselect();
                         }
-                    });
-
-                    // --- Export Selected Actions ---
-                    $('#export-selected-container').on('click', '.export-sel-action', function (e) {
-                        e.preventDefault();
-                        if (table.rows({ selected: true }).count() === 0) {
-                            alert('Tidak ada data yang dipilih untuk diekspor.');
-                            return;
-                        }
-                        var type = $(this).data('type');
-                        var tmpBtns = new $.fn.dataTable.Buttons(table, {
-                            buttons: [{ extend: type, exportOptions: { columns: exportCols, modifier: { selected: true } } }]
-                        });
-                        tmpBtns.dom.container.find('button').trigger('click');
-                        setTimeout(function () { tmpBtns.destroy(); }, 1000);
                     });
                 }
             });

@@ -33,13 +33,17 @@ block content
                                 option(value="" selected=(!selectedType)) Semua Jenis
                                 option(value="Inventaris" selected=(selectedType == 'Inventaris')) Inventaris
                                 option(value="BHP" selected=(selectedType == 'BHP')) BHP
-                        .col-md-3
+                        .col-md-2
                             select.form-control.form-control-sm(name="status" onchange="this.form.submit()")
                                 option(value="" selected=(!selectedStatus)) Semua Status
                                 option(value="belum" selected=(selectedStatus == 'belum')) Belum Diterima
                                 option(value="sebagian" selected=(selectedStatus == 'sebagian')) Diterima Sebagian
                                 option(value="selesai" selected=(selectedStatus == 'selesai')) Selesai Diterima
-                        .col-md-4
+                        .col-md-3
+                            select.form-control.form-control-sm(name="registration" onchange="this.form.submit()")
+                                option(value="" selected=(!selectedRegistration)) Semua Riwayat Penerimaan & Registrasi
+                                option(value="pending" selected=(selectedRegistration == 'pending')) Belum Sepenuhnya Diterima & Diregistrasi
+                        .col-md-3
                             select.form-control.form-control-sm(name="sort" onchange="this.form.submit()")
                                 option(value="" selected=(!selectedSort)) Urutkan
                                 option(value="abjad" selected=(selectedSort == 'abjad')) Abjad (A-Z)
@@ -50,7 +54,7 @@ block content
                                 option(value="diterima_desc" selected=(selectedSort == 'diterima_desc')) Diterima: Terbesar → Terkecil
                                 option(value="terima_asc" selected=(selectedSort == 'terima_asc')) Sisa Terima: Terkecil → Terbesar
                                 option(value="terima_desc" selected=(selectedSort == 'terima_desc')) Sisa Terima: Terbesar → Terkecil
-                        .col-md-3
+                        .col-md-2
                             a.btn.btn-secondary.btn-sm.btn-block(href="/stafadmin/penerimaan")
                                 i.fas.fa-undo
                                 |  Reset Filter
@@ -69,8 +73,7 @@ block content
                                         th Nama Barang
                                         th.text-center(style="width: 10%") Jenis
                                         th.text-right(style="width: 13%") Harga Estimasi
-                                        th.text-center(style="width: 8%") Target
-                                        th.text-center(style="width: 8%") Diterima
+                                        th.text-center(style="width: 16%") Jumlah Diterima
                                         th.text-center(style="width: 12%") Status
                                         th.text-center(style="width: 8%") Link
                                         th.text-center(style="width: 12%") Terima
@@ -92,8 +95,13 @@ block content
                                                         i.fas.fa-box-open.mr-1
                                                         | BHP
                                             td.text-right= 'Rp ' + Number(item.price).toLocaleString('id-ID')
-                                            td.text-center.font-weight-bold= item.target_quantity
-                                            td.text-center= item.quantity_received
+                                            td.text-center
+                                                div.d-flex.align-items-center.justify-content-center
+                                                    .progress.flex-grow-1.mr-2(style="height: 10px; min-width: 80px;")
+                                                        - const percent = Math.min(100, Math.round((item.quantity_received / item.target_quantity) * 100))
+                                                        - const barColor = percent === 100 ? 'bg-success' : (percent > 0 ? 'bg-warning' : 'bg-danger')
+                                                        .progress-bar(class=barColor role="progressbar" style=`width: ${percent}%` aria-valuenow=percent aria-valuemin="0" aria-valuemax="100")
+                                                    span.small.font-weight-bold(style="white-space: nowrap;")= `${item.quantity_received}/${item.target_quantity}`
                                             td.text-center
                                                 if item.quantity_received == 0
                                                     span.badge.badge-danger.p-2
@@ -126,7 +134,7 @@ block content
 
                                         //- Row riwayat penerimaan (collapsible)
                                         tr
-                                            td(colspan="10" style="padding: 0; border-top: none;")
+                                            td(colspan="9" style="padding: 0; border-top: none;")
                                                 - const collapseId = 'collapse-receipt-' + item.item_id
                                                 - const hasUnregistered = item.item_type === 'Inventaris' && hasReceipts && receiptsByItem[item.item_id].some(r => !r.is_registered)
                                                 .d-flex.justify-content-center.py-1(style="background-color: #f1f3f5; border-bottom: 1px solid #dee2e6;")

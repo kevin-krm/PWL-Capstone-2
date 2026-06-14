@@ -252,11 +252,11 @@ INSERT INTO procurement_items (draft_id, item_type, item_name, price, quantity, 
 (1, 'Inventaris', 'Monitor Dell 22 Inch',          1800000,  10, 'https://dell.com/monitor',      'Disetujui', NULL, 'Pelengkap PC baru',           'Disetujui'),
 (1, 'BHP',        'RAM DDR4 8GB',                   600000,   20, 'https://corsair.com/ram',       'Disetujui', NULL, 'Upgrade memori PC',           'Disetujui'),
 (2, 'Inventaris', 'PC Desktop HP ProDesk',          13500000, 8,  'https://hp.com/prodesk',        'Disetujui', NULL, 'Tambahan unit lab enterprise','Disetujui untuk ekspansi'),
-(2, 'Inventaris', 'Monitor LG 24 Inch',             2500000,  5,  'https://lg.com/monitor',        'Disetujui', 34,   'Mengganti monitor rusak di Database Lab', 'Disetujui, monitor lama rusak'),
+(2, 'Inventaris', 'Monitor LG 24 Inch',             2500000,  1,  'https://lg.com/monitor',        'Disetujui', 34,   'Mengganti monitor rusak di Database Lab', 'Disetujui, monitor lama rusak'),
 (2, 'BHP',        'SSD Samsung 500GB',              750000,   15, 'https://samsung.com/ssd',       'Disetujui', NULL, 'Upgrade storage PC',          'Disetujui'),
 (2, 'BHP',        'Toner Printer HP',               450000,   10, 'https://hp.com/toner',          'Ditolak',   NULL, 'Cadangan toner',              'Ditolak, stok toner masih cukup'),
 (3, 'Inventaris', 'PC Desktop Lenovo ThinkCentre', 15000000, 10, 'https://lenovo.com/thinkcentre', 'Disetujui', NULL, 'Lab multimedia baru',         'Disetujui'),
-(3, 'Inventaris', 'Cisco Switch 24-Port',           8500000,  2,  'https://cisco.com/switch',      'Disetujui', 29,   'Mengganti switch rusak Internet Lab 1', 'Disetujui'),
+(3, 'Inventaris', 'Cisco Switch 24-Port',           8500000,  1,  'https://cisco.com/switch',      'Disetujui', 29,   'Mengganti switch rusak Internet Lab 1', 'Disetujui'),
 (3, 'BHP',        'Power Supply 500W',              550000,   6,  'https://corsair.com/psu',       'Disetujui', NULL, 'Cadangan PSU',                'Disetujui'),
 (3, 'Inventaris', 'Printer Laserjet Pro',           3200000,  2,  'https://hp.com/laserjet',       'Ditolak',   NULL, 'Printer tambahan',            'Ditolak, anggaran terbatas'),
 (4, 'Inventaris', 'PC Desktop HP ProDesk',          13500000, 5,  'https://hp.com/prodesk',        'Pending',   NULL, 'Permintaan tambahan unit',    NULL),
@@ -283,7 +283,7 @@ INSERT INTO maintenance_logs (asset_id, staf_lab_id, maintenance_date, descripti
 (23, 7, '2026-01-20', 'Maintenance rutin PC Advance Programming Lab 3'),
 (19, 5, '2026-03-11', 'Penggantian RAM PC Advance Programming Lab 1'),
 (39, 7, '2026-06-05', 'Servis lensa & sensor DSLR Canon'),
-(11, 5, '2026-09-17', 'Kalibrasi & pembersihan proyektor Epson');
+(11, 5, '2026-06-17', 'Kalibrasi & pembersihan proyektor Epson');
 
 -- Insert Maintenance BHP Usage (jumlah dijaga <= stok)
 INSERT INTO maintenance_bhp_usage (maintenance_log_id, consumable_id, quantity_used) VALUES
