@@ -2,6 +2,7 @@ const ProcurementDraft = require('../models/ProcurementDraft');
 const ProcurementItem = require('../models/ProcurementItem');
 const Asset = require('../models/Asset');
 const Consumable = require('../models/Consumable');
+const ActivityLog = require('../models/ActivityLog');
 
 // Membangun array nilai item draf dari body form (dipakai create & edit)
 function buildItemValues(body, draftId) {
@@ -107,6 +108,14 @@ exports.createDraft = async (req, res) => {
         }
 
         await ProcurementItem.bulkInsert(values);
+        
+        // Log Activity
+        ActivityLog.logAction(
+            kalabId, 
+            'Membuat Draft Pengadaan', 
+            `Membuat draft pengadaan baru untuk tahun ${year} dengan ${values.length} item`
+        );
+
         res.redirect('/kalab/procurement-drafts');
     } catch (err) {
         res.status(500).send(err);

@@ -26,4 +26,7 @@ router.post('/rooms/add', adminController.createRoom);
 router.post('/rooms/edit/:id', adminController.updateRoom);
 router.post('/rooms/delete/:id', adminController.deleteRoom);
 
+// Riwayat Audit Penuh
+router.get('/activity-logs', adminController.listLogs);
+
 module.exports = router;

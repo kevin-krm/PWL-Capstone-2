@@ -30,6 +30,10 @@ aside.main-sidebar.sidebar-dark-primary.elevation-4
                         a.nav-link(href="/admin/rooms")
                             i.nav-icon.fas.fa-door-open
                             p Kelola Ruangan
+                    li.nav-item
+                        a.nav-link(href="/admin/activity-logs")
+                            i.nav-icon.fas.fa-history
+                            p Riwayat Audit
 
                 // 2. MENU STAF ADMINISTRASI
                 if user.role === 'Staf Administrasi'

@@ -1,0 +1,50 @@
+extends ../../layouts/master
+
+block content
+    .content-header
+        .container-fluid
+            .row.mb-2
+                .col-sm-6
+                    h1.m-0 Riwayat Audit Penuh (Activity Log)
+                .col-sm-6
+                    ol.breadcrumb.float-sm-right
+                        li.breadcrumb-item
+                            a(href="/admin/dashboard") Dashboard
+                        li.breadcrumb-item.active Riwayat Audit Penuh
+
+    .content
+        .container-fluid
+            .card.card-primary.card-outline
+                .card-header
+                    h3.card-title 
+                        i.fas.fa-history.mr-1
+                        | Log Aktivitas Pengguna
+                .card-body
+                    .table-responsive
+                        table.table.table-bordered.table-hover.table-striped
+                            thead.thead-dark
+                                tr
+                                    th(width="5%") No
+                                    th(width="15%") Waktu
+                                    th(width="25%") Pengguna
+                                    th(width="15%") Aksi
+                                    th(width="40%") Deskripsi Detail
+                            tbody
+                                if logs.length > 0
+                                    each log, index in logs
+                                        tr
+                                            td.text-center #{index + 1}
+                                            td #{new Date(log.created_at).toLocaleString('id-ID')}
+                                            td
+                                                if log.user_name
+                                                    strong #{log.user_name}
+                                                    br
+                                                    small.text-muted #{log.user_role}
+                                                else
+                                                    span.text-danger Sistem / Terhapus
+                                            td
+                                                span.badge.badge-info #{log.action}
+                                            td #{log.description}
+                                else
+                                    tr
+                                        td.text-center(colspan="5") Belum ada riwayat aktivitas yang dicatat.

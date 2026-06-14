@@ -3,6 +3,24 @@ DROP DATABASE IF EXISTS capstone_lab_inventory;
 CREATE DATABASE IF NOT EXISTS capstone_lab_inventory;
 USE capstone_lab_inventory;
 
+-- Disable foreign key checks to safely drop tables
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Drop all existing tables
+DROP TABLE IF EXISTS maintenance_bhp_usage;
+DROP TABLE IF EXISTS maintenance_logs;
+DROP TABLE IF EXISTS item_receipts;
+DROP TABLE IF EXISTS procurement_items;
+DROP TABLE IF EXISTS procurement_drafts;
+DROP TABLE IF EXISTS activity_logs;
+DROP TABLE IF EXISTS consumables;
+DROP TABLE IF EXISTS assets;
+DROP TABLE IF EXISTS rooms;
+DROP TABLE IF EXISTS users;
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+
 -- 1. Tabel Users (Mengelola role pengguna)
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -104,6 +122,16 @@ CREATE TABLE maintenance_bhp_usage (
     quantity_used INT NOT NULL,
     FOREIGN KEY (maintenance_log_id) REFERENCES maintenance_logs(id) ON DELETE CASCADE,
     FOREIGN KEY (consumable_id) REFERENCES consumables(id) ON DELETE CASCADE
+);
+
+-- 10. Tabel Activity Logs (Riwayat Audit Penuh)
+CREATE TABLE activity_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    action VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- ==========================================
@@ -242,7 +270,7 @@ INSERT INTO item_receipts (procurement_item_id, staf_admin_id, quantity_received
 (3, 4, 20, '2024-03-20', TRUE),
 (4, 4, 5,  '2025-05-12', TRUE),
 (5, 4, 5,  '2025-05-20', FALSE),
-(6, 4, 15, '2025-06-01', TRUE)
+(6, 4, 15, '2025-06-01', TRUE),
 (10,4, 6,  '2026-07-15', TRUE);
 -- (item 8 & 9 belum diterima -> memicu notifikasi Penerimaan Staf Admin)
 
