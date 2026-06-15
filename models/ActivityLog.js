@@ -17,17 +17,6 @@ class ActivityLog {
         });
     }
 
-<<<<<<< HEAD
-    static findAll() {
-        return new Promise((resolve, reject) => {
-            const query = `
-                SELECT al.*, u.name as user_name, u.role as user_role 
-                FROM activity_logs al
-                LEFT JOIN users u ON al.user_id = u.id
-                ORDER BY al.created_at DESC
-            `;
-            db.query(query, (err, results) => {
-=======
     static findAll(filters = {}) {
         return new Promise((resolve, reject) => {
             let query = `
@@ -62,7 +51,6 @@ class ActivityLog {
             }
 
             db.query(query, params, (err, results) => {
->>>>>>> parent of 0e90963 (Revert "Debug filters, update labeling & update export")
                 if (err) return reject(err);
                 resolve(results);
             });

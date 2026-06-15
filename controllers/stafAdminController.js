@@ -326,22 +326,6 @@ exports.registerAsset = async (req, res) => {
             const roomName = oldAssetRoom ? oldAssetRoom.room_name : 'UNKNOWN';
 
             for (let i = 0; i < quantityReceived; i++) {
-<<<<<<< Updated upstream
-                const paddedNum = String(nextId + i).padStart(3, '0');
-<<<<<<< HEAD
-                
-                let currentPrefix = label_prefix;
-                const parts = currentPrefix.split('-');
-                if (parts.length >= 3 && parts[0].toUpperCase() === 'INV') {
-                    const year = parts[parts.length - 1];
-                    const formattedRoom = roomName.trim().toUpperCase().replace(/\s+/g, '-');
-                    currentPrefix = `INV-${formattedRoom}-${year}`;
-                }
-
-                const labelCode = `${currentPrefix}-${paddedNum}`;
-=======
-                const labelCode = `${label_prefix}-${paddedNum}`;
-=======
                 let labelCode;
                 if (isManual && customLabels[i] && customLabels[i].trim() !== '') {
                     labelCode = customLabels[i].trim();
@@ -357,8 +341,6 @@ exports.registerAsset = async (req, res) => {
                     labelCode = `${currentPrefix}-${paddedNum}`;
                 }
 
->>>>>>> Stashed changes
->>>>>>> parent of 0e90963 (Revert "Debug filters, update labeling & update export")
                 const qrCodeUrl = await QRCode.toDataURL(labelCode);
                 await Asset.insertNew({
                     room_id: newAssetRoomId,
@@ -378,23 +360,6 @@ exports.registerAsset = async (req, res) => {
 
             for (let i = 0; i < quantityReceived; i++) {
                 const assignedRoomId = roomIds[i] || roomIds[roomIds.length - 1];
-<<<<<<< Updated upstream
-                const paddedNum = String(nextId + i).padStart(3, '0');
-<<<<<<< HEAD
-                
-                const roomName = roomMap[assignedRoomId] || 'UNKNOWN';
-                let currentPrefix = label_prefix;
-                const parts = currentPrefix.split('-');
-                if (parts.length >= 3 && parts[0].toUpperCase() === 'INV') {
-                    const year = parts[parts.length - 1];
-                    const formattedRoom = roomName.trim().toUpperCase().replace(/\s+/g, '-');
-                    currentPrefix = `INV-${formattedRoom}-${year}`;
-                }
-
-                const labelCode = `${currentPrefix}-${paddedNum}`;
-=======
-                const labelCode = `${label_prefix}-${paddedNum}`;
-=======
                 let labelCode;
 
                 if (isManual && customLabels[i] && customLabels[i].trim() !== '') {
@@ -412,8 +377,6 @@ exports.registerAsset = async (req, res) => {
                     labelCode = `${currentPrefix}-${paddedNum}`;
                 }
 
->>>>>>> Stashed changes
->>>>>>> parent of 0e90963 (Revert "Debug filters, update labeling & update export")
                 const qrCodeUrl = await QRCode.toDataURL(labelCode);
                 await Asset.insertNew({
                     room_id: assignedRoomId,

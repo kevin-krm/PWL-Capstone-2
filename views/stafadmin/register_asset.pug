@@ -174,27 +174,7 @@ block content
 
                                 hr
 
-<<<<<<< Updated upstream
-                                //- ==========================================
-                                //- LABEL PREFIX (ALWAYS SHOWN)
-                                //- ==========================================
-                                .form-group
-                                    label(for="label_prefix") Prefix Kode Label *
-                                    .input-group
-                                        input#label_prefix.form-control(type="text" name="label_prefix" required placeholder="Masukkan prefix label (misal: INV-LAB-2026)")
-                                        .input-group-append
-                                            if replacementAsset
-                                                button#btn-generate-label.btn.btn-info(type="button")
-                                                    i.fas.fa-magic.mr-1
-                                                    | Auto-Generate
-                                            else
-                                                button#btn-generate-label.btn.btn-info(type="button")
-                                                    i.fas.fa-magic.mr-1
-                                                    | Auto-Generate
-                                    small.text-muted Masukkan prefix label, nomor urut akan di-generate otomatis oleh sistem per unit.
-=======
                                 input(type="hidden" name="manual_mode" id="manual_mode" value="false")
->>>>>>> Stashed changes
 
                                 .form-group
                                     button#btn-toggle-manual-mode.btn.btn-sm.btn-outline-primary.mb-3(type="button")
