@@ -48,6 +48,7 @@ block content
                                     th Qty
                                     th Link Pembelian
                                     th Alasan Pengadaan
+                                    th Aset yang Diganti
                                     th Status Persetujuan
                                     th Alasan Kaprodi
 
@@ -70,6 +71,13 @@ block content
                                             else
                                                 span.text-muted Tidak ada link
                                         td= item.reason
+                                        td
+                                            if item.replaced_asset_name
+                                                span= item.replaced_asset_name
+                                                if item.replaced_asset_label
+                                                    span.text-muted  (#{item.replaced_asset_label})
+                                            else
+                                                span.text-muted -
                                         td
                                             if draft.status === 'Locked'
                                                 if item.status === 'Disetujui'

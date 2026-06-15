@@ -62,7 +62,7 @@ exports.showReview = async (req, res) => {
             return res.send('Draft tidak ditemukan');
         }
 
-        const items = await ProcurementItem.findByDraft(draftId);
+        const items = await ProcurementItem.findByDraftWithReplacement(draftId);
 
         res.render('procurement_review/edit', {
             user: req.session.user,
