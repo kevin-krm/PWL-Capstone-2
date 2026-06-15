@@ -1,0 +1,16 @@
+//- Mixin include aset DataTables (dipakai di banyak halaman daftar)
+//- Pemakaian:
+//-   extends ../layouts/master
+//-   include ../partials/dt-assets
+//-   block styles
+//-       +dtStyles
+//-   block scripts
+//-       +dtScripts
+//-       script. ... init ...
+
+mixin dtStyles
+    link(rel="stylesheet" href="/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css")
+
+mixin dtScripts
+    script(src="/adminlte/plugins/datatables/jquery.dataTables.min.js")
+    script(src="/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js")

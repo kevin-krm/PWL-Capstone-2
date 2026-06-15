@@ -1,4 +1,8 @@
 extends ../layouts/master
+include ../partials/dt-assets
+
+block styles
+    +dtStyles
 
 block content
     .content-header
@@ -12,66 +16,92 @@ block content
             .card
                 .card-header
                     h3.card-title Daftar Draft Pengadaan
-
                 .card-body
-                    form.row.mb-3(method="GET" action="/kaprodi/procurement-review")
-                        .col-md-2
-                            select.form-control.form-control-sm(name="year" onchange="this.form.submit()")
-                                option(value="" selected=(!selectedYear)) Semua Tahun
+                    .row.mb-3
+                        .col-md-3
+                            label.small.mb-1.text-muted Tahun
+                            select#filter-year.form-control.form-control-sm
+                                option(value="") Semua Tahun
                                 each year in years
-                                    option(value=year selected=(selectedYear == year))= year
-                        .col-md-2
-                            select.form-control.form-control-sm(name="status" onchange="this.form.submit()")
-                                option(value="" selected=(!selectedStatus)) Semua Status
-                                option(value="Draft" selected=(selectedStatus == 'Draft')) Draft
-                                option(value="Locked" selected=(selectedStatus == 'Locked')) Locked
+                                    option(value=year)= year
                         .col-md-3
-                            select.form-control.form-control-sm(name="action" onchange="this.form.submit()")
-                                option(value="" selected=(!selectedAction)) Semua Aksi
-                                option(value="reviewable" selected=(selectedAction == 'reviewable')) Bisa Direview
-                                option(value="final" selected=(selectedAction == 'final')) Sudah Final
-                        .col-md-2
-                            select.form-control.form-control-sm(name="sort" onchange="this.form.submit()")
-                                option(value="" selected=(!selectedSort)) Urutkan
-                                option(value="abjad" selected=(selectedSort == 'abjad')) Abjad (A-Z)
-                                option(value="recent" selected=(selectedSort == 'recent')) Terbaru
-                        .col-md-3
-                            a.btn.btn-secondary.btn-sm.btn-block(href="/kaprodi/procurement-review")
-                                i.fas.fa-undo
-                                |  Reset Filter
+                            label.small.mb-1.text-muted Status
+                            select#filter-status.form-control.form-control-sm
+                                option(value="") Semua Status
+                                option(value="Draft") Draft
+                                option(value="Locked") Locked
+                        .col-md-3.d-flex.align-items-end
+                            button#btn-reset-filter.btn.btn-secondary.btn-sm.btn-block(type="button")
+                                i.fas.fa-undo.mr-1
+                                | Reset Filter
 
-                    table.table.table-bordered.table-striped
+                    table#reviewTable.table.table-bordered.table-striped(style="width:100%")
                         thead.bg-primary
                             tr
                                 th No
                                 th Tahun
                                 th Kepala Laboratorium
-                                th Status
-                                th Tanggal Dibuat
-                                th Aksi
-
+                                th.text-center Status
+                                th.text-center Tanggal Dibuat
+                                th.text-center Aksi
                         tbody
                             each draft, index in drafts
                                 tr
                                     td= index + 1
                                     td= draft.year
                                     td= draft.kalab_name
-                                    td
+                                    td.text-center
                                         if draft.status == 'Draft'
                                             span.badge.badge-warning Draft
                                         else if draft.status == 'Reviewed'
                                             span.badge.badge-info Reviewed
                                         else if draft.status == 'Locked'
                                             span.badge.badge-success Locked
-
-                                    td= new Date(draft.created_at).toLocaleDateString('id-ID')
-
-                                    td
+                                    td.text-center(data-order=(draft.created_at ? new Date(draft.created_at).getTime() : 0))= new Date(draft.created_at).toLocaleDateString('id-ID')
+                                    td.text-center
                                         a.btn.btn-primary.btn-sm(href=`/kaprodi/procurement-review/edit/${draft.id}`)
                                             i.fas.fa-eye
                                             |  Review
-
                                         if draft.status != 'Locked'
                                             span.badge.badge-warning.ml-2 Bisa Direview
                                         else
                                             span.badge.badge-secondary.ml-2 Sudah Final
+
+block scripts
+    +dtScripts
+    script.
+        $(function () {
+            var lang = {
+                search: "Cari:", lengthMenu: "Tampilkan _MENU_ data", zeroRecords: "Tidak ditemukan data yang cocok",
+                info: "Menampilkan _START_–_END_ dari _TOTAL_ data", infoEmpty: "Tidak ada data",
+                infoFiltered: "(disaring dari _MAX_ total)",
+                paginate: { first: "Awal", last: "Akhir", next: "›", previous: "‹" }
+            };
+            var table = $('#reviewTable').DataTable({
+                language: lang,
+                pageLength: 10, lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Semua']],
+                stateSave: true, stateDuration: -1,
+                order: [[4, 'desc']],
+                columnDefs: [{ targets: [0, 5], orderable: false, searchable: false }]
+            });
+            table.on('draw.dt', function () {
+                table.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (c, i) { c.innerHTML = i + 1; });
+            });
+
+            function exact(v) { return v ? '^' + $.fn.dataTable.util.escapeRegex(v) + '$' : ''; }
+            function unanchor(s) { return s ? s.replace(/^\^/, '').replace(/\$$/, '').replace(/\\(.)/g, '$1') : ''; }
+            $('#filter-year').on('change',   function () { table.column(1).search(exact(this.value), true, false).draw(); });
+            $('#filter-status').on('change', function () { table.column(3).search(this.value, false, true).draw(); });
+
+            $('#btn-reset-filter').on('click', function () {
+                $('#filter-year, #filter-status').val('');
+                $('#reviewTable_filter input').val('');
+                table.search('').columns().search('').order([[4, 'desc']]).draw();
+            });
+
+            // Sinkron dropdown dari state tersimpan (stateSave)
+            $('#filter-year').val(unanchor(table.column(1).search()));
+            $('#filter-status').val(table.column(3).search());
+
+            table.draw();
+        });

@@ -33,20 +33,7 @@ const ProcurementDraft = {
             sql += ' WHERE ' + conditions.join(' AND ');
         }
 
-        switch (filters.sort) {
-            case 'abjad':
-                sql += ' ORDER BY users.name ASC, procurement_drafts.created_at DESC';
-                break;
-            case 'recent':
-                sql += ' ORDER BY procurement_drafts.created_at DESC';
-                break;
-            case 'no':
-                sql += ' ORDER BY procurement_drafts.id ASC';
-                break;
-            default:
-                sql += ' ORDER BY procurement_drafts.created_at DESC';
-                break;
-        }
+        sql += ' ORDER BY procurement_drafts.created_at DESC';
 
         const [rows] = await conn.query(sql, params);
         return rows;
@@ -92,20 +79,7 @@ const ProcurementDraft = {
             params.push(filters.status);
         }
 
-        switch (filters.sort) {
-            case 'abjad':
-                sql += ' ORDER BY status ASC, created_at DESC';
-                break;
-            case 'recent':
-                sql += ' ORDER BY created_at DESC';
-                break;
-            case 'no':
-                sql += ' ORDER BY id ASC';
-                break;
-            default:
-                sql += ' ORDER BY created_at DESC';
-                break;
-        }
+        sql += ' ORDER BY created_at DESC';
 
         const [rows] = await conn.query(sql, params);
         return rows;

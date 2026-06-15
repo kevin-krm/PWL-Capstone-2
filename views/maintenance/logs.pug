@@ -1,4 +1,10 @@
 extends ../layouts/master
+include ../partials/dt-assets
+
+block styles
+    +dtStyles
+    style.
+        td.dt-expand-cell { cursor: pointer; }
 
 block content
     .content-header
@@ -20,62 +26,79 @@ block content
                         i.fas.fa-tools.mr-1
                         | Riwayat Maintenance Laboratorium
                 .card-body
-                    form.row.mb-3(method="GET" action="/staflab/maintenance-logs")
-                        .col-md-3
-                            select.form-control.form-control-sm(name="sort" onchange="this.form.submit()")
-                                option(value="" selected=(!selectedSort)) Urutkan
-                                option(value="abjad" selected=(selectedSort == 'abjad')) Abjad (A-Z)
-                                option(value="recent" selected=(selectedSort == 'recent')) Terbaru
-                        .col-md-3
-                            a.btn.btn-secondary.btn-sm.btn-block(href="/staflab/maintenance-logs")
-                                i.fas.fa-undo
-                                |  Reset Filter
-
-                    if logs.length === 0
-                        .alert.alert-info.mb-0
-                            i.icon.fas.fa-info-circle
-                            |  Belum ada log maintenance yang tercatat.
-                    else
-                        .table-responsive
-                            table.table.table-striped.table-bordered
-                                thead
-                                    tr.bg-primary
-                                        th.text-center(style="width: 5%") No.
-                                        th.text-center(style="width: 12%") Tanggal
-                                        th(style="width: 15%") Nama Aset
-                                        th(style="width: 10%") Kode Label
-                                        th(style="width: 12%") Ruangan
-                                        th Deskripsi
-                                        th.text-center(style="width: 10%") Petugas
-                                        th.text-center(style="width: 8%") Detail
-                                tbody
-                                    each log, index in logs
-                                        - const hasUsages = usagesByLog[log.id] && usagesByLog[log.id].length > 0
-                                        tr
-                                            td.text-center= index + 1
-                                            td.text-center= new Date(log.maintenance_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })
-                                            td.font-weight-bold= log.asset_name
-                                            td
-                                                code= log.label_code || '-'
-                                            td= log.room_name || '-'
-                                            td
-                                                if log.description
-                                                    | #{log.description.length > 60 ? log.description.substring(0, 60) + '...' : log.description}
-                                                else
-                                                    span.text-muted -
-                                            td.text-center= log.staf_name
-                                            td.text-center
-                                                a.btn.btn-xs.btn-info(href=`/staflab/maintenance-logs/${log.id}` title="Lihat Detail")
-                                                    i.fas.fa-eye.mr-1
-                                                    | Detail
-
-                                        //- Row BHP usage (collapsible inline)
+                    table#maintLogsTable.table.table-striped.table-bordered(style="width:100%")
+                        thead
+                            tr.bg-primary
+                                th(style="width: 3%")
+                                th.text-center(style="width: 5%") No.
+                                th.text-center(style="width: 12%") Tanggal
+                                th Nama Aset
+                                th(style="width: 10%") Kode Label
+                                th(style="width: 12%") Ruangan
+                                th Deskripsi
+                                th.text-center(style="width: 10%") Petugas
+                                th.text-center(style="width: 8%") Detail
+                        tbody
+                            each log, index in logs
+                                - var hasUsages = usagesByLog[log.id] && usagesByLog[log.id].length > 0
+                                tr
+                                    td.text-center.dt-expand-cell
                                         if hasUsages
-                                            tr
-                                                td(colspan="8" style="padding: 4px 16px; background-color: #f8f9fa; border-top: none;")
-                                                    small.text-muted
-                                                        i.fas.fa-box-open.mr-1
-                                                        | BHP Digunakan: 
-                                                    each usage, uIdx in usagesByLog[log.id]
-                                                        span.badge.badge-warning.mr-1.mb-1.p-1
-                                                            | #{usage.consumable_name} (#{usage.quantity_used} #{usage.unit})
+                                            button.btn.btn-xs.btn-outline-info.btn-expand(type="button" title="Lihat BHP digunakan")
+                                                i.fas.fa-plus
+                                            .dt-child.d-none
+                                                small.text-muted.mr-1
+                                                    i.fas.fa-box-open.mr-1
+                                                    | BHP Digunakan:
+                                                each usage in usagesByLog[log.id]
+                                                    span.badge.badge-warning.mr-1.mb-1.p-1 #{usage.consumable_name} (#{usage.quantity_used} #{usage.unit})
+                                    td.text-center= index + 1
+                                    td.text-center(data-order=(log.maintenance_date ? new Date(log.maintenance_date).getTime() : 0))= new Date(log.maintenance_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })
+                                    td.font-weight-bold= log.asset_name
+                                    td
+                                        code= log.label_code || '-'
+                                    td= log.room_name || '-'
+                                    td= log.description ? (log.description.length > 60 ? log.description.substring(0, 60) + '...' : log.description) : '-'
+                                    td.text-center= log.staf_name
+                                    td.text-center
+                                        a.btn.btn-xs.btn-info(href=`/staflab/maintenance-logs/${log.id}` title="Lihat Detail")
+                                            i.fas.fa-eye.mr-1
+                                            | Detail
+
+block scripts
+    +dtScripts
+    script.
+        $(function () {
+            var lang = {
+                search: "Cari:", lengthMenu: "Tampilkan _MENU_ data", zeroRecords: "Tidak ditemukan data yang cocok",
+                info: "Menampilkan _START_–_END_ dari _TOTAL_ data", infoEmpty: "Tidak ada data",
+                infoFiltered: "(disaring dari _MAX_ total)",
+                paginate: { first: "Awal", last: "Akhir", next: "›", previous: "‹" }
+            };
+            var table = $('#maintLogsTable').DataTable({
+                language: lang,
+                pageLength: 10, lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Semua']],
+                stateSave: true, stateDuration: -1,
+                order: [[2, 'desc']],
+                columnDefs: [{ targets: [0, 1, 8], orderable: false, searchable: false }]
+            });
+            table.on('draw.dt', function () {
+                table.column(1, { search: 'applied', order: 'applied' }).nodes().each(function (c, i) { c.innerHTML = i + 1; });
+            });
+
+            // Child-row: BHP digunakan
+            $('#maintLogsTable tbody').on('click', '.btn-expand', function () {
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+                var icon = $(this).find('i');
+                if (row.child.isShown()) {
+                    row.child.hide();
+                    icon.removeClass('fa-minus').addClass('fa-plus');
+                } else {
+                    row.child('<div class="p-2">' + $(tr).find('.dt-child').html() + '</div>').show();
+                    icon.removeClass('fa-plus').addClass('fa-minus');
+                }
+            });
+
+            table.draw();
+        });

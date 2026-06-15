@@ -138,7 +138,7 @@ block scripts
                     { extend: 'print', text: '<i class="fas fa-print"></i> Print', className: 'btn btn-sm btn-info',    exportOptions: { columns: exportCols, rows: exportRowsSetting } }
                 ],
                 select: { style: 'api', selector: 'td:first-child', info: false },
-                pageLength: 10, lengthMenu: [[5, 10, 25, -1], [5, 10, 25, 'Semua']], order: [[2,'asc']], language: lang,
+                pageLength: 10, lengthMenu: [[5, 10, 25, -1], [5, 10, 25, 'Semua']], order: [[2,'asc']], language: lang, stateSave: true, stateDuration: -1,
                 columnDefs: [
                     { targets: 0, orderable: false, searchable: false, className: 'select-checkbox', visible: false },
                     { targets: [1, 6], orderable: false, searchable: false }
@@ -218,6 +218,17 @@ block scripts
                 $('#consumablesTable_filter input').val('');
                 table.search('').columns().search('').order([[2,'asc']]).draw();
             });
+
+            // Sinkron dropdown sort dari state tersimpan (stateSave)
+            (function () {
+                var o = table.order();
+                if (o && o.length) {
+                    var col = o[0][0], dir = o[0][1];
+                    if (col === 5 && dir === 'desc') $('#filter-sort').val('recent');
+                    else if (col === 2 && dir === 'asc') $('#filter-sort').val('abjad');
+                    else $('#filter-sort').val('');
+                }
+            })();
 
             table.draw();
         });
