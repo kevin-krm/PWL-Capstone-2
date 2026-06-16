@@ -33,31 +33,43 @@ block content
                             i.fas.fa-chevron-up.mr-1
                             | Tutup Semua
                 .card-body
-                    .row.mb-3
-                        .col-md-2
-                            label.small.mb-1.text-muted Tahun
+                    .d-flex.align-items-end.flex-nowrap.mb-3(style="gap: .5rem;")
+                        div(style="flex: 2 1 0; min-width: 88px;")
+                            label.small.mb-1.text-muted.text-nowrap Tahun
                             select#filter-year.form-control.form-control-sm
                                 option(value="") Semua Tahun
-                        .col-md-2
-                            label.small.mb-1.text-muted Jenis
+                        div(style="flex: 2 1 0; min-width: 92px;")
+                            label.small.mb-1.text-muted.text-nowrap Jenis
                             select#filter-type.form-control.form-control-sm
                                 option(value="") Semua Jenis
                                 option(value="Inventaris") Inventaris
                                 option(value="BHP") BHP
-                        .col-md-3
-                            label.small.mb-1.text-muted Status Penerimaan
+                        div(style="flex: 3 1 0; min-width: 110px;")
+                            label.small.mb-1.text-muted.text-nowrap Tipe
+                            select#filter-tipe.form-control.form-control-sm
+                                option(value="") Semua Tipe
+                                option(value="Barang Baru") Barang Baru
+                                option(value="Barang Pengganti") Barang Pengganti
+                        div(style="flex: 3 1 0; min-width: 132px;")
+                            label.small.mb-1.text-muted.text-nowrap Status Penerimaan
                             select#filter-status.form-control.form-control-sm
                                 option(value="") Semua Status
                                 option(value="Belum Diterima") Belum Diterima
                                 option(value="Diterima Sebagian") Diterima Sebagian
                                 option(value="Selesai Diterima") Selesai Diterima
-                        .col-md-3
-                            label.small.mb-1.text-muted Registrasi Aset
+                        div(style="flex: 5 1 0; min-width: 150px;")
+                            label.small.mb-1.text-muted.text-nowrap Registrasi Aset
                             select#filter-registration.form-control.form-control-sm
                                 option(value="") Semua Registrasi Aset
                                 option(value="pending") Masih bisa Daftar ke Inventaris
                                 option(value="done") Sudah terdaftar ke Inventaris
-                        .col-md-2.d-flex.align-items-end
+                        div(style="flex: 2 1 0; min-width: 96px;")
+                            label.small.mb-1.text-muted.text-nowrap Urutkan
+                            select#filter-sort.form-control.form-control-sm
+                                option(value="") Default
+                                option(value="abjad") Abjad (A-Z)
+                                option(value="recent") Terbaru
+                        div(style="flex: 2 1 0; min-width: 104px;")
                             button#btn-reset-filter.btn.btn-secondary.btn-sm.btn-block(type="button")
                                 i.fas.fa-undo.mr-1
                                 | Reset Filter
@@ -66,14 +78,15 @@ block content
                         thead
                             tr.bg-primary
                                 th(style="width: 3%")
-                                th.text-center(style="width: 5%") No.
-                                th.text-center(style="width: 8%") Tahun
+                                th.text-center(style="width: 2%") No.
+                                th.text-center(style="width: 5%") Tahun
                                 th Nama Barang
-                                th.text-center(style="width: 10%") Jenis
-                                th.text-right(style="width: 13%") Harga Estimasi
-                                th.text-center(style="width: 16%") Jumlah Diterima
-                                th.text-center(style="width: 12%") Status
-                                th.text-center(style="width: 8%") Link
+                                th.text-center(style="width: 5%") Jenis
+                                th.text-center(style="width: 8%") Tipe
+                                th.text-right(style="width: 10%") Harga Estimasi
+                                th.text-center(style="width: 15%") Jumlah Diterima
+                                th.text-center(style="width: 8%") Status
+                                th.text-center(style="width: 5%") Link
                                 th.text-center(style="width: 12%") Terima
                                 th Registrasi
                         tbody
@@ -124,7 +137,7 @@ block content
                                     td.text-center
                                         span.badge.badge-secondary= item.year
                                     td.font-weight-bold= item.item_name
-                                    td.text-center
+                                    td.text-center(data-search=item.item_type)
                                         if item.item_type === 'Inventaris'
                                             span.badge.badge-primary
                                                 i.fas.fa-desktop.mr-1
@@ -133,10 +146,19 @@ block content
                                             span.badge.badge-warning
                                                 i.fas.fa-box-open.mr-1
                                                 | BHP
+                                    td.text-center(data-search=item.target_replacement_asset_id ? 'Barang Pengganti' : 'Barang Baru')
+                                        if item.target_replacement_asset_id
+                                            span.badge.badge-danger
+                                                i.fas.fa-exchange-alt.mr-1
+                                                | Barang Pengganti
+                                        else
+                                            span.badge.badge-light.border
+                                                i.fas.fa-plus.mr-1
+                                                | Barang Baru
                                     td.text-right(data-order=item.price)= 'Rp ' + Number(item.price).toLocaleString('id-ID')
                                     td.text-center(data-order=item.quantity_received)
-                                        div.d-flex.align-items-center.justify-content-center
-                                            .progress.flex-grow-1.mr-2(style="height: 10px; min-width: 80px;")
+                                        div.d-flex.align-items-center.justify-content-left
+                                            .progress.flex-grow-1.mr-2(style="height: 12px; min-width: 80px; max-width: 70%;")
                                                 - const percent = Math.min(100, Math.round((item.quantity_received / item.target_quantity) * 100))
                                                 - const barColor = percent === 100 ? 'bg-success' : (percent > 0 ? 'bg-warning' : 'bg-danger')
                                                 .progress-bar(class=barColor role="progressbar" style=`width: ${percent}%` aria-valuenow=percent aria-valuemin="0" aria-valuemax="100")
@@ -188,8 +210,8 @@ block scripts
                 stateSave: true, stateDuration: -1,
                 order: [[3, 'asc']],
                 columnDefs: [
-                    { targets: [0, 1, 8, 9], orderable: false, searchable: false },
-                    { targets: 10, visible: false, orderable: false }
+                    { targets: [0, 1, 9, 10], orderable: false, searchable: false },
+                    { targets: 11, visible: false, orderable: false }
                 ]
             });
             table.on('draw.dt', function () {
@@ -229,11 +251,16 @@ block scripts
 
             $('#filter-year').on('change',         function () { table.column(2).search(exact(this.value), true, false).draw(); });
             $('#filter-type').on('change',         function () { table.column(4).search(exact(this.value), true, false).draw(); });
-            $('#filter-status').on('change',       function () { table.column(7).search(exact(this.value), true, false).draw(); });
-            $('#filter-registration').on('change', function () { table.column(10).search(exact(this.value), true, false).draw(); });
+            $('#filter-tipe').on('change',         function () { table.column(5).search(exact(this.value), true, false).draw(); });
+            $('#filter-status').on('change',       function () { table.column(8).search(exact(this.value), true, false).draw(); });
+            $('#filter-registration').on('change', function () { table.column(11).search(exact(this.value), true, false).draw(); });
+            $('#filter-sort').on('change', function () {
+                if (this.value === 'recent') table.order([2, 'desc']).draw();
+                else table.order([3, 'asc']).draw();
+            });
 
             $('#btn-reset-filter').on('click', function () {
-                $('#filter-year, #filter-type, #filter-status, #filter-registration').val('');
+                $('#filter-year, #filter-type, #filter-tipe, #filter-status, #filter-registration, #filter-sort').val('');
                 $('#penerimaanTable_filter input').val('');
                 table.search('').columns().search('').order([[3, 'asc']]).draw();
             });
@@ -241,8 +268,18 @@ block scripts
             // Sinkron dropdown dari state tersimpan (stateSave)
             $('#filter-year').val(unanchor(table.column(2).search()));
             $('#filter-type').val(unanchor(table.column(4).search()));
-            $('#filter-status').val(unanchor(table.column(7).search()));
-            $('#filter-registration').val(unanchor(table.column(10).search()));
+            $('#filter-tipe').val(unanchor(table.column(5).search()));
+            $('#filter-status').val(unanchor(table.column(8).search()));
+            $('#filter-registration').val(unanchor(table.column(11).search()));
+            (function () {
+                var o = table.order();
+                if (o && o.length) {
+                    var col = o[0][0], dir = o[0][1];
+                    if (col === 2 && dir === 'desc') $('#filter-sort').val('recent');
+                    else if (col === 3 && dir === 'asc') $('#filter-sort').val('abjad');
+                    else $('#filter-sort').val('');
+                }
+            })();
 
             table.draw();
         });

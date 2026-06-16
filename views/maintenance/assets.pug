@@ -36,7 +36,7 @@ block content
                 .card-body
                     //- Filter canggih (client-side DataTables)
                     .row.mb-3
-                        .col-md-4
+                        .col-md-3
                             label.small.mb-1.text-muted Kondisi
                             select#filter-condition.form-control.form-control-sm
                                 option(value="") Semua Kondisi
@@ -44,7 +44,17 @@ block content
                                 option(value="Rusak") Rusak
                                 option(value="Maintenance") Maintenance
                                 option(value="Dihapus") Dihapus
-                        .col-md-4.d-flex.align-items-end
+                        .col-md-3
+                            label.small.mb-1.text-muted Ruangan
+                            select#filter-room.form-control.form-control-sm
+                                option(value="") Semua Ruangan
+                        .col-md-3
+                            label.small.mb-1.text-muted Urutkan
+                            select#filter-sort.form-control.form-control-sm
+                                option(value="") Default
+                                option(value="abjad") Abjad (A-Z)
+                                option(value="recent") Terbaru
+                        .col-md-3.d-flex.align-items-end
                             button#btn-reset-filter.btn.btn-secondary.btn-sm.btn-block(type="button")
                                 i.fas.fa-undo.mr-1
                                 | Reset Filter
@@ -60,6 +70,7 @@ block content
                                     th Lokasi Ruangan
                                     th.text-center Kondisi
                                     th.text-center Aksi
+                                    th.d-none Ditambahkan
                             tbody
                                 each a, index in assets
                                     tr
@@ -93,6 +104,7 @@ block content
                                                     | Maintenance
                                             else
                                                 span.text-muted -
+                                        td.d-none(data-order=(a.created_at ? new Date(a.created_at).getTime() : a.id))
 
 block scripts
     script(src="/adminlte/plugins/datatables/jquery.dataTables.min.js")
@@ -145,7 +157,8 @@ block scripts
                 pageLength: 10, lengthMenu: [[5, 10, 25, -1], [5, 10, 25, 'Semua']], order: [[3,'asc']], language: lang, stateSave: true, stateDuration: -1,
                 columnDefs: [
                     { targets: 0, orderable: false, searchable: false, className: 'select-checkbox', visible: false },
-                    { targets: [1, 6], orderable: false, searchable: false }
+                    { targets: [1, 6], orderable: false, searchable: false },
+                    { targets: 7, visible: false, searchable: false }
                 ],
                 initComplete: function () {
                     // --- Toggle Select Button ---
@@ -205,16 +218,37 @@ block scripts
                 table.column(1, { search: 'applied', order: 'applied' }).nodes().each(function (c, i) { c.innerHTML = i + 1; });
             });
 
+            function exact(v) { return v ? '^' + $.fn.dataTable.util.escapeRegex(v) + '$' : ''; }
+            function unanchor(s) { return s ? s.replace(/^\^/, '').replace(/\$$/, '').replace(/\\(.)/g, '$1') : ''; }
+
+            // Isi dropdown Ruangan dari nilai unik kolom Lokasi Ruangan (col 4)
+            table.column(4).data().unique().sort().each(function (d) {
+                var t = $('<div>').html(d).text().trim();
+                if (t) $('#filter-room').append($('<option>').val(t).text(t));
+            });
+
             $('#filter-condition').on('change', function () { table.column(5).search(this.value, false, true).draw(); });
+            $('#filter-room').on('change', function () { table.column(4).search(exact(this.value), true, false).draw(); });
+            $('#filter-sort').on('change', function () {
+                if (this.value === 'recent') table.order([7, 'desc']).draw();
+                else table.order([3, 'asc']).draw();
+            });
 
             $('#btn-reset-filter').on('click', function () {
-                $('#filter-condition').val('');
+                $('#filter-condition, #filter-room, #filter-sort').val('');
                 $('#assetsTable_filter input').val('');
                 table.search('').columns().search('').order([[3,'asc']]).draw();
             });
 
             // Sinkron dropdown dari state tersimpan (stateSave); kolom checkbox tetap tersembunyi
             $('#filter-condition').val(table.column(5).search());
+            $('#filter-room').val(unanchor(table.column(4).search()));
+            (function () {
+                var o = table.order();
+                if (o && o.length && o[0][0] === 7 && o[0][1] === 'desc') $('#filter-sort').val('recent');
+                else if (o && o.length && o[0][0] === 3 && o[0][1] === 'asc') $('#filter-sort').val('abjad');
+                else $('#filter-sort').val('');
+            })();
             table.column(0).visible(false);
 
             table.draw();

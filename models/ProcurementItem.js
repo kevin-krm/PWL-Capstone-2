@@ -134,6 +134,7 @@ const ProcurementItem = {
                 pi.item_name,
                 pi.item_type,
                 pi.quantity AS target_quantity,
+                pi.target_replacement_asset_id,
                 pd.year
             FROM procurement_items pi
             JOIN procurement_drafts pd ON pi.draft_id = pd.id
