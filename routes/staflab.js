@@ -19,6 +19,7 @@ router.post('/consumables/delete/:id', stafLabController.deleteConsumable);
 
 // Data Inventaris (read-only)
 router.get('/assets', stafLabController.listAssets);
+router.post('/assets/delete/:id', stafLabController.deleteAsset);
 
 // Maintenance & update kondisi barang
 router.get('/assets/maintenance/:id', stafLabController.showMaintenanceForm);

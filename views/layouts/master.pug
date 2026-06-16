@@ -65,3 +65,66 @@ html(lang="en")
                     }
                 });
             });
+
+        // Reset Filter: biru primary + enabled saat ada filter/sort aktif, abu-abu
+        // (secondary) + disabled saat default. Status mengikuti AKSI pengguna (flag
+        // dirty: klik header sort / ubah dropdown / ketik pencarian) sehingga sort ke
+        // urutan default (mis. nama-asc) tetap mengaktifkan tombol — konsisten untuk
+        // semua sort/filter. Direset saat tombol Reset ditekan. State DataTables
+        // tersimpan (stateSave) tetap dianggap aktif saat reload.
+        script.
+            $(function () {
+                var $btn = $('#btn-reset-filter');
+                if (!$btn.length || !$.fn.dataTable) return;
+
+                var dirty = false;
+
+                function orderChanged(api) {
+                    var s = api.settings()[0];
+                    var def = (s && s.oInit && s.oInit.order) ? s.oInit.order : [[0, 'asc']];
+                    return JSON.stringify(api.order()) !== JSON.stringify(def);
+                }
+                function stateNotPristine() {
+                    var active = false;
+                    $('table').each(function () {
+                        if (!$.fn.dataTable.isDataTable(this)) return;
+                        var api = $(this).DataTable();
+                        if (api.search()) { active = true; return; }            // pencarian global
+                        var col = false;
+                        api.columns().search().each(function (v) { if (v) col = true; }); // pencarian kolom
+                        if (col || orderChanged(api)) active = true;             // sorting != default
+                    });
+                    return active;
+                }
+                function sync() {
+                    var on = dirty || stateNotPristine();
+                    $btn.prop('disabled', !on)
+                        .toggleClass('btn-primary', on)
+                        .toggleClass('btn-secondary', !on);
+                }
+                function markDirty() { dirty = true; sync(); }
+
+                // Aksi pengguna => tombol aktif (termasuk sort ke urutan default seperti nama-asc):
+                $(document).on('change', 'select[id^="filter-"]', markDirty);                 // dropdown filter & Urutkan
+                $(document).on('input keyup search', '.dataTables_filter input', markDirty);  // kotak pencarian global
+                $(document).on('click', 'thead th.sorting, thead th.sorting_asc, thead th.sorting_desc', markDirty); // klik header sort
+
+                // Reset universal: kembalikan SEMUA filter/pencarian/urutan tiap tabel ke
+                // default, lalu paksa tombol ke state abu-abu & nonaktif (tidak dapat ditekan).
+                function resetAll() {
+                    $('select[id^="filter-"]').val('');            // dropdown filter & Urutkan
+                    $('.dataTables_filter input').val('');         // kotak pencarian global
+                    $('table').each(function () {
+                        if (!$.fn.dataTable.isDataTable(this)) return;
+                        var api = $(this).DataTable();
+                        var s = api.settings()[0];
+                        var def = (s && s.oInit && s.oInit.order) ? s.oInit.order : [[0, 'asc']];
+                        api.search('').columns().search('').order(def).draw();
+                    });
+                    dirty = false;
+                    sync();
+                }
+                $btn.on('click', resetAll);
+
+                setTimeout(sync, 0); // sinkron awal: aktif hanya bila state tersimpan bukan default
+            });
