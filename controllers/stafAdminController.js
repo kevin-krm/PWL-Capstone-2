@@ -133,7 +133,7 @@ exports.showReceiptForm = async (req, res) => {
 
 // Fitur 1: POST Form Penerimaan Barang Parsial
 exports.createReceipt = async (req, res) => {
-    const conn = db.promise();
+    const conn = await db.promise().getConnection();
     try {
         const itemId = req.params.id;
         const quantityReceived = parseInt(req.body.quantity_received, 10);
@@ -189,6 +189,8 @@ exports.createReceipt = async (req, res) => {
         await conn.rollback();
         console.error(err);
         return res.send("<script>alert('Terjadi kesalahan sistem saat menyimpan penerimaan.'); window.history.back();</script>");
+    } finally {
+        conn.release();
     }
 };
 
@@ -244,7 +246,7 @@ exports.showRegisterAsset = async (req, res) => {
 
 // Fitur 2: POST Form Registrasi Aset & Generate Label/Barcode (MULTI-ROW, PER-UNIT ROOM)
 exports.registerAsset = async (req, res) => {
-    const conn = db.promise();
+    const conn = await db.promise().getConnection();
     try {
         const receiptId = req.params.id;
         const { label_prefix, old_asset_new_label, manual_mode } = req.body;
@@ -406,5 +408,7 @@ exports.registerAsset = async (req, res) => {
         }
         console.error(err);
         return res.send("<script>alert('Terjadi kesalahan sistem saat mendaftarkan aset.'); window.history.back();</script>");
+    } finally {
+        conn.release();
     }
 };

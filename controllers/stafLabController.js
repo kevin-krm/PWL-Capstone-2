@@ -92,7 +92,7 @@ async function renderMaintenanceFormError(res, user, assetId, errorMsg, oldInput
 
 // POST: Proses maintenance — update kondisi, catat log, kurangi stok BHP
 exports.createMaintenance = async (req, res) => {
-    const conn = db.promise();
+    const conn = await db.promise().getConnection();
     const assetId = req.params.id;
     let oldInput = {};
     try {
@@ -190,6 +190,8 @@ exports.createMaintenance = async (req, res) => {
         } catch (e2) {
             return res.send("<script>alert('Terjadi kesalahan sistem.'); window.location.href='/staflab/assets';</script>");
         }
+    } finally {
+        conn.release();
     }
 };
 
