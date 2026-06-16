@@ -167,6 +167,15 @@ const Asset = {
             [condition_status, id]
         );
         return result;
+    },
+
+    // Update kondisi + status aktif sekaligus ('Dihapus' menonaktifkan aset)
+    async updateConditionAndStatus(id, condition_status, is_active, conn = pool) {
+        const [result] = await conn.query(
+            'UPDATE assets SET condition_status = ?, is_active = ? WHERE id = ?',
+            [condition_status, is_active, id]
+        );
+        return result;
     }
 };
 

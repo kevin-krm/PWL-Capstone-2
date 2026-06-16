@@ -9,7 +9,7 @@ exports.listAssets = async (req, res) => {
     try {
         const sort = req.query.sort || null;
         const condition = req.query.condition || null;
-        const assets = await Asset.findActiveWithRoomOrdered({ sort, condition });
+        const assets = await Asset.findAllWithRoom({ sort, condition });
         res.render('maintenance/assets', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition });
     } catch (err) {
         res.send(err);

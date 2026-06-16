@@ -46,8 +46,14 @@ exports.deleteConsumable = async (req, res) => {
 exports.listAssets = async (req, res) => {
     const sort = req.query.sort || null;
     const condition = req.query.condition || null;
-    const assets = await Asset.findActiveWithRoomOrdered({ sort, condition });
+    const assets = await Asset.findAllWithRoom({ sort, condition });
     res.render('maintenance/assets', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition });
+};
+
+// POST DELETE: Hapus aset permanen (hard delete) oleh Staf Lab
+exports.deleteAsset = async (req, res) => {
+    await Asset.remove(req.params.id);
+    res.redirect('/staflab/assets');
 };
 
 // MAINTENANCE & UPDATE KONDISI BARANG
@@ -156,8 +162,9 @@ exports.createMaintenance = async (req, res) => {
         }, conn);
         const maintenanceLogId = logResult.insertId;
 
-        // 3. Update kondisi aset
-        await Asset.updateCondition(assetId, condition_status, conn);
+        // 3. Update kondisi aset ('Dihapus' otomatis menonaktifkan aset)
+        const isActive = condition_status === 'Dihapus' ? 0 : 1;
+        await Asset.updateConditionAndStatus(assetId, condition_status, isActive, conn);
 
         // 4. Insert BHP usage & kurangi stok
         let totalBhpUsed = 0;

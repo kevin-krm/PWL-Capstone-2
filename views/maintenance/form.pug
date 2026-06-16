@@ -11,12 +11,12 @@ block content
         .container-fluid
             .row.mb-2
                 .col-sm-6
-                    h1.m-0 Form Maintenance Aset
+                    h1.m-0 Form Update Kondisi Aset
                 .col-sm-6
                     ol.breadcrumb.float-sm-right
                         li.breadcrumb-item
                             a(href="/staflab/assets") Data Inventaris
-                        li.breadcrumb-item.active Maintenance
+                        li.breadcrumb-item.active Update Kondisi
 
     .content
         .container-fluid
@@ -58,7 +58,7 @@ block content
                         .card-header
                             h3.card-title
                                 i.fas.fa-tools.mr-1
-                                | Catat Maintenance
+                                | Update Kondisi & Servis
                         form(action=`/staflab/assets/maintenance/${asset.id}` method="POST")
                             .card-body
                                 if errorMsg
@@ -72,7 +72,7 @@ block content
                                         .form-group
                                             label(for="condition_status")
                                                 i.fas.fa-heartbeat.mr-1
-                                                | Kondisi Setelah Maintenance
+                                                | Pembaruan Kondisi
                                             select#condition_status.form-control(name="condition_status" required)
                                                 option(value="Baik" selected=(prevCondition=='Baik')) Baik
                                                 option(value="Rusak" selected=(prevCondition=='Rusak')) Rusak
@@ -82,12 +82,12 @@ block content
                                         .form-group
                                             label(for="maintenance_date")
                                                 i.fas.fa-calendar-alt.mr-1
-                                                | Tanggal Maintenance
+                                                | Tanggal Tindakan / Laporan
                                             input#maintenance_date.form-control(type="date" name="maintenance_date" required value=prevDate)
                                 .form-group
                                     label(for="description")
                                         i.fas.fa-pencil-alt.mr-1
-                                        | Deskripsi / Catatan Perbaikan
+                                        | Deskripsi / Catatan Tindakan
                                     textarea#description.form-control(name="description" rows="3" placeholder="Misal: Penggantian SSD karena bad sector")= prevDesc
 
                                 //- Bagian BHP yang digunakan
@@ -126,7 +126,7 @@ block content
                                 a.btn.btn-default(href="/staflab/assets") Batal
                                 button.btn.btn-primary.float-right(type="submit")
                                     i.fas.fa-save.mr-1
-                                    | Simpan Maintenance
+                                    | Simpan Perubahan
 
     //- Script untuk dynamic BHP rows
     script.
