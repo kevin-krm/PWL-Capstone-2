@@ -56,8 +56,6 @@ block content
                                         if user.role === 'Staf Laboratorium'
                                             .d-flex.flex-wrap.justify-content-center
                                                 button.btn.btn-sm.btn-warning.m-1(data-toggle="modal" data-target=`#modal-edit-${c.id}`) Edit
-                                                form.m-1(action=`/staflab/consumables/delete/${c.id}` method="POST" style="display:inline;")
-                                                    button.btn.btn-sm.btn-danger(type="submit" onclick="return confirm('Yakin ingin menghapus item BHP ini?');") Hapus
                                         else
                                             span.text-muted -
 

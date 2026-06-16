@@ -78,6 +78,19 @@ exports.showReview = async (req, res) => {
 exports.finalizeReview = async (req, res) => {
     try {
         const draftId = req.params.id;
+
+        // Guard: hanya draf berstatus 'Reviewed' yang boleh difinalisasi.
+        // Mencegah finalisasi ulang draf yang sudah 'Locked' (yang bisa mengubah
+        // keputusan setelah barang diterima/diregistrasi) maupun draf 'Draft'
+        // yang belum diajukan Kalab. Dicek SEBELUM ada mutasi item apa pun.
+        const draft = await ProcurementDraft.findByIdWithKalab(draftId);
+        if (!draft) {
+            return res.send('Draft tidak ditemukan');
+        }
+        if (draft.status !== 'Reviewed') {
+            return res.send(`<script>alert('Gagal: Draft ini tidak dapat difinalisasi. Hanya draft berstatus "Reviewed" (sudah diajukan Kalab & belum dikunci) yang bisa difinalisasi.'); window.location.href='/kaprodi/procurement-review';</script>`);
+        }
+
         const itemIds = req.body.item_ids || [];
         const statuses = req.body.statuses || [];
         const finalReasons = req.body.final_reasons || [];

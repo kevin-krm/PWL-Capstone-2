@@ -33,6 +33,7 @@ block content
                             select#filter-status.form-control.form-control-sm
                                 option(value="") Semua Status
                                 option(value="Draft") Draft
+                                option(value="Reviewed") Reviewed
                                 option(value="Locked") Locked
                         .col-md-3.d-flex.align-items-end
                             button#btn-reset-filter.btn.btn-secondary.btn-sm.btn-block(type="button")
@@ -65,11 +66,19 @@ block content
                                             a.btn.btn-info.btn-sm.m-1(href=`/kalab/procurement-drafts/${draft.id}`)
                                                 i.fas.fa-eye
                                                 |  Detail
-                                            if draft.status !== 'Locked'
+                                            if draft.status === 'Draft'
+                                                form.m-1(action=`/kalab/procurement-drafts/${draft.id}/submit` method="POST" style="display:inline;")
+                                                    button.btn.btn-success.btn-sm(type="submit" onclick="return confirm('Ajukan draft ini ke Ketua Program Studi? Setelah diajukan, draft tidak dapat diubah/dihapus lagi.');")
+                                                        i.fas.fa-paper-plane
+                                                        |  Ajukan
                                                 form.m-1(action=`/kalab/procurement-drafts/delete/${draft.id}` method="POST" style="display:inline;")
                                                     button.btn.btn-danger.btn-sm(type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus draft pengadaan ini? Semua barang di dalamnya juga akan terhapus.');")
                                                         i.fas.fa-trash
                                                         |  Hapus
+                                            else if draft.status === 'Reviewed'
+                                                button.btn.btn-info.btn-sm.m-1(disabled)
+                                                    i.fas.fa-hourglass-half
+                                                    |  Menunggu Review
                                             else
                                                 button.btn.btn-secondary.btn-sm.m-1(disabled)
                                                     i.fas.fa-lock

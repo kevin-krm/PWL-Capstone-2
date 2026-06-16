@@ -15,11 +15,11 @@ router.get('/consumables', stafLabController.listConsumables);
 router.get('/bhp-usage-log', stafLabController.listBhpUsageLog);
 router.get('/consumables/edit/:id', stafLabController.showEditConsumable);
 router.post('/consumables/edit/:id', stafLabController.updateConsumable);
-router.post('/consumables/delete/:id', stafLabController.deleteConsumable);
 
-// Data Inventaris (read-only)
+// Data Inventaris (read-only). Penghapusan aset memakai soft-delete:
+// set kondisi 'Dihapus' lewat form maintenance (otomatis is_active=0),
+// agar riwayat maintenance & pemakaian BHP tidak ikut terhapus.
 router.get('/assets', stafLabController.listAssets);
-router.post('/assets/delete/:id', stafLabController.deleteAsset);
 
 // Maintenance & update kondisi barang
 router.get('/assets/maintenance/:id', stafLabController.showMaintenanceForm);

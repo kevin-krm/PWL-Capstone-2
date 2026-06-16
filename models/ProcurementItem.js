@@ -146,7 +146,7 @@ const ProcurementItem = {
     // Kunci item di dalam transaksi penerimaan
     async lockForReceipt(id, conn = pool) {
         const [rows] = await conn.query(`
-            SELECT quantity, item_type, item_name
+            SELECT quantity, item_type, item_name, target_replacement_asset_id
             FROM procurement_items
             WHERE id = ? AND status = 'Disetujui'
             FOR UPDATE

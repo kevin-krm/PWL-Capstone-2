@@ -34,12 +34,6 @@ exports.updateConsumable = async (req, res) => {
     res.redirect('/staflab/consumables');
 };
 
-// POST DELETE
-exports.deleteConsumable = async (req, res) => {
-    await Consumable.remove(req.params.id);
-    res.redirect('/staflab/consumables');
-};
-
 // DATA INVENTARIS (READ-ONLY Staf Lab)
 
 // READ: Menampilkan daftar aset staf lab
@@ -50,11 +44,10 @@ exports.listAssets = async (req, res) => {
     res.render('maintenance/assets', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition });
 };
 
-// POST DELETE: Hapus aset permanen (hard delete) oleh Staf Lab
-exports.deleteAsset = async (req, res) => {
-    await Asset.remove(req.params.id);
-    res.redirect('/staflab/assets');
-};
+// Catatan: penghapusan aset/BHP TIDAK memakai hard-delete. Menghapus baris aset
+// memicu ON DELETE CASCADE ke maintenance_logs & maintenance_bhp_usage sehingga
+// riwayat siklus barang hilang. "Penghapusan" aset = set kondisi 'Dihapus'
+// (otomatis is_active=0) lewat form maintenance di bawah.
 
 // MAINTENANCE & UPDATE KONDISI BARANG
 

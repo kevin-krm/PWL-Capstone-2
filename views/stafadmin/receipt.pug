@@ -60,8 +60,14 @@ block content
                                 
                                 .form-group
                                     label(for="quantity_received") Jumlah Diterima Saat Ini *
-                                    input#quantity_received.form-control(type="number" name="quantity_received" min="1" max=remainingQuantity required value="1" placeholder="Masukkan jumlah barang yang datang")
-                                    small.text-muted Jumlah barang tidak boleh melebihi sisa harus diterima (#{remainingQuantity}).
+                                    if replacedAsset
+                                        input#quantity_received.form-control(type="number" name="quantity_received" min=remainingQuantity max=remainingQuantity required value=remainingQuantity readonly)
+                                        small.text-muted
+                                            i.fas.fa-exchange-alt.mr-1
+                                            | Barang pengganti wajib diterima sekaligus penuh (#{remainingQuantity} unit) dalam satu penerimaan.
+                                    else
+                                        input#quantity_received.form-control(type="number" name="quantity_received" min="1" max=remainingQuantity required value="1" placeholder="Masukkan jumlah barang yang datang")
+                                        small.text-muted Jumlah barang tidak boleh melebihi sisa harus diterima (#{remainingQuantity}).
                                 
                                 .form-group
                                     label(for="received_date") Tanggal Penerimaan *

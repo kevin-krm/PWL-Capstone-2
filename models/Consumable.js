@@ -33,7 +33,12 @@ const Consumable = {
     },
 
     async findIdByName(name, conn = pool) {
-        const [rows] = await conn.query('SELECT id FROM consumables WHERE item_name = ?', [name]);
+        // Cocokkan ternormalisasi (abaikan spasi & kapitalisasi) agar penerimaan BHP
+        // tidak membuat consumable duplikat hanya karena beda spasi/huruf besar-kecil.
+        const [rows] = await conn.query(
+            'SELECT id FROM consumables WHERE LOWER(TRIM(item_name)) = LOWER(TRIM(?)) LIMIT 1',
+            [name]
+        );
         return rows[0] || null;
     },
 
@@ -56,11 +61,6 @@ const Consumable = {
             'UPDATE consumables SET item_name=?, stock=?, unit=? WHERE id=?',
             [item_name, stock, unit, id]
         );
-        return result;
-    },
-
-    async remove(id, conn = pool) {
-        const [result] = await conn.query('DELETE FROM consumables WHERE id=?', [id]);
         return result;
     },
 

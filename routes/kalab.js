@@ -20,6 +20,7 @@ router.post('/procurement-drafts/create', kalabController.createDraft);
 router.get('/procurement-drafts/edit/:id', kalabController.showEditDraft);
 router.post('/procurement-drafts/edit/:id', kalabController.updateDraft);
 router.post('/procurement-drafts/delete/:id', kalabController.deleteDraft);
+router.post('/procurement-drafts/:id/submit', kalabController.submitDraft);
 
 // Rute detail dengan parameter :id harus didefinisikan terakhir
 // agar tidak menangkap path statis seperti /create di atasnya

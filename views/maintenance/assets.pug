@@ -103,8 +103,6 @@ block content
                                                     a.btn.btn-sm.btn-info.m-1(href=`/staflab/assets/maintenance/${a.id}`)
                                                         i.fas.fa-sync-alt.mr-1
                                                         | Update Kondisi
-                                                    form.m-1(action=`/staflab/assets/delete/${a.id}` method="POST" style="display:inline;")
-                                                        button.btn.btn-sm.btn-danger(type="submit" onclick="return confirm('Yakin ingin menghapus aset ini secara permanen?');") Hapus
                                             else
                                                 span.text-muted -
                                         td.d-none(data-order=(a.created_at ? new Date(a.created_at).getTime() : a.id))

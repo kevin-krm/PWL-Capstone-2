@@ -138,11 +138,6 @@ const Asset = {
         return result;
     },
 
-    async remove(id, conn = pool) {
-        const [result] = await conn.query('DELETE FROM assets WHERE id=?', [id]);
-        return result;
-    },
-
     // Pindahkan & ganti label aset lama (registrasi aset pengganti)
     async relocateOld(id, { room_id, label_code, qr_code_url, condition_status }, conn = pool) {
         const [result] = await conn.query(

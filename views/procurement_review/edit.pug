@@ -79,7 +79,7 @@ block content
                                             else
                                                 span.text-muted -
                                         td
-                                            if draft.status === 'Locked'
+                                            if draft.status !== 'Reviewed'
                                                 if item.status === 'Disetujui'
                                                     span.badge.badge-success Disetujui
                                                 else if item.status === 'Ditolak'
@@ -109,7 +109,7 @@ block content
                                                         selected=(item.status === 'Ditolak')
                                                     ) Ditolak
                                         td
-                                            if draft.status === 'Locked'
+                                            if draft.status !== 'Reviewed'
                                                 = item.final_reason || '-'
                                             else
                                                 input.form-control(type="text" name="final_reasons[]" value=item.final_reason placeholder="Alasan (opsional)")
@@ -118,17 +118,25 @@ block content
                             .alert.alert-success.mt-3
                                 i.fas.fa-check-circle
                                 |  Draft sudah difinalisasi dan tidak dapat diubah lagi.
+                        else if draft.status !== 'Reviewed'
+                            .alert.alert-warning.mt-3
+                                i.fas.fa-hourglass-half
+                                |  Draft ini belum diajukan oleh Kepala Laboratorium, sehingga belum dapat difinalisasi.
 
                         .card-footer.mt-4.px-0.pb-0(style="background: transparent; border-top: 1px solid #dee2e6;")
                             a.btn.btn-default(href="/kaprodi/procurement-review")
                                 i.fas.fa-arrow-left
                                 |  Kembali
 
-                            if draft.status !== 'Locked'
+                            if draft.status === 'Reviewed'
                                 button.btn.btn-success.float-right(type='submit')
                                     i.fas.fa-check
                                     |  Finalisasi
-                            else
+                            else if draft.status === 'Locked'
                                 button.btn.btn-secondary.float-right(disabled)
                                     i.fas.fa-lock
                                     |  Sudah Difinalisasi
+                            else
+                                button.btn.btn-secondary.float-right(disabled)
+                                    i.fas.fa-hourglass-half
+                                    |  Belum Diajukan
