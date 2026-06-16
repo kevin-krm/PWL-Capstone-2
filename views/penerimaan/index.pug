@@ -135,8 +135,8 @@ block content
                                                 | BHP
                                     td.text-right(data-order=item.price)= 'Rp ' + Number(item.price).toLocaleString('id-ID')
                                     td.text-center(data-order=item.quantity_received)
-                                        div.d-flex.align-items-center.justify-content-center
-                                            .progress.flex-grow-1.mr-2(style="height: 10px; min-width: 80px;")
+                                        div.d-flex.align-items-center.justify-content-left
+                                            .progress.flex-grow-1.mr-2(style="height: 12px; min-width: 80px; max-width: 70%;")
                                                 - const percent = Math.min(100, Math.round((item.quantity_received / item.target_quantity) * 100))
                                                 - const barColor = percent === 100 ? 'bg-success' : (percent > 0 ? 'bg-warning' : 'bg-danger')
                                                 .progress-bar(class=barColor role="progressbar" style=`width: ${percent}%` aria-valuenow=percent aria-valuemin="0" aria-valuemax="100")
