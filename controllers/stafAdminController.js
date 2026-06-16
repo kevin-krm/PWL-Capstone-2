@@ -119,11 +119,17 @@ exports.showReceiptForm = async (req, res) => {
         const totalReceived = await ItemReceipt.sumReceived(itemId);
         const remainingQuantity = item.target_quantity - totalReceived;
 
+        let replacedAsset = null;
+        if (item.target_replacement_asset_id) {
+            replacedAsset = await Asset.findReplacementInfo(item.target_replacement_asset_id);
+        }
+
         res.render('stafadmin/receipt', {
             user: req.session.user,
             item,
             totalReceived,
-            remainingQuantity
+            remainingQuantity,
+            replacedAsset
         });
     } catch (err) {
         console.error(err);

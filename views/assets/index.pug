@@ -28,7 +28,7 @@ block content
                             label.small.mb-1.text-muted Ruangan
                             select#filter-room.form-control.form-control-sm
                                 option(value="") Semua Ruangan
-                        .col-md-3
+                        .col-md-2
                             label.small.mb-1.text-muted Kondisi
                             select#filter-condition.form-control.form-control-sm
                                 option(value="") Semua Kondisi
@@ -36,12 +36,18 @@ block content
                                 option(value="Rusak") Rusak
                                 option(value="Maintenance") Maintenance
                                 option(value="Dihapus") Dihapus
-                        .col-md-3
+                        .col-md-2
                             label.small.mb-1.text-muted Status Aktif
                             select#filter-active.form-control.form-control-sm
                                 option(value="") Semua Status
                                 option(value="Ya") Aktif
                                 option(value="Tidak") Nonaktif
+                        .col-md-2
+                            label.small.mb-1.text-muted Urutkan
+                            select#filter-sort.form-control.form-control-sm
+                                option(value="") Default
+                                option(value="abjad") Abjad (A-Z)
+                                option(value="recent") Terbaru
                         .col-md-3.d-flex.align-items-end
                             button#btn-reset-filter.btn.btn-secondary.btn-sm.btn-block(type="button")
                                 i.fas.fa-undo.mr-1
@@ -59,6 +65,7 @@ block content
                                 th Kondisi
                                 th Status Aktif
                                 th Aksi
+                                th.d-none Ditambahkan
                         tbody
                             each a, index in assets
                                 tr
@@ -87,6 +94,7 @@ block content
                                             a.btn.btn-sm.btn-warning.m-1(href=`/stafadmin/assets/edit/${a.id}`) Edit
                                             form.m-1(action=`/stafadmin/assets/delete/${a.id}` method="POST" style="display:inline;")
                                                 button.btn.btn-sm.btn-danger(type="submit" onclick="return confirm('Yakin ingin menghapus aset ini?');") Hapus
+                                    td.d-none(data-order=(a.created_at ? new Date(a.created_at).getTime() : a.id))
 
 block scripts
     script(src="/adminlte/plugins/datatables/jquery.dataTables.min.js")
@@ -139,7 +147,8 @@ block scripts
                 pageLength: 10, lengthMenu: [[5, 10, 25, -1], [5, 10, 25, 'Semua']], order: [[4,'asc']], language: lang, stateSave: true, stateDuration: -1,
                 columnDefs: [
                     { targets: 0, orderable: false, searchable: false, className: 'select-checkbox', visible: false },
-                    { targets: [1, 3, 8], orderable: false, searchable: false }
+                    { targets: [1, 3, 8], orderable: false, searchable: false },
+                    { targets: 9, visible: false, searchable: false }
                 ],
                 initComplete: function () {
                     // --- Toggle Select Button ---
@@ -208,9 +217,13 @@ block scripts
             $('#filter-room').on('change',      function () { table.column(5).search(exact(this.value), true, false).draw(); });
             $('#filter-condition').on('change', function () { table.column(6).search(this.value, false, true).draw(); });
             $('#filter-active').on('change',    function () { table.column(7).search(exact(this.value), true, false).draw(); });
+            $('#filter-sort').on('change', function () {
+                if (this.value === 'recent') table.order([9, 'desc']).draw();
+                else table.order([4, 'asc']).draw();
+            });
 
             $('#btn-reset-filter').on('click', function () {
-                $('#filter-room, #filter-condition, #filter-active').val('');
+                $('#filter-room, #filter-condition, #filter-active, #filter-sort').val('');
                 $('#assetsTable_filter input').val('');
                 table.search('').columns().search('').order([[4,'asc']]).draw();
             });
@@ -220,6 +233,15 @@ block scripts
             $('#filter-room').val(unanchor(table.column(5).search()));
             $('#filter-condition').val(table.column(6).search());
             $('#filter-active').val(unanchor(table.column(7).search()));
+            (function () {
+                var o = table.order();
+                if (o && o.length) {
+                    var col = o[0][0], dir = o[0][1];
+                    if (col === 9 && dir === 'desc') $('#filter-sort').val('recent');
+                    else if (col === 4 && dir === 'asc') $('#filter-sort').val('abjad');
+                    else $('#filter-sort').val('');
+                }
+            })();
             table.column(0).visible(false);
 
             table.draw();

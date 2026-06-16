@@ -24,6 +24,21 @@ block content
                         i.fas.fa-history.mr-1
                         | Riwayat Pemakaian BHP per Aset & Ruangan
                 .card-body
+                    .row.mb-3
+                        .col-md-3
+                            label.small.mb-1.text-muted Ruangan
+                            select#filter-room.form-control.form-control-sm
+                                option(value="") Semua Ruangan
+                        .col-md-3
+                            label.small.mb-1.text-muted Urutkan
+                            select#filter-sort.form-control.form-control-sm
+                                option(value="") Default
+                                option(value="abjad") Abjad (A-Z)
+                                option(value="recent") Terbaru
+                        .col-md-3.d-flex.align-items-end
+                            button#btn-reset-filter.btn.btn-secondary.btn-sm.btn-block(type="button")
+                                i.fas.fa-undo.mr-1
+                                | Reset Filter
                     table#usageLogTable.table.table-striped.table-bordered(style="width:100%")
                         thead
                             tr.bg-primary
@@ -70,4 +85,36 @@ block scripts
             table.on('draw.dt', function () {
                 table.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (c, i) { c.innerHTML = i + 1; });
             });
+
+            function exact(v) { return v ? '^' + $.fn.dataTable.util.escapeRegex(v) + '$' : ''; }
+            function unanchor(s) { return s ? s.replace(/^\^/, '').replace(/\$$/, '').replace(/\\(.)/g, '$1') : ''; }
+
+            // Isi dropdown Ruangan dari nilai unik kolom Ruangan (col 6)
+            table.column(6).data().unique().sort().each(function (d) {
+                var t = $('<div>').html(d).text().trim();
+                if (t) $('#filter-room').append($('<option>').val(t).text(t));
+            });
+
+            $('#filter-room').on('change', function () { table.column(6).search(exact(this.value), true, false).draw(); });
+            $('#filter-sort').on('change', function () {
+                if (this.value === 'abjad') table.order([1, 'asc']).draw();
+                else table.order([7, 'desc']).draw();
+            });
+
+            $('#btn-reset-filter').on('click', function () {
+                $('#filter-room, #filter-sort').val('');
+                $('#usageLogTable_filter input').val('');
+                table.search('').columns().search('').order([[7, 'desc']]).draw();
+            });
+
+            // Sinkron dropdown dari state tersimpan (stateSave)
+            $('#filter-room').val(unanchor(table.column(6).search()));
+            (function () {
+                var o = table.order();
+                if (o && o.length && o[0][0] === 1 && o[0][1] === 'asc') $('#filter-sort').val('abjad');
+                else if (o && o.length && o[0][0] === 7 && o[0][1] === 'desc') $('#filter-sort').val('recent');
+                else $('#filter-sort').val('');
+            })();
+
+            table.draw();
         });
