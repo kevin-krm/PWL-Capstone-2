@@ -23,6 +23,22 @@ block content
                             h3.card-title Form Penerimaan Parsial
                         form(action=`/stafadmin/procurement/${item.item_id}/receipt` method="POST")
                             .card-body
+                                if replacedAsset
+                                    .alert.alert-warning
+                                        h6.mb-2
+                                            i.fas.fa-exchange-alt.mr-2
+                                            strong Barang Pengganti
+                                        | Barang ini akan menggantikan aset berikut:
+                                        ul.mb-0.mt-2
+                                            li
+                                                | Nama Aset Lama:&nbsp;
+                                                strong= replacedAsset.item_name
+                                            li
+                                                | Kode Label:&nbsp;
+                                                strong= replacedAsset.label_code
+                                            li
+                                                | Lokasi Saat Ini:&nbsp;
+                                                strong= replacedAsset.room_name || 'Tidak diketahui'
                                 .form-group
                                     label Nama Barang
                                     input.form-control(type="text" value=item.item_name disabled)
@@ -44,8 +60,14 @@ block content
                                 
                                 .form-group
                                     label(for="quantity_received") Jumlah Diterima Saat Ini *
-                                    input#quantity_received.form-control(type="number" name="quantity_received" min="1" max=remainingQuantity required placeholder="Masukkan jumlah barang yang datang")
-                                    small.text-muted Jumlah barang tidak boleh melebihi sisa harus diterima (#{remainingQuantity}).
+                                    if replacedAsset
+                                        input#quantity_received.form-control(type="number" name="quantity_received" min=remainingQuantity max=remainingQuantity required value=remainingQuantity readonly)
+                                        small.text-muted
+                                            i.fas.fa-exchange-alt.mr-1
+                                            | Barang pengganti wajib diterima sekaligus penuh (#{remainingQuantity} unit) dalam satu penerimaan.
+                                    else
+                                        input#quantity_received.form-control(type="number" name="quantity_received" min="1" max=remainingQuantity required value="1" placeholder="Masukkan jumlah barang yang datang")
+                                        small.text-muted Jumlah barang tidak boleh melebihi sisa harus diterima (#{remainingQuantity}).
                                 
                                 .form-group
                                     label(for="received_date") Tanggal Penerimaan *

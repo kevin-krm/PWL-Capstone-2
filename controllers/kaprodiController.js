@@ -9,7 +9,7 @@ exports.listAssets = async (req, res) => {
     try {
         const sort = req.query.sort || null;
         const condition = req.query.condition || null;
-        const assets = await Asset.findActiveWithRoomOrdered({ sort, condition });
+        const assets = await Asset.findAllWithRoom({ sort, condition });
         res.render('maintenance/assets', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition });
     } catch (err) {
         res.send(err);
@@ -62,7 +62,7 @@ exports.showReview = async (req, res) => {
             return res.send('Draft tidak ditemukan');
         }
 
-        const items = await ProcurementItem.findByDraft(draftId);
+        const items = await ProcurementItem.findByDraftWithReplacement(draftId);
 
         res.render('procurement_review/edit', {
             user: req.session.user,
@@ -78,6 +78,19 @@ exports.showReview = async (req, res) => {
 exports.finalizeReview = async (req, res) => {
     try {
         const draftId = req.params.id;
+
+        // Guard: hanya draf berstatus 'Reviewed' yang boleh difinalisasi.
+        // Mencegah finalisasi ulang draf yang sudah 'Locked' (yang bisa mengubah
+        // keputusan setelah barang diterima/diregistrasi) maupun draf 'Draft'
+        // yang belum diajukan Kalab. Dicek SEBELUM ada mutasi item apa pun.
+        const draft = await ProcurementDraft.findByIdWithKalab(draftId);
+        if (!draft) {
+            return res.send('Draft tidak ditemukan');
+        }
+        if (draft.status !== 'Reviewed') {
+            return res.send(`<script>alert('Gagal: Draft ini tidak dapat difinalisasi. Hanya draft berstatus "Reviewed" (sudah diajukan Kalab & belum dikunci) yang bisa difinalisasi.'); window.location.href='/kaprodi/procurement-review';</script>`);
+        }
+
         const itemIds = req.body.item_ids || [];
         const statuses = req.body.statuses || [];
         const finalReasons = req.body.final_reasons || [];

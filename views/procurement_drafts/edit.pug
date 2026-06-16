@@ -136,6 +136,9 @@ block content
                                 |  Tambah Barang Pengganti
 
                     .card-footer
+                        small.d-block.text-muted.text-right.mb-2
+                            i.fas.fa-info-circle.mr-1
+                            | Batas kuantitas: maks #{limits.MAX_QTY_INVENTARIS} unit/Inventaris, #{limits.MAX_QTY_BHP} unit/BHP, total #{limits.MAX_TOTAL_UNITS} unit per draf.
                         a.btn.btn-default(href="/kalab/procurement-drafts") Batal
                         button.btn.btn-primary.float-right(type="submit") Simpan Perubahan
 
@@ -197,6 +200,61 @@ block content
             const regularTemplate = document.querySelector('#row-template-regular');
             const replacementTemplate = document.querySelector('#row-template-replacement');
 
+            // ---- Batas kuantitas (anti-freeze Penerimaan & Labeling) ----
+            const LIMITS = !{JSON.stringify(limits)};
+            function capForType(type) {
+                return type === 'BHP' ? LIMITS.MAX_QTY_BHP : LIMITS.MAX_QTY_INVENTARIS;
+            }
+            function getRowType(row) {
+                const sel = row.querySelector('[name="item_type"]');
+                return sel ? sel.value : 'Inventaris';
+            }
+            function syncMax(row) {
+                const qty = row.querySelector('input[name="quantity"]');
+                if (!qty || qty.readOnly) return; // baris pengganti terkunci qty=1
+                qty.max = capForType(getRowType(row));
+            }
+            function syncAllRows() {
+                document.querySelectorAll('#items-table-regular tbody tr, #items-table-replacement tbody tr').forEach(syncMax);
+            }
+            // Perbarui batas (max) saat jenis barang diganti
+            [regularTbody, replacementTbody].forEach(function (tb) {
+                tb.addEventListener('change', function (e) {
+                    if (e.target && e.target.name === 'item_type') syncMax(e.target.closest('tr'));
+                });
+            });
+            // Validasi saat submit (mirror validasi server)
+            regularTbody.closest('form').addEventListener('submit', function (e) {
+                const rows = document.querySelectorAll('#items-table-regular tbody tr, #items-table-replacement tbody tr');
+                let total = 0;
+                for (let i = 0; i < rows.length; i++) {
+                    const nameInput = rows[i].querySelector('input[name="item_name"]');
+                    if (!nameInput || nameInput.value.trim() === '') continue;
+                    const type = getRowType(rows[i]);
+                    const label = type === 'BHP' ? 'BHP' : 'Inventaris';
+                    const qtyInput = rows[i].querySelector('input[name="quantity"]');
+                    const qty = parseInt(qtyInput && qtyInput.value, 10);
+                    if (!qty || qty < 1) {
+                        e.preventDefault();
+                        alert('Gagal: Jumlah barang ' + label + ' tidak valid (minimal 1 unit per barang).');
+                        if (qtyInput) qtyInput.focus();
+                        return;
+                    }
+                    const cap = capForType(type);
+                    if (qty > cap) {
+                        e.preventDefault();
+                        alert('Gagal: Jumlah barang ' + label + ' (' + qty + ') melebihi batas ' + cap + ' unit per barang.');
+                        if (qtyInput) qtyInput.focus();
+                        return;
+                    }
+                    total += qty;
+                }
+                if (total > LIMITS.MAX_TOTAL_UNITS) {
+                    e.preventDefault();
+                    alert('Gagal: Total kuantitas seluruh barang (' + total + ') melebihi batas ' + LIMITS.MAX_TOTAL_UNITS + ' unit per draf.');
+                }
+            });
+
             // Function to bind remove event
             function bindRemoveEvent(btn) {
                 btn.addEventListener('click', function() {
@@ -221,6 +279,7 @@ block content
                 const row = clone.querySelector('tr');
                 bindRemoveEvent(row.querySelector('.remove-row-btn'));
                 regularTbody.appendChild(clone);
+                syncMax(row);
             });
 
             // Add replacement row
@@ -229,5 +288,8 @@ block content
                 const row = clone.querySelector('tr');
                 bindRemoveEvent(row.querySelector('.remove-row-btn'));
                 replacementTbody.appendChild(clone);
+                syncMax(row);
             });
+
+            syncAllRows();
         });

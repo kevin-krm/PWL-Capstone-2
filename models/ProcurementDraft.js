@@ -15,6 +15,10 @@ const ProcurementDraft = {
         const params = [];
         const conditions = [];
 
+        // Kaprodi tidak melihat draf yang masih 'Draft' (masih digarap Kalab dan
+        // belum diajukan). Hanya draf 'Reviewed' (perlu direview) & 'Locked' (final).
+        conditions.push("procurement_drafts.status <> 'Draft'");
+
         if (filters.year) {
             conditions.push('procurement_drafts.year = ?');
             params.push(filters.year);
@@ -24,14 +28,12 @@ const ProcurementDraft = {
             params.push(filters.status);
         }
         if (filters.action === 'reviewable') {
-            conditions.push("procurement_drafts.status != 'Locked'");
+            conditions.push("procurement_drafts.status = 'Reviewed'");
         } else if (filters.action === 'final') {
             conditions.push("procurement_drafts.status = 'Locked'");
         }
 
-        if (conditions.length > 0) {
-            sql += ' WHERE ' + conditions.join(' AND ');
-        }
+        sql += ' WHERE ' + conditions.join(' AND ');
 
         sql += ' ORDER BY procurement_drafts.created_at DESC';
 
@@ -60,6 +62,15 @@ const ProcurementDraft = {
     async setLocked(id, conn = pool) {
         const [result] = await conn.query(
             "UPDATE procurement_drafts SET status = 'Locked' WHERE id = ?",
+            [id]
+        );
+        return result;
+    },
+
+    // Kalab mengajukan draf untuk direview Kaprodi (Draft -> Reviewed)
+    async setReviewed(id, conn = pool) {
+        const [result] = await conn.query(
+            "UPDATE procurement_drafts SET status = 'Reviewed' WHERE id = ?",
             [id]
         );
         return result;

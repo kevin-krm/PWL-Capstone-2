@@ -34,21 +34,20 @@ exports.updateConsumable = async (req, res) => {
     res.redirect('/staflab/consumables');
 };
 
-// POST DELETE
-exports.deleteConsumable = async (req, res) => {
-    await Consumable.remove(req.params.id);
-    res.redirect('/staflab/consumables');
-};
-
 // DATA INVENTARIS (READ-ONLY Staf Lab)
 
 // READ: Menampilkan daftar aset staf lab
 exports.listAssets = async (req, res) => {
     const sort = req.query.sort || null;
     const condition = req.query.condition || null;
-    const assets = await Asset.findActiveWithRoomOrdered({ sort, condition });
+    const assets = await Asset.findAllWithRoom({ sort, condition });
     res.render('maintenance/assets', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition });
 };
+
+// Catatan: penghapusan aset/BHP TIDAK memakai hard-delete. Menghapus baris aset
+// memicu ON DELETE CASCADE ke maintenance_logs & maintenance_bhp_usage sehingga
+// riwayat siklus barang hilang. "Penghapusan" aset = set kondisi 'Dihapus'
+// (otomatis is_active=0) lewat form maintenance di bawah.
 
 // MAINTENANCE & UPDATE KONDISI BARANG
 
@@ -92,7 +91,7 @@ async function renderMaintenanceFormError(res, user, assetId, errorMsg, oldInput
 
 // POST: Proses maintenance — update kondisi, catat log, kurangi stok BHP
 exports.createMaintenance = async (req, res) => {
-    const conn = db.promise();
+    const conn = await db.promise().getConnection();
     const assetId = req.params.id;
     let oldInput = {};
     try {
@@ -156,8 +155,9 @@ exports.createMaintenance = async (req, res) => {
         }, conn);
         const maintenanceLogId = logResult.insertId;
 
-        // 3. Update kondisi aset
-        await Asset.updateCondition(assetId, condition_status, conn);
+        // 3. Update kondisi aset ('Dihapus' otomatis menonaktifkan aset)
+        const isActive = condition_status === 'Dihapus' ? 0 : 1;
+        await Asset.updateConditionAndStatus(assetId, condition_status, isActive, conn);
 
         // 4. Insert BHP usage & kurangi stok
         let totalBhpUsed = 0;
@@ -190,6 +190,8 @@ exports.createMaintenance = async (req, res) => {
         } catch (e2) {
             return res.send("<script>alert('Terjadi kesalahan sistem.'); window.location.href='/staflab/assets';</script>");
         }
+    } finally {
+        conn.release();
     }
 };
 

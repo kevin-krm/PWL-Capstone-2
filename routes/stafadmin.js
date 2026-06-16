@@ -17,7 +17,6 @@ router.get('/consumables', stafAdminController.listConsumables);
 router.get('/assets', stafAdminController.listAssets);
 router.get('/assets/edit/:id', stafAdminController.showEditAsset);
 router.post('/assets/edit/:id', stafAdminController.updateAsset);
-router.post('/assets/delete/:id', stafAdminController.deleteAsset);
 
 // Penerimaan & Labeling
 router.get('/penerimaan', stafAdminController.listPenerimaan);

@@ -12,9 +12,9 @@ async function loadNotifications(req, res, next) {
     try {
         switch (user.role) {
             case 'Ketua Program Studi': {
-                // Ada draft yang belum difinalisasi (perlu di-review)
+                // Ada draft yang sudah diajukan Kalab (status 'Reviewed') & menunggu review
                 const [[r]] = await pool.query(
-                    "SELECT COUNT(*) AS n FROM procurement_drafts WHERE status <> 'Locked'"
+                    "SELECT COUNT(*) AS n FROM procurement_drafts WHERE status = 'Reviewed'"
                 );
                 res.locals.notif.procurementReview = r.n > 0;
                 break;

@@ -54,11 +54,8 @@ exports.updateAsset = async (req, res) => {
     }
 };
 
-// POST DELETE
-exports.deleteAsset = async (req, res) => {
-    await Asset.remove(req.params.id);
-    res.redirect('/stafadmin/assets');
-};
+// Catatan: hard-delete aset dihapus dari alur. Untuk menonaktifkan aset, ubah
+// 'Status Aktif' lewat form Edit aset (soft-delete) agar riwayat tetap utuh.
 
 // PENERIMAAN & LABELING
 // READ: Daftar barang pengadaan disetujui & draf Locked
@@ -119,11 +116,17 @@ exports.showReceiptForm = async (req, res) => {
         const totalReceived = await ItemReceipt.sumReceived(itemId);
         const remainingQuantity = item.target_quantity - totalReceived;
 
+        let replacedAsset = null;
+        if (item.target_replacement_asset_id) {
+            replacedAsset = await Asset.findReplacementInfo(item.target_replacement_asset_id);
+        }
+
         res.render('stafadmin/receipt', {
             user: req.session.user,
             item,
             totalReceived,
-            remainingQuantity
+            remainingQuantity,
+            replacedAsset
         });
     } catch (err) {
         console.error(err);
@@ -133,7 +136,7 @@ exports.showReceiptForm = async (req, res) => {
 
 // Fitur 1: POST Form Penerimaan Barang Parsial
 exports.createReceipt = async (req, res) => {
-    const conn = db.promise();
+    const conn = await db.promise().getConnection();
     try {
         const itemId = req.params.id;
         const quantityReceived = parseInt(req.body.quantity_received, 10);
@@ -156,9 +159,18 @@ exports.createReceipt = async (req, res) => {
         const targetQuantity = item.quantity;
         const itemType = item.item_type;
         const itemName = item.item_name;
+        const isReplacement = !!item.target_replacement_asset_id;
 
         // Lock and get current receipts sum
         const totalReceived = await ItemReceipt.sumReceived(itemId, conn);
+
+        // Barang PENGGANTI wajib diterima sekaligus penuh dalam satu penerimaan.
+        // Penerimaan bertahap untuk item pengganti memicu bug registrasi (unit
+        // berikutnya salah masuk ke gudang + aset lama diproses ulang), jadi dilarang.
+        if (isReplacement && quantityReceived !== targetQuantity) {
+            await conn.rollback();
+            return res.send(`<script>alert('Gagal: Barang pengganti harus diterima sekaligus penuh sebanyak ${targetQuantity} unit dalam satu penerimaan (tidak boleh parsial).'); window.history.back();</script>`);
+        }
 
         if (totalReceived + quantityReceived > targetQuantity) {
             await conn.rollback();
@@ -173,13 +185,16 @@ exports.createReceipt = async (req, res) => {
             received_date: receivedDate
         }, conn);
 
-        // Jika BHP, otomatis masukkan/update ke tabel consumables
+        // Jika BHP, otomatis masukkan/update ke tabel consumables.
+        // Pencocokan ternormalisasi (lihat Consumable.findIdByName) mencegah duplikat.
         if (itemType === 'BHP') {
             const existing = await Consumable.findIdByName(itemName, conn);
             if (existing) {
                 await Consumable.addStock(existing.id, quantityReceived, conn);
             } else {
-                await Consumable.create({ item_name: itemName, stock: quantityReceived, unit: 'Pcs' }, conn);
+                // Unit default 'Pcs' karena procurement_items tidak menyimpan satuan;
+                // Staf Lab dapat menyesuaikan satuan lewat menu Edit BHP bila perlu.
+                await Consumable.create({ item_name: itemName.trim(), stock: quantityReceived, unit: 'Pcs' }, conn);
             }
         }
 
@@ -189,6 +204,8 @@ exports.createReceipt = async (req, res) => {
         await conn.rollback();
         console.error(err);
         return res.send("<script>alert('Terjadi kesalahan sistem saat menyimpan penerimaan.'); window.history.back();</script>");
+    } finally {
+        conn.release();
     }
 };
 
@@ -244,7 +261,7 @@ exports.showRegisterAsset = async (req, res) => {
 
 // Fitur 2: POST Form Registrasi Aset & Generate Label/Barcode (MULTI-ROW, PER-UNIT ROOM)
 exports.registerAsset = async (req, res) => {
-    const conn = db.promise();
+    const conn = await db.promise().getConnection();
     try {
         const receiptId = req.params.id;
         const { label_prefix, old_asset_new_label, manual_mode } = req.body;
@@ -406,5 +423,7 @@ exports.registerAsset = async (req, res) => {
         }
         console.error(err);
         return res.send("<script>alert('Terjadi kesalahan sistem saat mendaftarkan aset.'); window.history.back();</script>");
+    } finally {
+        conn.release();
     }
 };

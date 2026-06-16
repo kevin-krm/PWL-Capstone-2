@@ -88,10 +88,18 @@ block content
                         i.fas.fa-arrow-left
                         |  Kembali
 
-                    if draft.status !== 'Locked'
-                        a.btn.btn-warning.float-right(href=`/kalab/procurement-drafts/edit/${draft.id}`)
+                    if draft.status === 'Draft'
+                        form.float-right(action=`/kalab/procurement-drafts/${draft.id}/submit` method="POST" style="display:inline;")
+                            button.btn.btn-success(type="submit" onclick="return confirm('Ajukan draft ini ke Ketua Program Studi? Setelah diajukan, draft tidak dapat diubah/dihapus lagi.');")
+                                i.fas.fa-paper-plane
+                                |  Ajukan ke Kaprodi
+                        a.btn.btn-warning.float-right.mr-2(href=`/kalab/procurement-drafts/edit/${draft.id}`)
                             i.fas.fa-edit
                             |  Edit Draft
+                    else if draft.status === 'Reviewed'
+                        button.btn.btn-info.float-right(disabled)
+                            i.fas.fa-hourglass-half
+                            |  Menunggu Review Kaprodi
                     else
                         button.btn.btn-secondary.float-right(disabled)
                             i.fas.fa-lock

@@ -28,8 +28,8 @@ block content
                             label.small.mb-1.text-muted Status
                             select#filter-status.form-control.form-control-sm
                                 option(value="") Semua Status
-                                option(value="Draft") Draft
-                                option(value="Locked") Locked
+                                option(value="Reviewed") Menunggu Review
+                                option(value="Locked") Sudah Final
                         .col-md-3.d-flex.align-items-end
                             button#btn-reset-filter.btn.btn-secondary.btn-sm.btn-block(type="button")
                                 i.fas.fa-undo.mr-1
@@ -62,7 +62,7 @@ block content
                                         a.btn.btn-primary.btn-sm(href=`/kaprodi/procurement-review/edit/${draft.id}`)
                                             i.fas.fa-eye
                                             |  Review
-                                        if draft.status != 'Locked'
+                                        if draft.status === 'Reviewed'
                                             span.badge.badge-warning.ml-2 Bisa Direview
                                         else
                                             span.badge.badge-secondary.ml-2 Sudah Final

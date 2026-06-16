@@ -138,11 +138,6 @@ const Asset = {
         return result;
     },
 
-    async remove(id, conn = pool) {
-        const [result] = await conn.query('DELETE FROM assets WHERE id=?', [id]);
-        return result;
-    },
-
     // Pindahkan & ganti label aset lama (registrasi aset pengganti)
     async relocateOld(id, { room_id, label_code, qr_code_url, condition_status }, conn = pool) {
         const [result] = await conn.query(
@@ -165,6 +160,15 @@ const Asset = {
         const [result] = await conn.query(
             'UPDATE assets SET condition_status = ? WHERE id = ?',
             [condition_status, id]
+        );
+        return result;
+    },
+
+    // Update kondisi + status aktif sekaligus ('Dihapus' menonaktifkan aset)
+    async updateConditionAndStatus(id, condition_status, is_active, conn = pool) {
+        const [result] = await conn.query(
+            'UPDATE assets SET condition_status = ?, is_active = ? WHERE id = ?',
+            [condition_status, is_active, id]
         );
         return result;
     }
