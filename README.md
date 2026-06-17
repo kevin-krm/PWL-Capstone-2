@@ -12,29 +12,31 @@ Sistem inventaris laboratorium berbasis web yang dibangun menggunakan kombinasi 
 
 ## Fitur per Role
 
-### 1. Administrator
-* **Kelola Pengguna**: Operasi CRUD penuh untuk akun pengguna (`users`) termasuk penentuan peran (*role-based access control*).
-* **Kelola Ruangan**: Operasi CRUD untuk data ruangan laboratorium (mendukung manajemen denah seperti 13 laboratorium aktif di gedung).
+1. Administrator
+- Mengelola data pengguna.
+- Mengelola data ruangan.
 
-### 2. Kepala Laboratorium (Kalab)
-* **Rancangan Tahunan**: Pembuatan draf pengadaan tahunan (`procurement_drafts`) yang berisi daftar barang belanja bersarang (`procurement_items`) beserta target harga, kuantitas, dan tautan referensi pembelian.
-* **Opsi Penggantian Aset Lama**: Kemampuan menghubungkan item belanja baru dengan aset lama yang statusnya 'Rusak' sebagai target *replacement*.
-* **Histori Pengajuan**: Melihat kembali rekam jejak draf yang pernah diajukan sebelumnya. Jika status draf di database telah dikunci (`Locked`), fitur modifikasi otomatis dinonaktifkan via middleware.
+2. Kepala Laboratorium
+- Membuat draf pengadaan barang (tahunan). Draf ini membuat data inventaris dan BHP yang akan dibeli. Data-data yang dicantumkan seperti nama barang, harga, jumlah barang, dan link pembelian. Terdapat opsi untuk menambahkan barang inventaris yang akan digantikan dengan pembelian ini.
+- Melihat draf pengadaan barang yang pernah diajukan. Jika draf sudah berstatus locked, maka data tidak dapat diganti.
 
-### 3. Ketua Program Studi (Kaprodi)
-* **Review Pengadaan**: Meninjau draf yang diajukan oleh Kepala Laboratorium secara granular. Kaprodi berhak menyetujui (`Disetujui`) atau menolak (`Ditolak`) item secara satuan.
-* **Finalisasi & Penguncian**: Mengunci draf yang telah disetujui. Setelah tombol "Finalisasi" ditekan, status berubah menjadi `Locked`, mengaktifkan visibilitas draf bagi Staf Administrasi.
+3. Ketua Program Studi
+- Melakukan review draf pengadaan barang dari kepala laboratorium.
+- Kaprodi dapat memilih barang mana yang disetujui atau ditolak pengadaannya.
+- Finalisasi draf pengadaan barang. Setelah melakukan finalisasi maka draf sudah tidak dapat diubah.
 
-### 4. Staf Administrasi (Penerimaan & Labeling)
-* **Monitoring Hasil Review**: Melihat draf pengadaan tahunan yang sudah disetujui Kaprodi dan berstatus locked.
-* **Pencatatan Kedatangan Parsial**: Menginput data penerimaan barang fisik ke tabel `item_receipts`. Sistem memiliki validasi ketat sehingga akumulasi kuantitas parsial yang datang tidak dapat melebihi total kuantitas yang disetujui.
-* **Registrasi Aset & Auto-Generate Label**: Mendaftarkan barang inventaris resmi baru ke tabel `assets`, menyertakan input penomoran label manual atau menggunakan tombol otomatis (*Auto-Generate* dengan format: `INV-[ROOM]-[YEAR]-[INCREMENT]`).
-* **Dynamic QR Code URL Rendering**: Sistem secara otomatis mengonversi string kode unik menjadi gambar QR Code berbasis **Base64 Data URL** melalui library `qrcode` yang disimpan ke database, lalu langsung merendernya secara visual pada antarmuka data inventaris.
+4. Staf Administrasi
+- Melihat draf pengadaan barang yang telah disetujui oleh ketua program studi.
+- Melakukan update inventaris misal dengan memberikan penomoran label dan foto QR/ Barcode
+- Melakukan input tanggal penerimaan barang (Barang yang dibeli bisa datang tidak secara bersamaan).
 
-### 5. Staf Laboratorium (Maintenance & Stok)
-* **Manajemen Bahan (BHP)**: Mengelola penambahan dan monitoring sisa stok komoditas consumable (`consumables`).
-* **Pencatatan Pemeliharaan Aset**: Membuat log perbaikan laboratorium (`maintenance_logs`) berdasarkan aset spesifik yang dipilih.
-* **Logika Otomatisasi Pemotongan Stok (Auto-Deduct)**: Jika selama pemeliharaan aset terdapat penggunaan BHP (seperti pemasangan SSD baru atau pengolesan Thermal Paste), sistem secara terprogram merekam penggunaan tersebut ke `maintenance_bhp_usage` dan langsung memotong kuantitas stok di tabel `consumables` melalui mekanisme database aman.
+5. Staf Laboratorium
+- Mengelola stok BHP.
+- Melakukan log maintenance dan update kondisi barang inventaris. Jika selama proses maintenance ada BHP yang digunakan, maka stok dalam sistem juga harus berkurang.
+
+#### Ketentuan aplikasi dan basis data
+Aplikasi yang dibuat menggunakan kombinasi berikut
+- Node.js (Full stack, Pug) + MySQL
 
 ## Panduan Setup Server
 
