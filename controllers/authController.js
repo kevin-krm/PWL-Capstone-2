@@ -5,8 +5,8 @@ const ActivityLog = require('../models/ActivityLog');
 // Halaman utama (landing) per role — dipakai redirect login, 403, & change-password
 const ROLE_HOME = {
     'Administrator': '/admin/dashboard',
-    'Staf Administrasi': '/stafadmin/assets',
-    'Staf Laboratorium': '/staflab/consumables',
+    'Staf Administrasi': '/stafadmin/penerimaan',
+    'Staf Laboratorium': '/staflab/maintenance-logs',
     'Ketua Program Studi': '/kaprodi/procurement-review',
     'Kepala Laboratorium': '/kalab/procurement-drafts'
 };
@@ -46,8 +46,8 @@ exports.login = async (req, res) => {
             ActivityLog.logAction(user.id, 'Login', 'User berhasil login ke sistem');
 
             if (userRole === 'Administrator') res.redirect('/admin/dashboard');
-            else if (userRole === 'Staf Administrasi') res.redirect('/stafadmin/assets');
-            else if (userRole === 'Staf Laboratorium') res.redirect('/staflab/consumables');
+            else if (userRole === 'Staf Administrasi') res.redirect('/stafadmin/penerimaan');
+            else if (userRole === 'Staf Laboratorium') res.redirect('/staflab/maintenance-logs');
             else if (userRole === 'Ketua Program Studi') res.redirect('/kaprodi/procurement-review');
             else if (userRole === 'Kepala Laboratorium') res.redirect('/kalab/procurement-drafts');
             else res.send('Dashboard untuk role ini belum tersedia.');
