@@ -86,7 +86,7 @@ DB_PASSWORD=password
 DB_NAME=database_name
 DB
 
-SESSION_SECRET=key_for_sessions
+SESSION_SECRET=capstone_secret_key_123
 ```
 
 ### 6. Menjalankan Server
