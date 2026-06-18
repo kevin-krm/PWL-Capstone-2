@@ -45,7 +45,6 @@ block content
                         .col-md-2
                             label.small.mb-1.text-muted Urutkan
                             select#filter-sort.form-control.form-control-sm
-                                option(value="") Default
                                 option(value="abjad") Abjad (A-Z)
                                 option(value="recent") Terbaru
                         .col-md-3.d-flex.align-items-end
@@ -221,14 +220,17 @@ block scripts
             });
 
             $('#btn-reset-filter').on('click', function () {
-                $('#filter-room, #filter-condition, #filter-active, #filter-sort').val('');
+                $('#filter-room, #filter-condition, #filter-active').val('');
+                $('#filter-sort').val('abjad');
                 $('#assetsTable_filter input').val('');
                 table.search('').columns().search('').order([[4,'asc']]).draw();
             });
 
             // Sinkron dropdown dari state tersimpan (stateSave); pastikan kolom checkbox tetap tersembunyi
             function unanchor(s) { return s ? s.replace(/^\^/, '').replace(/\$$/, '').replace(/\\(.)/g, '$1') : ''; }
-            $('#filter-room').val(unanchor(table.column(5).search()));
+            var savedRoom = unanchor(table.column(5).search());
+            $('#filter-room').val(savedRoom);
+            if ($('#filter-room').val() !== savedRoom) { table.column(5).search('').draw(); } // self-heal: cegah desync dropdown↔tabel
             $('#filter-condition').val(table.column(6).search());
             $('#filter-active').val(unanchor(table.column(7).search()));
             (function () {
@@ -237,7 +239,7 @@ block scripts
                     var col = o[0][0], dir = o[0][1];
                     if (col === 9 && dir === 'desc') $('#filter-sort').val('recent');
                     else if (col === 4 && dir === 'asc') $('#filter-sort').val('abjad');
-                    else $('#filter-sort').val('');
+                    else $('#filter-sort').val('abjad');
                 }
             })();
             table.column(0).visible(false);

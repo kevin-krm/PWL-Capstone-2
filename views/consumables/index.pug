@@ -26,7 +26,6 @@ block content
                         .col-md-3
                             label.small.mb-1.text-muted Urutkan
                             select#filter-sort.form-control.form-control-sm
-                                option(value="") Default
                                 option(value="abjad") Abjad (A-Z)
                                 option(value="recent") Terbaru
                         .col-md-3.d-flex.align-items-end
@@ -212,7 +211,7 @@ block scripts
             });
 
             $('#btn-reset-filter').on('click', function () {
-                $('#filter-sort').val('');
+                $('#filter-sort').val('abjad');
                 $('#consumablesTable_filter input').val('');
                 table.search('').columns().search('').order([[2,'asc']]).draw();
             });
@@ -224,7 +223,7 @@ block scripts
                     var col = o[0][0], dir = o[0][1];
                     if (col === 5 && dir === 'desc') $('#filter-sort').val('recent');
                     else if (col === 2 && dir === 'asc') $('#filter-sort').val('abjad');
-                    else $('#filter-sort').val('');
+                    else $('#filter-sort').val('abjad');
                 }
             })();
 

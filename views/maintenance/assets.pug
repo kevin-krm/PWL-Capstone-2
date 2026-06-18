@@ -51,7 +51,6 @@ block content
                         .col-md-3
                             label.small.mb-1.text-muted Urutkan
                             select#filter-sort.form-control.form-control-sm
-                                option(value="") Default
                                 option(value="abjad") Abjad (A-Z)
                                 option(value="recent") Terbaru
                         .col-md-3.d-flex.align-items-end
@@ -236,19 +235,22 @@ block scripts
             });
 
             $('#btn-reset-filter').on('click', function () {
-                $('#filter-condition, #filter-room, #filter-sort').val('');
+                $('#filter-condition, #filter-room').val('');
+                $('#filter-sort').val('abjad');
                 $('#assetsTable_filter input').val('');
                 table.search('').columns().search('').order([[3,'asc']]).draw();
             });
 
             // Sinkron dropdown dari state tersimpan (stateSave); kolom checkbox tetap tersembunyi
             $('#filter-condition').val(table.column(5).search());
-            $('#filter-room').val(unanchor(table.column(4).search()));
+            var savedRoom = unanchor(table.column(4).search());
+            $('#filter-room').val(savedRoom);
+            if ($('#filter-room').val() !== savedRoom) { table.column(4).search('').draw(); } // self-heal: cegah desync dropdown↔tabel
             (function () {
                 var o = table.order();
                 if (o && o.length && o[0][0] === 7 && o[0][1] === 'desc') $('#filter-sort').val('recent');
                 else if (o && o.length && o[0][0] === 3 && o[0][1] === 'asc') $('#filter-sort').val('abjad');
-                else $('#filter-sort').val('');
+                else $('#filter-sort').val('abjad');
             })();
             table.column(0).visible(false);
 

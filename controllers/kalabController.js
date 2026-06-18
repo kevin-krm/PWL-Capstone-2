@@ -67,17 +67,14 @@ function validateItemLimits(values) {
 
 // READ: Daftar inventaris (read-only)
 exports.listAssets = async (req, res) => {
-    const sort = req.query.sort || null;
-    const condition = req.query.condition || null;
-    const assets = await Asset.findAllWithRoom({ sort, condition });
-    res.render('maintenance/assets', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition });
+    const assets = await Asset.findAllWithRoom();
+    res.render('maintenance/assets', { user: req.session.user, assets });
 };
 
 // READ: Daftar BHP (read-only)
 exports.listConsumables = async (req, res) => {
-    const sort = req.query.sort || null;
-    const consumables = await Consumable.findAll(sort);
-    res.render('consumables/index', { user: req.session.user, consumables, selectedSort: sort });
+    const consumables = await Consumable.findAll();
+    res.render('consumables/index', { user: req.session.user, consumables });
 };
 
 // Menampilkan daftar draft pengadaan

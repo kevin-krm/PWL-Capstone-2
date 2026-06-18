@@ -9,20 +9,16 @@ const ActivityLog = require('../models/ActivityLog');
 
 // READ: Daftar BHP/Consumables (read-only untuk StafAdmin)
 exports.listConsumables = async (req, res) => {
-    const sort = req.query.sort || null;
-    const consumables = await Consumable.findAll(sort);
-    res.render('consumables/index', { user: req.session.user, consumables, selectedSort: sort });
+    const consumables = await Consumable.findAll();
+    res.render('consumables/index', { user: req.session.user, consumables });
 };
 
 // CRUD INVENTARIS (ASSETS)
 
 // READ: Menampilkan daftar aset
 exports.listAssets = async (req, res) => {
-    const sort = req.query.sort || null;
-    const condition = req.query.condition || null;
-    const active = req.query.active || null;
-    const assets = await Asset.findAllWithRoom({ sort, condition, active });
-    res.render('assets/index', { user: req.session.user, assets, selectedSort: sort, selectedCondition: condition, selectedActive: active });
+    const assets = await Asset.findAllWithRoom();
+    res.render('assets/index', { user: req.session.user, assets });
 };
 
 // EDIT FORM: Halaman edit aset

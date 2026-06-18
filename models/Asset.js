@@ -42,39 +42,6 @@ const Asset = {
         return rows;
     },
 
-    async findActiveWithRoomOrdered(filters = {}, conn = pool) {
-        let sql = `
-            SELECT a.*, r.room_name
-            FROM assets a
-            LEFT JOIN rooms r ON a.room_id = r.id
-            WHERE a.is_active = TRUE
-        `;
-        const params = [];
-
-        if (filters.condition) {
-            sql += ' AND a.condition_status = ?';
-            params.push(filters.condition);
-        }
-
-        switch (filters.sort) {
-            case 'abjad':
-                sql += ' ORDER BY a.item_name ASC';
-                break;
-            case 'recent':
-                sql += ' ORDER BY a.created_at DESC';
-                break;
-            case 'no':
-                sql += ' ORDER BY a.id ASC';
-                break;
-            default:
-                sql += ' ORDER BY r.room_name ASC, a.item_name ASC';
-                break;
-        }
-
-        const [rows] = await conn.query(sql, params);
-        return rows;
-    },
-
     async findById(id, conn = pool) {
         const [rows] = await conn.query('SELECT * FROM assets WHERE id = ?', [id]);
         return rows[0] || null;
